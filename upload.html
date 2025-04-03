@@ -3,287 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Uploader - Board Creator</title>
+    <title>Image Uploader</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #4CAF50;
-            color: white;
-            padding: 8px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .top-bar-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .top-bar a {
-            text-decoration: none;
-        }
-        
-        .top-bar button {
-            background-color: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .top-bar button:hover {
-            background-color: rgba(255,255,255,0.3);
-        }
-        
-        .top-bar h1 {
-            margin: 0;
-            font-size: 1.3rem;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-        
-        .content {
             max-width: 800px;
-            margin: 80px auto 30px;
+            margin: 0 auto;
             padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            line-height: 1.6;
         }
-        
-        h2 {
-            color: #4CAF50;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
         .upload-container {
-            border: 3px dashed #ccc;
-            padding: 40px 20px;
-            margin: 30px 0;
-            border-radius: 8px;
+            border: 2px dashed #ccc;
+            padding: 20px;
             text-align: center;
-            transition: all 0.3s;
-            background-color: #f9f9f9;
+            margin: 20px 0;
+            border-radius: 5px;
         }
-        
-        .upload-container:hover {
-            border-color: #4CAF50;
-            background-color: #f0fff0;
+        #gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
         }
-        
-        .upload-container.drag-over {
-            border-color: #4CAF50;
-            background-color: #e8f5e9;
+        .gallery-item {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
         }
-        
-        #fileInput {
-            display: none;
+        .gallery-item img {
+            max-width: 100%;
+            height: auto;
         }
-        
-        .upload-label {
-            display: inline-block;
-            padding: 12px 24px;
+        button {
             background-color: #4CAF50;
             color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-        
-        .upload-label:hover {
-            background-color: #45a049;
-        }
-        
-        #preview {
-            max-width: 100%;
-            max-height: 400px;
-            margin: 20px auto;
-            display: none;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        #downloadBtn {
-            padding: 12px 24px;
-            background-color: #2196F3;
-            color: white;
             border: none;
+            padding: 10px 15px;
+            margin: 10px 0;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-            display: none;
-            margin: 0 auto;
         }
-        
-        #downloadBtn:hover {
-            background-color: #0b7dda;
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
         }
-        
-        .instructions {
-            margin-top: 30px;
-            padding: 15px;
-            background-color: #e8f5e9;
-            border-left: 4px solid #4CAF50;
-            border-radius: 0 4px 4px 0;
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
         }
-        
-        .instructions h3 {
-            margin-top: 0;
-            color: #2E7D32;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        @media (max-width: 600px) {
-            .content {
-                margin: 70px 15px 15px;
-                padding: 15px;
-            }
-            
-            .upload-container {
-                padding: 30px 15px;
-            }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
         }
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <div class="top-bar-buttons">
-            <a href="index.html"><button>Board Creator</button></a>
-            <a href="tower.html"><button>Tower</button></a>
-            <a href="other.html"><button>??</button></a>
-            <a href="https://discord.com" target="_blank"><button>Discord</button></a>
-        </div>
-        <h1>Image Uploader</h1>
-    </div>
-
-    <div class="content">
-        <h2>Upload and Download Images</h2>
-        
-        <div class="upload-container" id="dropArea">
-            <label for="fileInput" class="upload-label">Choose an Image</label>
-            <input type="file" id="fileInput" accept="image/*">
-            <p>or drag and drop your image here</p>
-            
-            <img id="preview" alt="Image preview">
-            <button id="downloadBtn">Download Image</button>
-        </div>
-        
-        <div class="instructions">
-            <h3>How to use:</h3>
-            <ol>
-                <li>Click "Choose an Image" or drag and drop an image into the area above</li>
-                <li>Preview your image</li>
-                <li>Click "Download Image" to save it to your device</li>
-            </ol>
-        </div>
+    <h1>Image Uploader to GitHub</h1>
+    
+    <div class="upload-container">
+        <input type="file" id="fileInput" accept="image/*">
+        <button id="uploadBtn">Upload Image</button>
+        <div id="status"></div>
     </div>
     
-    <footer>Made By 0jek</footer>
+    <h2>Image Gallery</h2>
+    <button id="refreshBtn">Refresh Gallery</button>
+    <div id="gallery"></div>
 
     <script>
+        const uploadBtn = document.getElementById('uploadBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
         const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const dropArea = document.getElementById('dropArea');
-        
-        // Handle file selection
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                displayImage(file);
+        const gallery = document.getElementById('gallery');
+        const statusDiv = document.getElementById('status');
+
+        // Upload obrazu
+        uploadBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                showStatus('Please select an image first', 'error');
+                return;
             }
-        });
-        
-        // Handle drag and drop
-        dropArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropArea.classList.add('drag-over');
-        });
-        
-        dropArea.addEventListener('dragleave', () => {
-            dropArea.classList.remove('drag-over');
-        });
-        
-        dropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropArea.classList.remove('drag-over');
-            
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                fileInput.files = e.dataTransfer.files;
-                displayImage(file);
-            } else {
-                alert('Please upload an image file.');
-            }
-        });
-        
-        // Handle download
-        downloadBtn.addEventListener('click', function() {
-            if (preview.src) {
-                const link = document.createElement('a');
-                const fileName = getFileName(fileInput.files[0].name);
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                showStatus('Uploading...');
                 
-                link.href = preview.src;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                const response = await fetch('http://localhost:3000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('Image uploaded successfully!', 'success');
+                    loadGallery();
+                } else {
+                    showStatus(`Error: ${result.error || 'Upload failed'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                console.error('Upload error:', error);
             }
         });
-        
-        // Display the selected image
-        function displayImage(file) {
-            const reader = new FileReader();
-            
-            reader.onload = function(event) {
-                preview.src = event.target.result;
-                preview.style.display = 'block';
-                downloadBtn.style.display = 'block';
+
+        // Odśwież galerię
+        refreshBtn.addEventListener('click', loadGallery);
+
+        // Załaduj galerię
+        async function loadGallery() {
+            try {
+                gallery.innerHTML = '<p>Loading images...</p>';
                 
-                // Scroll to preview
-                preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                const response = await fetch('http://localhost:3000/gallery');
+                const images = await response.json();
+
+                if (images.length === 0) {
+                    gallery.innerHTML = '<p>No images found.</p>';
+                    return;
+                }
+
+                gallery.innerHTML = '';
+                images.forEach(image => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = image.url;
+                    img.alt = image.name;
+                    
+                    const name = document.createElement('p');
+                    name.textContent = image.name;
+                    
+                    item.appendChild(img);
+                    item.appendChild(name);
+                    gallery.appendChild(item);
+                });
+            } catch (error) {
+                gallery.innerHTML = `<p class="error">Error loading images: ${error.message}</p>`;
+                console.error('Gallery error:', error);
             }
-            
-            reader.readAsDataURL(file);
         }
-        
-        // Generate a clean filename
-        function getFileName(originalName) {
-            const timestamp = new Date().getTime();
-            const extension = originalName.split('.').pop();
-            const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
-            const cleanName = nameWithoutExt.replace(/[^a-zA-Z0-9-_]/g, "_");
-            
-            return `${cleanName}_${timestamp}.${extension}`;
+
+        function showStatus(message, type = '') {
+            statusDiv.textContent = message;
+            statusDiv.className = type;
         }
+
+        // Załaduj galerię przy starcie
+        loadGallery();
     </script>
 </body>
 </html>
