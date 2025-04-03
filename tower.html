@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Creator - Tower</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .top-bar-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .top-bar a {
+            text-decoration: none;
+        }
+        .top-bar button {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .top-bar button:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+        .top-bar h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 70px 15px 15px;
+            background-color: white;
+        }
+
+        .grid-container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            margin-bottom: 30px;
+        }
+        .grid-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('default2.png') no-repeat center center;
+            background-size: cover;
+            z-index: 1;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 50px);
+            grid-template-rows: repeat(7, 50px);
+            position: relative;
+            width: 350px;
+            height: 350px;
+            z-index: 2;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .cell.green {
+            cursor: pointer;
+        }
+        .unit {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            cursor: move;
+            top: 5px;
+            left: 5px;
+            z-index: 3;
+            image-rendering: crisp-edges;
+        }
+        .omen-unit {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            z-index: 4;
+        }
+        .omen-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: crisp-edges;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .omen-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+        .relic {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            top: 5px;
+            left: 5px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 2px solid;
+            border-radius: 0;
+            image-rendering: crisp-edges;
+            z-index: 2;
+        }
+        .units-container, .shapes-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .unit-option, .shape-option {
+            transition: transform 0.2s;
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .unit-option:hover, .shape-option:hover {
+            transform: scale(1.1);
+        }
+        .unit-option img, .shape-option img {
+            width: 50px;
+            height: 50px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            image-rendering: crisp-edges;
+        }
+        .unit-label {
+            margin-top: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .selected {
+            border-color: #4CAF50 !important;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6) !important;
+        }
+        .buttons {
+            margin: 5px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .buttons button {
+            padding: 8px 12px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+        .buttons button:hover {
+            background-color: #45a049;
+        }
+        #removeModeBtn {
+            background-color: #e74c3c;
+        }
+        #removeModeBtn:hover {
+            background-color: #c0392b;
+        }
+        .color-controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .color-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #image-container {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+        }
+        footer {
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+        .locked-color {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-buttons">
+            <a href="index.html"><button>Default</button></a>
+            <a href="upload.html"><button>??</button></a>
+            <a href="https://discord.com" target="_blank"><button>Discord</button></a>
+        </div>
+        <h1>Board Creator</h1>
+    </div>
+
+    <div class="buttons">
+        <button onclick="clearElements()">Clear All</button>
+        <button onclick="deselectAll()">Deselect All</button>
+        <button id="removeModeBtn" onclick="toggleRemoveMode()">Remove Mode: OFF</button>
+        <button onclick="saveAsImage()">Save as Image</button>
+        <button onclick="randomizePlacement()">Random Placement</button>
+    </div>
+    
+    <div class="color-controls">
+        <div class="color-control">
+            <label for="dotColor">Omen Dot Color:</label>
+            <input type="color" id="dotColor" value="#000000">
+        </div>
+        <div class="color-control">
+            <label for="relicColor">Relic Border Color:</label>
+            <input type="color" id="relicColor" value="#000000">
+        </div>
+    </div>
+    
+    <div class="grid-container" id="grid-container">
+        <div class="grid-background"></div>
+        <div class="grid" id="grid"></div>
+    </div>
+    
+    <h2>Available Units</h2>
+    <div class="units-container" id="units-container"></div>
+    
+    <h2>Omen "relic"</h2>
+    <div class="shapes-container" id="shapes-container">
+        <div class="shape-option" onclick="selectShape('relic')">
+            <img src="relic.png" alt="Relic">
+            <p class="unit-label">Relic</p>
+        </div>
+    </div>
+    
+    <div id="image-container">
+        <h3>Generated Board</h3>
+        <img id="generated-image" src="" alt="Generated board image">
+    </div>
+    
+    <script>
+        const config = {
+            omenCount: { min: 0, max: 18 }
+        };
+
+        const grid = document.getElementById("grid");
+        const unitsContainer = document.getElementById("units-container");
+        const shapesContainer = document.getElementById("shapes-container");
+        const removeModeBtn = document.getElementById("removeModeBtn");
+        const dotColorPicker = document.getElementById("dotColor");
+        const relicColorPicker = document.getElementById("relicColor");
+        
+        let selectedUnit = null;
+        let selectedShape = null;
+        let removeMode = false;
+        let currentDotColor = "#000000";
+        let currentRelicColor = "#000000";
+
+        const unitNames = {
+            1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
+            6: "Blue Dragon", 7: "Big Hand", 8: "Space Soldier", 9: "Coin man", 10: "Cat",
+            11: "Witch", 12: "Mouse", 13: "Heli", 14: "Mimic", 15: "Duck",
+            16: "Clara", 17: "???", 18: "Nature Guardian", 19: "Destroyer", 20: "Gold Crow",
+            21: "Maniac", 22: "Draxar", 23: "Regik", 24: "Basilisk", 25: "???",
+            26: "???", 27: "???", 28: "???", 
+            'omen': "Omen"
+        };
+
+        const availableUnits = [];
+        for (let i = 1; i <= 28; i++) {
+            availableUnits.push({
+                id: i,
+                src: `image${i}.png`,
+                name: unitNames[i] || `Unit ${i}`
+            });
+        }
+        
+        availableUnits.push({
+            id: 'omen',
+            src: 'omen.png',
+            name: 'Omen'
+        });
+
+        function preloadImages() {
+            const images = ['omen.png', 'relic.png', 'default2.png', ...availableUnits.map(u => u.src)];
+            images.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
+
+        function randomizePlacement() {
+            clearElements();
+            
+            const greenCells = Array.from(document.querySelectorAll('.cell.green'));
+            const shuffledCells = [...greenCells].sort(() => Math.random() - 0.5);
+            
+            const omenCount = Math.floor(Math.random() * (config.omenCount.max - config.omenCount.min + 1)) + config.omenCount.min;
+            
+            for (let i = 0; i < Math.min(omenCount, shuffledCells.length); i++) {
+                const cell = shuffledCells[i];
+                placeOmen(cell);
+            }
+            
+            for (let i = omenCount; i < shuffledCells.length; i++) {
+                const cell = shuffledCells[i];
+                const unitIndex = Math.floor(Math.random() * (availableUnits.length - 1));
+                const unit = availableUnits[unitIndex];
+                placeUnit(cell, unit);
+            }
+            
+            const allGreenCells = [...greenCells].sort(() => Math.random() - 0.5);
+            for (let i = 0; i < Math.min(omenCount, allGreenCells.length); i++) {
+                const cell = allGreenCells[i];
+                placeRelic(cell);
+            }
+        }
+
+        function placeOmen(cell) {
+            const existingOmen = cell.querySelector('.omen-unit');
+            if (existingOmen) existingOmen.remove();
+            
+            const omenContainer = document.createElement("div");
+            omenContainer.classList.add("omen-unit");
+            
+            const omenImg = new Image();
+            omenImg.src = 'omen.png';
+            omenImg.classList.add("omen-image");
+            
+            const dot = document.createElement("div");
+            dot.classList.add("omen-dot", "locked-color");
+            dot.style.backgroundColor = currentDotColor;
+            
+            omenContainer.appendChild(omenImg);
+            omenContainer.appendChild(dot);
+            cell.appendChild(omenContainer);
+        }
+
+        function placeUnit(cell, unit) {
+            const existingUnit = cell.querySelector('.unit');
+            if (existingUnit) existingUnit.remove();
+            
+            const img = document.createElement("img");
+            img.src = unit.src;
+            img.classList.add("unit");
+            img.style.imageRendering = "crisp-edges";
+            cell.appendChild(img);
+        }
+
+        function placeRelic(cell) {
+            const existingRelic = cell.querySelector('.relic');
+            if (existingRelic) existingRelic.remove();
+            
+            const relicDiv = document.createElement("div");
+            relicDiv.classList.add("relic", "locked-color");
+            relicDiv.style.borderColor = currentRelicColor;
+            relicDiv.style.backgroundImage = "url('relic.png')";
+            cell.appendChild(relicDiv);
+        }
+
+        function updateAllOmenDots() {
+            document.querySelectorAll('.omen-dot:not(.locked-color)').forEach(dot => {
+                dot.style.backgroundColor = currentDotColor;
+            });
+        }
+
+        function updateAllRelicBorders() {
+            document.querySelectorAll('.relic:not(.locked-color)').forEach(relic => {
+                relic.style.borderColor = currentRelicColor;
+            });
+        }
+
+        function toggleRemoveMode() {
+            removeMode = !removeMode;
+            removeModeBtn.textContent = removeMode ? "Remove Mode: ON" : "Remove Mode: OFF";
+            removeModeBtn.style.backgroundColor = removeMode ? "#c0392b" : "#e74c3c";
+            
+            // Reset selection when entering remove mode
+            if (removeMode) {
+                selectedUnit = null;
+                selectedShape = null;
+                document.querySelectorAll('.unit-option img, .shape-option').forEach(el => {
+                    el.classList.remove('selected');
+                });
+            }
+        }
+
+        function selectUnit(src, event) {
+            if (removeMode) toggleRemoveMode(); // Automatically turn off remove mode when selecting unit
+            
+            document.querySelectorAll('.unit-option img, .shape-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            selectedUnit = src;
+            selectedShape = null;
+            event.target.classList.add('selected');
+        }
+
+        function selectShape(type) {
+            if (removeMode) toggleRemoveMode(); // Automatically turn off remove mode when selecting shape
+            
+            document.querySelectorAll('.shape-option, .unit-option img').forEach(el => {
+                el.classList.remove('selected');
+            });
+            selectedShape = type;
+            selectedUnit = null;
+            event.currentTarget.classList.add('selected');
+        }
+
+        function placeElement(event) {
+            const cell = event.currentTarget;
+            
+            if (removeMode) {
+                cell.querySelectorAll('.unit, .omen-unit, .relic').forEach(el => el.remove());
+                return;
+            }
+            
+            if (selectedUnit) {
+                const unit = availableUnits.find(u => u.src === selectedUnit);
+                if (unit) {
+                    if (unit.id === 'omen') {
+                        placeOmen(cell);
+                    } else {
+                        placeUnit(cell, unit);
+                    }
+                }
+            } 
+            else if (selectedShape === 'relic') {
+                placeRelic(cell);
+            }
+        }
+
+        function deselectAll() {
+            selectedUnit = null;
+            selectedShape = null;
+            if (removeMode) toggleRemoveMode();
+            document.querySelectorAll('.unit-option img, .shape-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+        }
+
+        function clearElements() {
+            document.querySelectorAll(".unit, .omen-unit, .relic").forEach(element => element.remove());
+        }
+
+        function generateUnitSelection() {
+            unitsContainer.innerHTML = '';
+            availableUnits.forEach((unit) => {
+                const unitOption = document.createElement("div");
+                unitOption.classList.add("unit-option");
+                
+                const img = document.createElement("img");
+                img.src = unit.src;
+                img.alt = unit.name;
+                img.title = unit.name;
+                img.addEventListener("click", (e) => selectUnit(unit.src, e));
+                
+                const label = document.createElement("p");
+                label.classList.add("unit-label");
+                label.textContent = unit.name;
+                
+                unitOption.appendChild(img);
+                unitOption.appendChild(label);
+                unitsContainer.appendChild(unitOption);
+            });
+        }
+
+        function saveAsImage() {
+            const options = {
+                useCORS: true,
+                scale: 2,
+                logging: true,
+                backgroundColor: null,
+                allowTaint: false,
+                foreignObjectRendering: false
+            };
+
+            html2canvas(document.getElementById("grid-container"), options)
+                .then(canvas => {
+                    const generatedImage = document.getElementById("generated-image");
+                    generatedImage.src = canvas.toDataURL("image/png");
+                    document.getElementById("image-container").style.display = "block";
+                    generatedImage.scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(error => {
+                    console.error("Error generating image:", error);
+                    alert("Error generating image. Check console for details.");
+                });
+        }
+
+        // Plansza 7x7 - tylko komórki z klasą 'green' są klikalne
+        const layout = [
+            ["b", "green", "p", "p", "p", "green", "b"],
+            ["green", "green", "p", "green", "p", "green", "green"],
+            ["p", "p", "p", "green", "p", "p", "p"],
+            ["p", "green", "green", "green", "green", "green", "p"],
+            ["p", "p", "p", "green", "p", "p", "p"],
+            ["green", "green", "p", "green", "p", "green", "green"],
+            ["b", "green", "p", "p", "p", "green", "b"]
+        ];
+        
+        layout.forEach((row, rowIndex) => {
+            row.forEach((cellType, colIndex) => {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                
+                if (cellType === "green") {
+                    cell.classList.add("green");
+                    cell.addEventListener("click", placeElement);
+                }
+                else if (cellType === "b") {
+                    cell.classList.add("b");
+                }
+                else if (cellType === "p") {
+                    cell.classList.add("p");
+                }
+                
+                cell.dataset.row = rowIndex;
+                cell.dataset.col = colIndex;
+                grid.appendChild(cell);
+            });
+        });
+
+        // Inicjalizacja
+        preloadImages();
+        generateUnitSelection();
+        
+        // Obsługa zmiany kolorów
+        dotColorPicker.addEventListener("input", function() {
+            currentDotColor = this.value;
+            updateAllOmenDots();
+        });
+        
+        relicColorPicker.addEventListener("input", function() {
+            currentRelicColor = this.value;
+            updateAllRelicBorders();
+        });
+    </script>
+    <footer>Made By 0jek</footer>
+</body>
+</html>
