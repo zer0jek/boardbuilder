@@ -155,35 +155,55 @@
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 1;
+            z-index: 2;
             filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
 
-        .omen-dot {
+        .omen-shadow {
             position: absolute;
-            width: 20%;
-            height: 20%;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: currentColor;
+            opacity: 0.3;
             border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            z-index: 1;
+            filter: blur(6px);
+            transform: scale(0.9);
+        }
+
+        .relic-container {
+            position: relative;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
             z-index: 2;
         }
 
         .relic {
             position: absolute;
-            width: 80%;
-            height: 80%;
-            top: 10%;
-            left: 10%;
+            width: 100%;
+            height: 100%;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            border: 2px solid;
-            border-radius: 0;
             image-rendering: crisp-edges;
             z-index: 2;
             filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
+        }
+
+        .relic-shadow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: currentColor;
+            opacity: 0.3;
+            border-radius: 4px;
+            z-index: 1;
+            filter: blur(6px);
+            transform: scale(1.05);
         }
 
         .units-container, .shapes-container {
@@ -472,11 +492,11 @@
     
     <div class="color-controls">
         <div class="color-control">
-            <label for="dotColor">Omen Dot Color:</label>
+            <label for="dotColor">Omen Shadow Color:</label>
             <input type="color" id="dotColor" value="#000000">
         </div>
         <div class="color-control">
-            <label for="relicColor">Relic Border Color:</label>
+            <label for="relicColor">Relic Shadow Color:</label>
             <input type="color" id="relicColor" value="#000000">
         </div>
     </div>
@@ -602,16 +622,18 @@
             const omenContainer = document.createElement("div");
             omenContainer.classList.add("omen-unit");
             
+            // Add shadow first (behind the image)
+            const shadow = document.createElement("div");
+            shadow.classList.add("omen-shadow");
+            shadow.style.color = currentDotColor;
+            
+            // Then add the omen image
             const omenImg = new Image();
             omenImg.src = 'omen.png';
             omenImg.classList.add("omen-image");
             
-            const dot = document.createElement("div");
-            dot.classList.add("omen-dot", "locked-color");
-            dot.style.backgroundColor = currentDotColor;
-            
+            omenContainer.appendChild(shadow);
             omenContainer.appendChild(omenImg);
-            omenContainer.appendChild(dot);
             cell.appendChild(omenContainer);
         }
 
@@ -631,25 +653,36 @@
         function placeRelic(cell) {
             if (!cell.classList.contains('green')) return;
             
-            const existingRelic = cell.querySelector('.relic');
+            const existingRelic = cell.querySelector('.relic-container');
             if (existingRelic) existingRelic.remove();
             
+            const relicContainer = document.createElement("div");
+            relicContainer.classList.add("relic-container");
+            
+            // Add shadow first (behind the relic)
+            const shadow = document.createElement("div");
+            shadow.classList.add("relic-shadow");
+            shadow.style.color = currentRelicColor;
+            
+            // Then add the relic
             const relicDiv = document.createElement("div");
-            relicDiv.classList.add("relic", "locked-color");
-            relicDiv.style.borderColor = currentRelicColor;
+            relicDiv.classList.add("relic");
             relicDiv.style.backgroundImage = "url('relic.png')";
-            cell.appendChild(relicDiv);
+            
+            relicContainer.appendChild(shadow);
+            relicContainer.appendChild(relicDiv);
+            cell.appendChild(relicContainer);
         }
 
         function updateAllOmenDots() {
-            document.querySelectorAll('.omen-dot:not(.locked-color)').forEach(dot => {
-                dot.style.backgroundColor = currentDotColor;
+            document.querySelectorAll('.omen-shadow').forEach(shadow => {
+                shadow.style.color = currentDotColor;
             });
         }
 
         function updateAllRelicBorders() {
-            document.querySelectorAll('.relic:not(.locked-color)').forEach(relic => {
-                relic.style.borderColor = currentRelicColor;
+            document.querySelectorAll('.relic-shadow').forEach(shadow => {
+                shadow.style.color = currentRelicColor;
             });
         }
 
@@ -696,7 +729,7 @@
             if (!cell.classList.contains('green')) return;
             
             if (removeMode) {
-                cell.querySelectorAll('.unit, .omen-unit, .relic').forEach(el => el.remove());
+                cell.querySelectorAll('.unit, .omen-unit, .relic-container').forEach(el => el.remove());
                 return;
             }
             
@@ -725,7 +758,7 @@
         }
 
         function clearElements() {
-            document.querySelectorAll(".unit, .omen-unit, .relic").forEach(element => element.remove());
+            document.querySelectorAll(".unit, .omen-unit, .relic-container").forEach(element => element.remove());
         }
 
         function generateUnitSelection() {
