@@ -96,6 +96,7 @@
             margin-bottom: 20px;
             border: 2px solid #333;
             max-width: 100%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         .grid-background {
@@ -156,6 +157,7 @@
             top: 0;
             left: 0;
             z-index: 1;
+            filter: drop-shadow(0 0 5px var(--omen-shadow-color, #ff0000));
         }
 
         .relic-container {
@@ -176,6 +178,7 @@
             background-position: center;
             image-rendering: crisp-edges;
             z-index: 2;
+            filter: drop-shadow(0 0 5px var(--relic-shadow-color, #ffff00));
         }
 
         .units-container, .shapes-container {
@@ -319,6 +322,7 @@
             max-width: 100%;
             border: 1px solid #333;
             margin-bottom: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
         }
 
         .download-btn {
@@ -597,10 +601,8 @@
             omenImg.classList.add("omen-image");
             
             // Apply shadow color to the omen
-            omenImg.style.filter = `
-                drop-shadow(0 0 3px ${config.omenShadowColor})
-                drop-shadow(0 0 5px ${config.omenShadowColor})
-            `;
+            omenImg.style.setProperty('--omen-shadow-color', config.omenShadowColor);
+            omenImg.style.filter = `drop-shadow(0 0 5px ${config.omenShadowColor})`;
             
             omenContainer.appendChild(omenImg);
             cell.appendChild(omenContainer);
@@ -633,10 +635,8 @@
             relicDiv.style.backgroundImage = "url('relic.png')";
             
             // Apply shadow color to the relic
-            relicDiv.style.filter = `
-                drop-shadow(0 0 3px ${config.relicShadowColor})
-                drop-shadow(0 0 5px ${config.relicShadowColor})
-            `;
+            relicDiv.style.setProperty('--relic-shadow-color', config.relicShadowColor);
+            relicDiv.style.filter = `drop-shadow(0 0 5px ${config.relicShadowColor})`;
             
             relicContainer.appendChild(relicDiv);
             cell.appendChild(relicContainer);
@@ -744,13 +744,19 @@
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
             
+            // Apply shadows to the container before capturing
+            document.getElementById('grid-container').style.boxShadow = '0 0 20px rgba(0,0,0,0.7)';
+            
             const options = {
                 useCORS: true,
                 scale: 2,
                 logging: true,
                 backgroundColor: null,
                 allowTaint: false,
-                foreignObjectRendering: false
+                foreignObjectRendering: false,
+                onclone: function(clonedDoc) {
+                    clonedDoc.getElementById('grid-container').style.boxShadow = '0 0 20px rgba(0,0,0,0.7)';
+                }
             };
 
             html2canvas(document.getElementById("grid-container"), options)
