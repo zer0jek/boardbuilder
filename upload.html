@@ -3,43 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anonimowy Upload Obrazów</title>
+    <title>Upload Image</title>
     <style>
         :root {
-            --primary: #6c5ce7;
-            --primary-hover: #5649c0;
-            --success: #00b894;
-            --error: #d63031;
-            --background: #f5f6fa;
+            --primary: #27ae60;
+            --primary-hover: #219653;
+            --secondary: #2ecc71;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --background: #ecf0f1;
             --card: #ffffff;
-            --text: #2d3436;
-            --border: #dfe6e9;
+            --text: #2c3e50;
+            --border: #bdc3c7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--background);
             color: var(--text);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
             padding: 20px;
-            line-height: 1.6;
         }
 
         .container {
-            background: var(--card);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 700px;
+            background: var(--card);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, var(--primary), #5d4ae0);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             padding: 25px;
             text-align: center;
@@ -57,22 +62,22 @@
 
         .drop-zone {
             border: 3px dashed var(--border);
-            border-radius: 12px;
-            padding: 40px;
+            border-radius: 8px;
+            padding: 40px 20px;
             cursor: pointer;
             transition: all 0.3s;
-            margin-bottom: 25px;
-            background: rgba(108, 92, 231, 0.05);
+            margin-bottom: 20px;
+            background: rgba(46, 204, 113, 0.05);
         }
 
         .drop-zone:hover {
             border-color: var(--primary);
-            background: rgba(108, 92, 231, 0.1);
+            background: rgba(46, 204, 113, 0.1);
         }
 
         .drop-zone.active {
             border-color: var(--primary);
-            background: rgba(108, 92, 231, 0.2);
+            background: rgba(46, 204, 113, 0.2);
         }
 
         #fileInput {
@@ -84,12 +89,11 @@
             color: white;
             border: none;
             padding: 12px 30px;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
             transition: all 0.3s;
-            display: inline-block;
             margin: 10px 5px;
         }
 
@@ -100,7 +104,7 @@
         }
 
         .btn:disabled {
-            background-color: #b2bec3;
+            background-color: #95a5a6;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -109,50 +113,44 @@
         #imagePreview {
             max-width: 100%;
             max-height: 300px;
-            border-radius: 8px;
+            border-radius: 6px;
             margin: 20px auto;
             display: block;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
 
         .file-info {
             margin: 15px 0;
             font-size: 0.95rem;
-            color: #636e72;
+            color: #7f8c8d;
         }
 
         .status {
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 6px;
             margin: 20px 0;
             display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .status.success {
-            background-color: rgba(0, 184, 148, 0.2);
+            background-color: rgba(46, 204, 113, 0.2);
             color: var(--success);
             border-left: 4px solid var(--success);
             display: block;
         }
 
         .status.error {
-            background-color: rgba(214, 48, 49, 0.2);
+            background-color: rgba(231, 76, 60, 0.2);
             color: var(--error);
             border-left: 4px solid var(--error);
             display: block;
         }
 
         .result {
-            background: rgba(108, 92, 231, 0.05);
-            padding: 25px;
+            background: rgba(46, 204, 113, 0.05);
+            padding: 20px;
             border-radius: 8px;
-            margin-top: 25px;
+            margin-top: 20px;
             display: none;
         }
 
@@ -161,46 +159,43 @@
             word-break: break-all;
             display: inline-block;
             margin: 10px 0;
-            font-weight: 500;
             text-decoration: none;
-            border-bottom: 1px dashed var(--primary);
+            font-weight: 500;
         }
 
         .result textarea {
             width: 100%;
-            padding: 12px;
-            border-radius: 6px;
+            padding: 10px;
+            border-radius: 5px;
             border: 1px solid var(--border);
-            margin: 15px 0;
+            margin: 10px 0;
             resize: none;
             font-family: monospace;
-            background: rgba(255, 255, 255, 0.8);
         }
 
         .formats {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             margin-top: 15px;
         }
 
         .format {
-            background: rgba(108, 92, 231, 0.1);
-            padding: 6px 12px;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 5px 10px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--primary);
-            font-weight: 500;
         }
 
         @media (max-width: 600px) {
             .header {
-                padding: 20px 15px;
+                padding: 20px;
             }
             
             h1 {
-                font-size: 1.6rem;
+                font-size: 1.5rem;
             }
             
             .drop-zone {
@@ -212,8 +207,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Anonimowy Upload Obrazów</h1>
-            <p>Prześlij dowolny obraz bez rejestracji</p>
+            <h1>Image Generator</h1>
+            <p>Main use is for "Coop Td" board images</p>
         </div>
 
         <div class="upload-area">
@@ -222,10 +217,10 @@
                     <path d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707V11.5z"/>
                     <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
                 </svg>
-                <h3>Przeciągnij i upuść obraz tutaj</h3>
-                <p>lub</p>
+                <h3>Drag here</h3>
+                <p>or</p>
                 <input type="file" id="fileInput" accept="image/*">
-                <button class="btn" onclick="document.getElementById('fileInput').click()">Wybierz plik</button>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
                 <div class="file-info" id="fileInfo"></div>
             </div>
 
@@ -236,24 +231,24 @@
             <div class="status" id="status"></div>
             
             <div class="result" id="result">
-                <h3>Twój obraz został przesłany!</h3>
-                <p>Link do obrazu:</p>
+                <h3>Your Image Was Sent!</h3>
+                <p>Link do obr:</p>
                 <a id="imageLink" target="_blank"></a>
-                <p>Kod do osadzenia:</p>
+                <p>Code:</p>
                 <textarea id="embedCode" readonly></textarea>
-                <p>Podgląd:</p>
-                <img id="uploadedImagePreview" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                <p>Your Image:</p>
+                <img id="uploadedImagePreview" style="max-width: 100%; border-radius: 6px; margin-top: 10px;">
             </div>
 
-            <div style="margin-top: 25px;">
-                <p>Obsługiwane formaty:</p>
+            <div style="margin-top: 25px; text-align: center;">
+                <p>Types Of Files:</p>
                 <div class="formats">
                     <span class="format">JPG</span>
                     <span class="format">PNG</span>
                     <span class="format">GIF</span>
                     <span class="format">WEBP</span>
-                    <span class="format">BMP</span>
                     <span class="format">SVG</span>
+                    <span class="format">BMP</span>
                 </div>
             </div>
         </div>
@@ -310,6 +305,13 @@
                 return;
             }
 
+            // Sprawdź rozmiar pliku (Imgur ma limit 10MB dla anonimowych uploadów)
+            if (file.size > 10 * 1024 * 1024) {
+                showStatus('Plik jest zbyt duży. Maksymalny rozmiar to 10MB.', 'error');
+                resetUploader();
+                return;
+            }
+
             // Pokaż informacje o pliku
             fileInfo.textContent = `Wybrano: ${file.name} (${formatFileSize(file.size)})`;
             uploadBtn.disabled = false;
@@ -340,7 +342,7 @@
             uploadBtn.disabled = true;
         }
 
-        // Wysyłanie obrazu do CatBox.moe
+        // Wysyłanie obrazu do Imgur
         uploadBtn.addEventListener('click', async () => {
             const file = fileInput.files[0];
             if (!file) return;
@@ -350,34 +352,36 @@
                 uploadBtn.disabled = true;
                 resultDiv.style.display = 'none';
 
-                // Używamy CatBox.moe (anonimowy)
+                // Używamy Imgur API (anonimowy upload)
                 const formData = new FormData();
-                formData.append('fileToUpload', file);
+                formData.append('image', file);
 
-                const response = await fetch('https://catbox.moe/user/api.php', {
+                const response = await fetch('https://api.imgur.com/3/image', {
                     method: 'POST',
+                    headers: {
+                        // Klucz API klienta Imgur (publiczny, do anonimowych uploadów)
+                        'Authorization': 'Client-ID 6a8a0d7a9a1e4a1'
+                    },
                     body: formData
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Błąd serwera: ${response.status}`);
+                const data = await response.json();
+
+                if (data.success && data.data && data.data.link) {
+                    const imageUrl = data.data.link;
+                    
+                    // Pokaż wyniki
+                    imageLink.href = imageUrl;
+                    imageLink.textContent = imageUrl;
+                    embedCode.value = `<img src="${imageUrl}" alt="Uploaded Image" style="max-width:100%;">`;
+                    uploadedImagePreview.src = imageUrl;
+                    
+                    showStatus('Obraz przesłany pomyślnie!', 'success');
+                    resultDiv.style.display = 'block';
+                    resetUploader();
+                } else {
+                    throw new Error(data.data?.error || 'Nie udało się przesłać obrazu');
                 }
-
-                const imageUrl = await response.text();
-
-                if (!imageUrl.startsWith('http')) {
-                    throw new Error('Nieprawidłowa odpowiedź serwera');
-                }
-
-                // Pokaż wyniki
-                imageLink.href = imageUrl;
-                imageLink.textContent = imageUrl;
-                embedCode.value = `<img src="${imageUrl}" alt="Uploaded Image" style="max-width: 100%;">`;
-                uploadedImagePreview.src = imageUrl;
-                
-                showStatus('Obraz przesłany pomyślnie!', 'success');
-                resultDiv.style.display = 'block';
-                resetUploader();
             } catch (error) {
                 console.error('Błąd przesyłania:', error);
                 showStatus(`Błąd: ${error.message}`, 'error');
