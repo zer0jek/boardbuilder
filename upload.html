@@ -3,83 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Uploader</title>
+    <title>Image Uploader - Board Creator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
         }
-        .upload-container {
-            border: 2px dashed #ccc;
-            padding: 30px;
-            margin: 20px 0;
-            border-radius: 5px;
-        }
-        #preview {
-            max-width: 100%;
-            margin-top: 20px;
-            display: none;
-        }
-        button {
+        
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
             background-color: #4CAF50;
             color: white;
-            padding: 10px 15px;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .top-bar-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .top-bar a {
+            text-decoration: none;
+        }
+        
+        .top-bar button {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .top-bar button:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+        
+        .top-bar h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .content {
+            max-width: 800px;
+            margin: 80px auto 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .upload-container {
+            border: 3px dashed #ccc;
+            padding: 40px 20px;
+            margin: 30px 0;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+            background-color: #f9f9f9;
+        }
+        
+        .upload-container:hover {
+            border-color: #4CAF50;
+            background-color: #f0fff0;
+        }
+        
+        .upload-container.drag-over {
+            border-color: #4CAF50;
+            background-color: #e8f5e9;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .upload-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .upload-label:hover {
+            background-color: #45a049;
+        }
+        
+        #preview {
+            max-width: 100%;
+            max-height: 400px;
+            margin: 20px auto;
+            display: none;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        #downloadBtn {
+            padding: 12px 24px;
+            background-color: #2196F3;
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 10px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: none;
+            margin: 0 auto;
         }
-        a {
-            display: block;
-            margin-top: 20px;
-            color: #4CAF50;
-            text-decoration: none;
+        
+        #downloadBtn:hover {
+            background-color: #0b7dda;
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #2E7D32;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .content {
+                margin: 70px 15px 15px;
+                padding: 15px;
+            }
+            
+            .upload-container {
+                padding: 30px 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Image Uploader</h1>
-    <p>Upload an image to download it</p>
-    
-    <div class="upload-container">
-        <input type="file" id="fileInput" accept="image/*">
-        <img id="preview" alt="Image preview">
-        <button id="downloadBtn" disabled>Download Image</button>
+    <div class="top-bar">
+        <div class="top-bar-buttons">
+            <a href="index.html"><button>Board Creator</button></a>
+            <a href="tower.html"><button>Tower</button></a>
+            <a href="other.html"><button>??</button></a>
+            <a href="https://discord.com" target="_blank"><button>Discord</button></a>
+        </div>
+        <h1>Image Uploader</h1>
+    </div>
+
+    <div class="content">
+        <h2>Upload and Download Images</h2>
+        
+        <div class="upload-container" id="dropArea">
+            <label for="fileInput" class="upload-label">Choose an Image</label>
+            <input type="file" id="fileInput" accept="image/*">
+            <p>or drag and drop your image here</p>
+            
+            <img id="preview" alt="Image preview">
+            <button id="downloadBtn">Download Image</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to use:</h3>
+            <ol>
+                <li>Click "Choose an Image" or drag and drop an image into the area above</li>
+                <li>Preview your image</li>
+                <li>Click "Download Image" to save it to your device</li>
+            </ol>
+        </div>
     </div>
     
-    <a href="index.html">Back to Board Creator</a>
-    
+    <footer>Made By 0jek</footer>
+
     <script>
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
         const downloadBtn = document.getElementById('downloadBtn');
+        const dropArea = document.getElementById('dropArea');
         
+        // Handle file selection
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                
-                reader.onload = function(event) {
-                    preview.src = event.target.result;
-                    preview.style.display = 'block';
-                    downloadBtn.disabled = false;
-                }
-                
-                reader.readAsDataURL(file);
+                displayImage(file);
             }
         });
         
-        downloadBtn.addEventListener('click', function() {
-            const link = document.createElement('a');
-            link.href = preview.src;
-            link.download = 'uploaded_image_' + new Date().getTime() + '.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        // Handle drag and drop
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('drag-over');
         });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('drag-over');
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('drag-over');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                fileInput.files = e.dataTransfer.files;
+                displayImage(file);
+            } else {
+                alert('Please upload an image file.');
+            }
+        });
+        
+        // Handle download
+        downloadBtn.addEventListener('click', function() {
+            if (preview.src) {
+                const link = document.createElement('a');
+                const fileName = getFileName(fileInput.files[0].name);
+                
+                link.href = preview.src;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+        
+        // Display the selected image
+        function displayImage(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+                downloadBtn.style.display = 'block';
+                
+                // Scroll to preview
+                preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            reader.readAsDataURL(file);
+        }
+        
+        // Generate a clean filename
+        function getFileName(originalName) {
+            const timestamp = new Date().getTime();
+            const extension = originalName.split('.').pop();
+            const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
+            const cleanName = nameWithoutExt.replace(/[^a-zA-Z0-9-_]/g, "_");
+            
+            return `${cleanName}_${timestamp}.${extension}`;
+        }
     </script>
 </body>
 </html>
