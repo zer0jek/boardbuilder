@@ -3,19 +3,15 @@ const express = require('express');
 const fileUpload = require('express-fileupload');
 const { Octokit } = require('@octokit/rest');
 const cors = require('cors');
-const path = require('path');
 
 const app = express();
 
 // Enhanced CORS configuration
-const corsOptions = {
-  origin: [
-    'https://board-creator.netlify.app',
-    'http://localhost:3000'
-  ],
+app.use(cors({
+  origin: ['https://board-creator.netlify.app', 'http://localhost:3000'],
   methods: ['GET', 'POST']
-};
-app.use(cors(corsOptions));
+}));
+
 app.use(express.json());
 app.use(fileUpload());
 
@@ -24,7 +20,6 @@ const octokit = new Octokit({
   userAgent: 'BoardCreator/1.0'
 });
 
-// File upload endpoint
 app.post('/upload', async (req, res) => {
   try {
     if (!req.files?.image) {
@@ -32,20 +27,23 @@ app.post('/upload', async (req, res) => {
     }
 
     const image = req.files.image;
+    const fileName = `img_${Date.now()}${image.name.substring(image.name.lastIndexOf('.'))}`;
     const content = image.data.toString('base64');
 
+    // Important: Ensure we return proper JSON
     const { data } = await octokit.repos.createOrUpdateFileContents({
       owner: process.env.GITHUB_OWNER,
       repo: process.env.GITHUB_REPO,
-      path: `images/${image.name}`,
-      message: `Add ${image.name}`,
+      path: `images/${fileName}`,
+      message: `Add ${fileName}`,
       content: content,
       branch: 'main'
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
-      url: data.content.download_url
+      url: data.content.download_url,
+      name: fileName
     });
 
   } catch (error) {
@@ -57,32 +55,9 @@ app.post('/upload', async (req, res) => {
   }
 });
 
-// Gallery endpoint
-app.get('/gallery', async (req, res) => {
-  try {
-    const { data } = await octokit.repos.getContent({
-      owner: process.env.GITHUB_OWNER,
-      repo: process.env.GITHUB_REPO,
-      path: 'images',
-      ref: 'main'
-    });
-
-    res.json(data.map(item => ({
-      name: item.name,
-      url: item.download_url
-    })));
-
-  } catch (error) {
-    res.status(500).json({ 
-      error: 'Failed to load gallery',
-      details: error.message
-    });
-  }
-});
-
-// Health check
-app.get('/', (req, res) => {
-  res.json({ status: 'Server running' });
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
 });
 
 const PORT = process.env.PORT || 3000;
