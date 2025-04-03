@@ -137,6 +137,7 @@
             left: 10%;
             z-index: 3;
             image-rendering: crisp-edges;
+            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
 
         .omen-unit {
@@ -155,7 +156,7 @@
             top: 0;
             left: 0;
             z-index: 1;
-            filter: drop-shadow(0 0 5px #d32f2f);
+            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
 
         .omen-dot {
@@ -167,7 +168,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2;
-            background-color: currentColor;
         }
 
         .relic {
@@ -183,7 +183,7 @@
             border-radius: 0;
             image-rendering: crisp-edges;
             z-index: 2;
-            filter: drop-shadow(0 0 5px #d32f2f);
+            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
 
         .units-container, .shapes-container {
@@ -456,14 +456,34 @@
             }
         }
 
-        .stairs-icon {
+        .castle-icon {
             display: inline-block;
             width: 16px;
             height: 16px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M5 3h14v2H5V3zm0 4h14v2H5V7zm0 4h14v2H5v-2zm0 4h14v2H5v-2zm0 4h14v2H5v-2z"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M19 10V7h-2v3h-3v2h3v3h2v-3h3v-2h-3zM5 10V3h3v2H7v3H5zm0 9v-3h3v3H5zm5 0v-3h4v3h-4zm6 0v-3h3v3h-3zm-6-5h4v-2h-4v2z"/></svg>');
             background-repeat: no-repeat;
             background-position: center;
             margin-right: 5px;
+        }
+
+        .download-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .download-btn:hover {
+            background-color: #d32f2f;
         }
     </style>
 </head>
@@ -471,10 +491,7 @@
     <div class="top-bar">
         <h1>Board Creator</h1>
         <div class="top-bar-buttons">
-            <a href="tower.html"><button>
-                <span class="stairs-icon"></span>
-                <span>Tower</span>
-            </button></a>
+            <a href="tower.html"><button><span class="castle-icon"></span><span>Tower</span></button></a>
             <a href="upload.html"><button><i class="fas fa-question"></i><span>??</span></button></a>
             <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i><span>Discord</span></button></a>
         </div>
@@ -523,11 +540,16 @@
         <img class="generated-image" id="generatedImage" src="" alt="Generated board image">
         
         <div class="share-link-container">
-            <input type="text" class="share-link" id="shareLink" readonly>
-            <button class="copy-btn" onclick="copyShareLink()">
-                <i class="fas fa-copy"></i> Copy
-            </button>
+            <input type="text" class="share-link" id="shareLink" readonly placeholder="Image will be generated locally">
         </div>
+        
+        <button class="download-btn" onclick="downloadImage()">
+            <i class="fas fa-download"></i> Download Image
+        </button>
+        
+        <p style="margin-top: 15px; font-size: 14px; color: #888;">
+            You can upload the downloaded image to Google Photos manually
+        </p>
     </div>
     
     <footer>Made By 0jek</footer>
@@ -553,6 +575,7 @@
         let removeMode = false;
         let currentDotColor = "#000000";
         let currentRelicColor = "#000000";
+        let generatedImageDataUrl = null;
 
         const unitNames = {
             1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
@@ -775,59 +798,23 @@
             const originalText = generateBtn.textContent;
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
-
-            // Ustawienie foreignObjectRendering na true dla poprawnego renderowania efektów
+            
             const options = {
                 useCORS: true,
                 scale: 2,
                 logging: true,
                 backgroundColor: null,
                 allowTaint: false,
-                foreignObjectRendering: true,
-                onclone: function(clonedDoc) {
-                    // Upewniamy się, że style są zachowane
-                    const clonedOmenImages = clonedDoc.querySelectorAll('.omen-image');
-                    clonedOmenImages.forEach(img => {
-                        img.style.filter = 'drop-shadow(0 0 5px #d32f2f)';
-                    });
-
-                    const clonedRelics = clonedDoc.querySelectorAll('.relic');
-                    clonedRelics.forEach(relic => {
-                        relic.style.filter = 'drop-shadow(0 0 5px #d32f2f)';
-                    });
-                }
+                foreignObjectRendering: false
             };
 
             html2canvas(document.getElementById("grid-container"), options)
                 .then(canvas => {
-                    return canvas.toDataURL("image/png");
-                })
-                .then(dataUrl => {
-                    generatedImage.src = dataUrl;
-                    return fetch(dataUrl)
-                        .then(res => res.blob());
-                })
-                .then(blob => {
-                    const formData = new FormData();
-                    formData.append('image', blob);
-                    
-                    return fetch('https://api.imgur.com/3/image', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Client-ID 6a8a0d7a9a1e4a1'
-                        },
-                        body: formData
-                    });
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data && data.data.link) {
-                        shareLink.value = data.data.link;
-                        outputSection.style.display = "block";
-                        outputSection.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        throw new Error(data.data?.error || 'Failed to upload image');
-                    }
+                    generatedImageDataUrl = canvas.toDataURL("image/png");
+                    generatedImage.src = generatedImageDataUrl;
+                    shareLink.value = "Image generated locally - download and upload to Google Photos";
+                    outputSection.style.display = "block";
+                    outputSection.scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(error => {
                     console.error("Error generating output:", error);
@@ -839,10 +826,18 @@
                 });
         }
         
-        function copyShareLink() {
-            shareLink.select();
-            document.execCommand('copy');
-            alert('Link copied to clipboard!');
+        function downloadImage() {
+            if (!generatedImageDataUrl) {
+                alert("Please generate an image first");
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.href = generatedImageDataUrl;
+            link.download = 'board-creator-' + new Date().toISOString().slice(0, 10) + '.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         const layout = [
