@@ -3,12 +3,11 @@ const express = require('express');
 const fileUpload = require('express-fileupload');
 const { Octokit } = require('@octokit/rest');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
 
 const app = express();
 
-// Konfiguracja CORS
+// Enhanced CORS configuration
 const corsOptions = {
   origin: [
     'https://board-creator.netlify.app',
@@ -17,55 +16,36 @@ const corsOptions = {
   methods: ['GET', 'POST']
 };
 app.use(cors(corsOptions));
-app.use(fileUpload());
 app.use(express.json());
+app.use(fileUpload());
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
   userAgent: 'BoardCreator/1.0'
 });
 
-// Middleware do logowania
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
-
-// Endpoint uploadu
+// File upload endpoint
 app.post('/upload', async (req, res) => {
   try {
     if (!req.files?.image) {
-      return res.status(400).json({ error: 'No image uploaded' });
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
     const image = req.files.image;
-    const fileName = `img_${Date.now()}${path.extname(image.name)}`;
-    const tempPath = path.join(__dirname, 'temp', fileName);
+    const content = image.data.toString('base64');
 
-    // Utwórz folder temp jeśli nie istnieje
-    if (!fs.existsSync(path.join(__dirname, 'temp'))) {
-      fs.mkdirSync(path.join(__dirname, 'temp'));
-    }
-
-    await image.mv(tempPath);
-    const content = fs.readFileSync(tempPath, { encoding: 'base64' });
-
-    // Zapisz do GitHub w folderze images (bez public/)
     const { data } = await octokit.repos.createOrUpdateFileContents({
       owner: process.env.GITHUB_OWNER,
       repo: process.env.GITHUB_REPO,
-      path: `images/${fileName}`,
-      message: `Add image ${fileName}`,
+      path: `images/${image.name}`,
+      message: `Add ${image.name}`,
       content: content,
       branch: 'main'
     });
 
-    fs.unlinkSync(tempPath);
-
     res.json({
       success: true,
-      url: data.content.download_url,
-      name: fileName
+      url: data.content.download_url
     });
 
   } catch (error) {
@@ -77,7 +57,7 @@ app.post('/upload', async (req, res) => {
   }
 });
 
-// Endpoint galerii
+// Gallery endpoint
 app.get('/gallery', async (req, res) => {
   try {
     const { data } = await octokit.repos.getContent({
@@ -87,24 +67,25 @@ app.get('/gallery', async (req, res) => {
       ref: 'main'
     });
 
-    const images = data.map(item => ({
+    res.json(data.map(item => ({
       name: item.name,
-      url: item.download_url,
-      size: item.size
-    }));
+      url: item.download_url
+    })));
 
-    res.json(images);
   } catch (error) {
-    console.error('Gallery error:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch gallery',
+      error: 'Failed to load gallery',
       details: error.message
     });
   }
 });
 
+// Health check
+app.get('/', (req, res) => {
+  res.json({ status: 'Server running' });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`CORS enabled for: ${corsOptions.origin.join(', ')}`);
 });
