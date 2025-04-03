@@ -3,67 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Board Creator - Default</title>
+    <title>Board Creator - Dark Mode</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        :root {
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --accent-red: #ff2d2d;
+            --accent-dark-red: #cc0000;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333;
+            --success-green: #00aa00;
+            --error-red: #ff4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 15px 15px;
+        }
+
         .top-bar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background-color: #4CAF50;
+            background-color: var(--darker-bg);
             color: white;
-            padding: 8px 20px;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .top-bar-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .top-bar a {
-            text-decoration: none;
-        }
-        .top-bar button {
-            background-color: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        .top-bar button:hover {
-            background-color: rgba(255,255,255,0.3);
-        }
-        .top-bar h1 {
-            margin: 0;
-            font-size: 1.3rem;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            border-bottom: 1px solid var(--accent-red);
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
+        .top-bar-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .top-bar button {
+            background-color: rgba(255,45,45,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .top-bar button:hover {
+            background-color: rgba(255,45,45,0.4);
+            transform: translateY(-1px);
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-red);
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(255,45,45,0.3);
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 800px;
             display: flex;
             flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        .panel-header {
+            margin-bottom: 15px;
+            color: var(--accent-red);
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 70px 15px 15px;
-            background-color: white;
+            gap: 10px;
+        }
+
+        .panel-header::before {
+            content: "";
+            display: block;
+            width: 4px;
+            height: 20px;
+            background-color: var(--accent-red);
+            border-radius: 2px;
         }
 
         .grid-container {
             position: relative;
-            width: 350px;
+            width: 100%;
+            max-width: 350px;
             height: 250px;
-            margin-bottom: 30px;
+            margin: 0 auto;
         }
+
         .grid-background {
             position: absolute;
             width: 100%;
@@ -71,41 +133,61 @@
             background: url('default.png') no-repeat center center;
             background-size: cover;
             z-index: 1;
+            border-radius: 8px;
+            opacity: 0.8;
         }
+
         .grid {
             display: grid;
-            grid-template-columns: repeat(7, 50px);
-            grid-template-rows: repeat(5, 50px);
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(5, 1fr);
             position: relative;
-            width: 350px;
-            height: 250px;
+            width: 100%;
+            height: 100%;
             z-index: 2;
+            gap: 2px;
         }
+
         .cell {
-            width: 50px;
-            height: 50px;
+            background-color: rgba(255,45,45,0.05);
+            border-radius: 4px;
             position: relative;
-            box-sizing: border-box;
+            transition: all 0.2s ease;
         }
+
         .cell.green {
             cursor: pointer;
         }
+
+        .cell:hover {
+            background-color: rgba(255,45,45,0.1);
+            transform: scale(1.02);
+        }
+
         .unit {
-            width: 40px;
-            height: 40px;
+            width: 80%;
+            height: 80%;
             position: absolute;
             cursor: move;
-            top: 5px;
-            left: 5px;
+            top: 10%;
+            left: 10%;
             z-index: 3;
             image-rendering: crisp-edges;
+            filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
+            transition: transform 0.2s ease;
         }
+
+        .unit:hover {
+            transform: scale(1.1);
+        }
+
         .omen-unit {
             position: relative;
-            width: 40px;
-            height: 40px;
+            width: 100%;
+            height: 100%;
             z-index: 4;
         }
+
         .omen-image {
             width: 100%;
             height: 100%;
@@ -115,182 +197,284 @@
             top: 0;
             left: 0;
             z-index: 1;
+            filter: drop-shadow(0 0 4px rgba(255,0,0,0.7));
         }
+
         .omen-dot {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 20%;
+            height: 20%;
             border-radius: 50%;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2;
+            background-color: var(--accent-red);
+            box-shadow: 0 0 6px rgba(255,0,0,0.8);
         }
+
         .relic {
             position: absolute;
-            width: 40px;
-            height: 40px;
-            top: 5px;
-            left: 5px;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            border: 2px solid;
-            border-radius: 0;
+            border: 2px solid var(--accent-red);
+            border-radius: 4px;
             image-rendering: crisp-edges;
             z-index: 2;
+            box-shadow: 0 0 8px rgba(255,0,0,0.5);
         }
+
         .units-container, .shapes-container {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             justify-content: center;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 15px 0;
         }
+
         .unit-option, .shape-option {
-            transition: transform 0.2s;
+            transition: all 0.2s ease;
             cursor: pointer;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 80px;
         }
+
         .unit-option:hover, .shape-option:hover {
-            transform: scale(1.1);
+            transform: translateY(-5px);
         }
+
         .unit-option img, .shape-option img {
             width: 50px;
             height: 50px;
             border: 2px solid transparent;
-            border-radius: 5px;
+            border-radius: 8px;
             image-rendering: crisp-edges;
+            background-color: rgba(0,0,0,0.3);
+            padding: 5px;
+            transition: all 0.2s ease;
         }
+
         .unit-label {
             margin-top: 5px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 500;
+            color: var(--text-secondary);
         }
-        .selected {
-            border-color: #4CAF50 !important;
-            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6) !important;
+
+        .selected img {
+            border-color: var(--accent-red) !important;
+            box-shadow: 0 0 12px rgba(255,45,45,0.6);
+            background-color: rgba(255,45,45,0.2);
         }
-        .buttons {
-            margin: 5px;
+
+        .button-group {
             display: flex;
-            gap: 10px;
             flex-wrap: wrap;
+            gap: 10px;
             justify-content: center;
+            margin: 15px 0;
         }
-        .buttons button {
-            padding: 8px 12px;
+
+        .btn {
+            padding: 10px 18px;
             cursor: pointer;
-            background-color: #4CAF50;
+            background-color: var(--accent-red);
             color: white;
             border: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            border-radius: 8px;
+            transition: all 0.3s ease;
             font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
-        .buttons button:hover {
-            background-color: #45a049;
+
+        .btn:hover {
+            background-color: var(--accent-dark-red);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
+
+        .btn:disabled {
+            background-color: #444;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+            opacity: 0.7;
+        }
+
         #removeModeBtn {
-            background-color: #e74c3c;
+            background-color: #333;
         }
+
         #removeModeBtn:hover {
-            background-color: #c0392b;
+            background-color: #444;
         }
+
+        #removeModeBtn.active {
+            background-color: var(--accent-dark-red);
+            box-shadow: 0 0 10px rgba(255,0,0,0.5);
+        }
+
         .color-controls {
             display: flex;
             gap: 20px;
-            margin-top: 10px;
+            margin: 15px 0;
+            justify-content: center;
+            flex-wrap: wrap;
         }
+
         .color-control {
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 5px;
         }
+
+        .color-control label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
         #image-container {
             display: none;
             margin-top: 20px;
-            padding: 15px;
-            background-color: #f5f5f5;
+            text-align: center;
+        }
+
+        #generated-image {
+            max-width: 100%;
             border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            border: 1px solid var(--border-color);
         }
-        footer {
-            margin-top: 30px;
-            color: #666;
-            font-size: 14px;
-        }
-        .locked-color {
-            pointer-events: none;
-        }
-        
-        /* New styles for sharing section */
+
         .share-section {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
             display: none;
-            max-width: 600px;
-            width: 100%;
+            margin-top: 20px;
+            text-align: center;
         }
-        
-        .share-section h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-        }
-        
+
         .share-link {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 10px;
+            max-width: 500px;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 10px auto;
             font-family: monospace;
+            background-color: var(--darker-bg);
+            color: var(--text-primary);
+            font-size: 14px;
         }
-        
-        .copy-btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .copy-btn:hover {
-            background-color: #2980b9;
-        }
-        
+
         .share-buttons {
             display: flex;
             gap: 10px;
             justify-content: center;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
-        
+
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255,255,255,.2);
             border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 10px;
-            vertical-align: middle;
+            border-top-color: var(--accent-red);
+            animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+            font-weight: 500;
+        }
+
+        .success {
+            background-color: rgba(0,170,0,0.15);
+            color: var(--success-green);
+            border-left: 4px solid var(--success-green);
+            display: block;
+        }
+
+        .error {
+            background-color: rgba(255,68,68,0.15);
+            color: var(--error-red);
+            border-left: 4px solid var(--error-red);
+            display: block;
+        }
+
+        footer {
+            margin-top: 30px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-align: center;
+            padding: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .top-bar {
+                padding: 10px 15px;
+            }
+            
+            .top-bar h1 {
+                font-size: 1.2rem;
+            }
+            
+            .panel {
+                padding: 15px;
+            }
+            
+            .button-group {
+                gap: 8px;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -298,63 +482,131 @@
     <div class="top-bar">
         <div class="top-bar-buttons">
             <a href="tower.html"><button>Tower</button></a>
-            <a href="upload.html"><button>??</button></a>
+            <a href="upload.html"><button>Upload</button></a>
             <a href="https://discord.com" target="_blank"><button>Discord</button></a>
         </div>
         <h1>Board Creator</h1>
     </div>
 
-    <div class="buttons">
-        <button onclick="clearElements()">Clear All</button>
-        <button onclick="deselectAll()">Deselect All</button>
-        <button id="removeModeBtn" onclick="toggleRemoveMode()">Remove Mode: OFF</button>
-        <button onclick="saveAsImage()">Save as Image</button>
-        <button onclick="randomizePlacement()">Random Placement</button>
-        <button onclick="generateAndShare()" id="shareBtn">Generate Share Link</button>
-    </div>
-    
-    <div class="color-controls">
-        <div class="color-control">
-            <label for="dotColor">Omen Dot Color:</label>
-            <input type="color" id="dotColor" value="#000000">
+    <div class="main-container">
+        <div class="panel">
+            <div class="panel-header">Board Controls</div>
+            <div class="button-group">
+                <button class="btn" onclick="clearElements()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Clear
+                </button>
+                <button class="btn" onclick="deselectAll()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Deselect
+                </button>
+                <button class="btn" id="removeModeBtn" onclick="toggleRemoveMode()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                    Remove Mode
+                </button>
+                <button class="btn" onclick="randomizePlacement()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.5858 13.4142L7.75735 10.5858M6.34313 12L12 6.34313M13.4142 10.5858L16.2426 13.4142M17.6568 12L12 17.6568"></path>
+                    </svg>
+                    Randomize
+                </button>
+            </div>
+            
+            <div class="color-controls">
+                <div class="color-control">
+                    <label for="dotColor">Omen Dot</label>
+                    <input type="color" id="dotColor" value="#ff2d2d">
+                </div>
+                <div class="color-control">
+                    <label for="relicColor">Relic Border</label>
+                    <input type="color" id="relicColor" value="#ff2d2d">
+                </div>
+            </div>
         </div>
-        <div class="color-control">
-            <label for="relicColor">Relic Border Color:</label>
-            <input type="color" id="relicColor" value="#000000">
+
+        <div class="panel">
+            <div class="panel-header">Game Board</div>
+            <div class="grid-container">
+                <div class="grid-background"></div>
+                <div class="grid" id="grid"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Available Units</div>
+            <div class="units-container" id="units-container"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Special Items</div>
+            <div class="shapes-container" id="shapes-container">
+                <div class="shape-option" onclick="selectShape('relic')">
+                    <img src="relic.png" alt="Relic">
+                    <p class="unit-label">Relic</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Export Board</div>
+            <div class="button-group">
+                <button class="btn" onclick="saveAsImage()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                    </svg>
+                    Save Image
+                </button>
+                <button class="btn" onclick="generateAndShare()" id="shareBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"></path>
+                    </svg>
+                    Share Link
+                </button>
+            </div>
+            
+            <div id="image-container">
+                <h3>Generated Board</h3>
+                <img id="generated-image" src="" alt="Generated board image">
+            </div>
+            
+            <div class="share-section" id="shareSection">
+                <h3>Share Your Creation</h3>
+                <input type="text" class="share-link" id="shareLink" readonly>
+                <button class="btn" onclick="copyShareLink()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy Link
+                </button>
+                <div class="share-buttons">
+                    <button class="btn" onclick="shareOnTwitter()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                        </svg>
+                        Twitter
+                    </button>
+                    <button class="btn" onclick="shareOnDiscord()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 0 1-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        Discord
+                    </button>
+                </div>
+            </div>
+            
+            <div class="status-message" id="status"></div>
         </div>
     </div>
     
-    <div class="grid-container" id="grid-container">
-        <div class="grid-background"></div>
-        <div class="grid" id="grid"></div>
-    </div>
-    
-    <h2>Available Units</h2>
-    <div class="units-container" id="units-container"></div>
-    
-    <h2>Omen "relic"</h2>
-    <div class="shapes-container" id="shapes-container">
-        <div class="shape-option" onclick="selectShape('relic')">
-            <img src="relic.png" alt="Relic">
-            <p class="unit-label">Relic</p>
-        </div>
-    </div>
-    
-    <div id="image-container">
-        <h3>Generated Board</h3>
-        <img id="generated-image" src="" alt="Generated board image">
-    </div>
-    
-    <div class="share-section" id="shareSection">
-        <h3>Share Your Board</h3>
-        <input type="text" class="share-link" id="shareLink" readonly>
-        <button class="copy-btn" onclick="copyShareLink()">Copy Link</button>
-        <div class="share-buttons">
-            <button class="btn" onclick="shareOnTwitter()">Share on Twitter</button>
-            <button class="btn" onclick="shareOnDiscord()">Share on Discord</button>
-        </div>
-    </div>
-    
+    <footer>Created by 0jek | Dark Red Theme</footer>
+
     <script>
         const config = {
             omenCount: { min: 0, max: 18 }
@@ -369,12 +621,13 @@
         const shareSection = document.getElementById("shareSection");
         const shareLink = document.getElementById("shareLink");
         const shareBtn = document.getElementById("shareBtn");
+        const statusDiv = document.getElementById("status");
         
         let selectedUnit = null;
         let selectedShape = null;
         let removeMode = false;
-        let currentDotColor = "#000000";
-        let currentRelicColor = "#000000";
+        let currentDotColor = "#ff2d2d";
+        let currentRelicColor = "#ff2d2d";
 
         const unitNames = {
             1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
@@ -492,8 +745,7 @@
 
         function toggleRemoveMode() {
             removeMode = !removeMode;
-            removeModeBtn.textContent = removeMode ? "Remove Mode: ON" : "Remove Mode: OFF";
-            removeModeBtn.style.backgroundColor = removeMode ? "#c0392b" : "#e74c3c";
+            removeModeBtn.classList.toggle("active", removeMode);
             
             if (removeMode) {
                 selectedUnit = null;
@@ -600,16 +852,17 @@
                     generatedImage.src = canvas.toDataURL("image/png");
                     document.getElementById("image-container").style.display = "block";
                     generatedImage.scrollIntoView({ behavior: 'smooth' });
+                    showStatus("Board image generated successfully!", "success");
                 })
                 .catch(error => {
                     console.error("Error generating image:", error);
-                    alert("Error generating image. Check console for details.");
+                    showStatus("Error generating image: " + error.message, "error");
                 });
         }
         
         function generateAndShare() {
             const originalText = shareBtn.textContent;
-            shareBtn.innerHTML = originalText + '<span class="loading"></span>';
+            shareBtn.innerHTML = 'Generating <span class="loading"></span>';
             shareBtn.disabled = true;
             
             const options = {
@@ -650,13 +903,14 @@
                         shareLink.value = imageUrl;
                         shareSection.style.display = "block";
                         shareSection.scrollIntoView({ behavior: 'smooth' });
+                        showStatus("Share link generated successfully!", "success");
                     } else {
                         throw new Error(data.data?.error || 'Failed to upload image');
                     }
                 })
                 .catch(error => {
                     console.error("Error sharing image:", error);
-                    alert("Error sharing image: " + error.message);
+                    showStatus("Error sharing image: " + error.message, "error");
                 })
                 .finally(() => {
                     shareBtn.textContent = originalText;
@@ -667,7 +921,7 @@
         function copyShareLink() {
             shareLink.select();
             document.execCommand('copy');
-            alert('Link copied to clipboard!');
+            showStatus("Link copied to clipboard!", "success");
         }
         
         function shareOnTwitter() {
@@ -678,6 +932,21 @@
         
         function shareOnDiscord() {
             alert('Copy the link and paste it in Discord!');
+        }
+
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            setTimeout(() => {
+                statusDiv.style.opacity = '1';
+            }, 10);
+            
+            setTimeout(() => {
+                statusDiv.style.opacity = '0';
+                setTimeout(() => {
+                    statusDiv.className = 'status-message';
+                }, 300);
+            }, 3000);
         }
 
         // 5x7 board - all cells clickable
@@ -715,6 +984,5 @@
             updateAllRelicBorders();
         });
     </script>
-    <footer>Made By 0jek</footer>
 </body>
 </html>
