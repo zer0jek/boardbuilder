@@ -133,7 +133,6 @@
             background: url('default.png') no-repeat center center;
             background-size: cover;
             z-index: 1;
-            border-radius: 8px;
             opacity: 0.8;
         }
 
@@ -150,17 +149,17 @@
 
         .cell {
             background-color: rgba(255,45,45,0.05);
-            border-radius: 4px;
             position: relative;
             transition: all 0.2s ease;
         }
 
         .cell.green {
             cursor: pointer;
+            background-color: rgba(0,100,0,0.3);
         }
 
-        .cell:hover {
-            background-color: rgba(255,45,45,0.1);
+        .cell.green:hover {
+            background-color: rgba(0,150,0,0.4);
             transform: scale(1.02);
         }
 
@@ -223,7 +222,6 @@
             background-repeat: no-repeat;
             background-position: center;
             border: 2px solid var(--accent-red);
-            border-radius: 4px;
             image-rendering: crisp-edges;
             z-index: 2;
             box-shadow: 0 0 8px rgba(255,0,0,0.5);
@@ -255,7 +253,6 @@
             width: 50px;
             height: 50px;
             border: 2px solid transparent;
-            border-radius: 8px;
             image-rendering: crisp-edges;
             background-color: rgba(0,0,0,0.3);
             padding: 5px;
@@ -378,8 +375,6 @@
 
         #generated-image {
             max-width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             border: 1px solid var(--border-color);
         }
 
@@ -394,7 +389,6 @@
             max-width: 500px;
             padding: 10px 15px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
             margin: 10px auto;
             font-family: monospace;
             background-color: var(--darker-bg);
@@ -426,7 +420,6 @@
 
         .status-message {
             padding: 12px;
-            border-radius: 8px;
             margin: 10px 0;
             display: none;
             font-weight: 500;
@@ -682,9 +675,9 @@
                 placeUnit(cell, unit);
             }
             
-            const allGreenCells = [...greenCells].sort(() => Math.random() - 0.5);
-            for (let i = 0; i < Math.min(omenCount, allGreenCells.length); i++) {
-                const cell = allGreenCells[i];
+            const relicCells = [...greenCells].sort(() => Math.random() - 0.5);
+            for (let i = 0; i < Math.min(omenCount, relicCells.length); i++) {
+                const cell = relicCells[i];
                 placeRelic(cell);
             }
         }
@@ -837,6 +830,10 @@
         }
 
         function saveAsImage() {
+            const originalText = shareBtn.textContent;
+            shareBtn.innerHTML = 'Generating <span class="loading"></span>';
+            shareBtn.disabled = true;
+            
             const options = {
                 useCORS: true,
                 scale: 2,
@@ -857,6 +854,10 @@
                 .catch(error => {
                     console.error("Error generating image:", error);
                     showStatus("Error generating image: " + error.message, "error");
+                })
+                .finally(() => {
+                    shareBtn.textContent = originalText;
+                    shareBtn.disabled = false;
                 });
         }
         
@@ -949,7 +950,7 @@
             }, 3000);
         }
 
-        // 5x7 board - all cells clickable
+        // 5x7 board - mark green cells
         const layout = [
             ["green", "green", "green", "green", "green", "green", "green"],
             ["green", "green", "green", "green", "green", "green", "green"],
@@ -961,7 +962,7 @@
         layout.forEach((row, rowIndex) => {
             row.forEach((cellType, colIndex) => {
                 const cell = document.createElement("div");
-                cell.classList.add("cell", "green");
+                cell.classList.add("cell", cellType);
                 cell.addEventListener("click", placeElement);
                 cell.dataset.row = rowIndex;
                 cell.dataset.col = colIndex;
