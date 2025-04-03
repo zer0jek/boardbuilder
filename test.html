@@ -456,14 +456,12 @@
             }
         }
 
-        .castle-icon {
+        .tower-icon {
             display: inline-block;
             width: 16px;
             height: 16px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M19 10V7h-2v3h-3v2h3v3h2v-3h3v-2h-3zM5 10V3h3v2H7v3H5zm0 9v-3h3v3H5zm5 0v-3h4v3h-4zm6 0v-3h3v3h-3zm-6-5h4v-2h-4v2z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: center;
             margin-right: 5px;
+            vertical-align: middle;
         }
     </style>
 </head>
@@ -471,7 +469,14 @@
     <div class="top-bar">
         <h1>Board Creator</h1>
         <div class="top-bar-buttons">
-            <a href="tower.html"><button><span class="castle-icon"></span><span>Tower</span></button></a>
+            <a href="tower.html"><button>
+                <span class="tower-icon">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="#ffffff">
+                        <path d="M5 3h14v2h-6v3h6v2h-6v3h6v2h-6v3h6v2H5V3z"/>
+                    </svg>
+                </span>
+                <span>Tower</span>
+            </button></a>
             <a href="upload.html"><button><i class="fas fa-question"></i><span>??</span></button></a>
             <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i><span>Discord</span></button></a>
         </div>
