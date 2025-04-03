@@ -1,6 +1,6 @@
 [build]
   command = "cd server && npm install && cd .."
-  publish = "."  # Publikuj główny folder
+  publish = "."
 
 [[redirects]]
   from = "/images/*"
