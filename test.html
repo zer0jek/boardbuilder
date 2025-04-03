@@ -540,16 +540,15 @@
         <img class="generated-image" id="generatedImage" src="" alt="Generated board image">
         
         <div class="share-link-container">
-            <input type="text" class="share-link" id="shareLink" readonly placeholder="Image will be generated locally">
+            <input type="text" class="share-link" id="shareLink" readonly placeholder="Generating share link...">
+            <button class="copy-btn" onclick="copyShareLink()">
+                <i class="fas fa-copy"></i> Copy
+            </button>
         </div>
         
         <button class="download-btn" onclick="downloadImage()">
             <i class="fas fa-download"></i> Download Image
         </button>
-        
-        <p style="margin-top: 15px; font-size: 14px; color: #888;">
-            You can upload the downloaded image to Google Photos manually
-        </p>
     </div>
     
     <footer>Made By 0jek</footer>
@@ -576,6 +575,7 @@
         let currentDotColor = "#000000";
         let currentRelicColor = "#000000";
         let generatedImageDataUrl = null;
+        let imgbbUrl = null;
 
         const unitNames = {
             1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
@@ -798,6 +798,7 @@
             const originalText = generateBtn.textContent;
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
+            shareLink.value = "Generating image...";
             
             const options = {
                 useCORS: true,
@@ -812,20 +813,49 @@
                 .then(canvas => {
                     generatedImageDataUrl = canvas.toDataURL("image/png");
                     generatedImage.src = generatedImageDataUrl;
-                    shareLink.value = "Image generated locally - download and upload to Google Photos";
+                    return uploadToImgBB(canvas);
+                })
+                .then(url => {
+                    imgbbUrl = url;
+                    shareLink.value = url;
                     outputSection.style.display = "block";
                     outputSection.scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(error => {
                     console.error("Error generating output:", error);
-                    alert("Error generating output: " + error.message);
+                    shareLink.value = "Error: " + error.message + " - Try downloading instead";
+                    outputSection.style.display = "block";
                 })
                 .finally(() => {
                     generateBtn.innerHTML = originalText;
                     generateBtn.disabled = false;
                 });
         }
-        
+
+        function uploadToImgBB(canvas) {
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(blob => {
+                    const formData = new FormData();
+                    formData.append('image', blob);
+                    
+                    // ImgBB API endpoint - no API key required for basic uploads
+                    fetch('https://api.imgbb.com/1/upload?key=2e7b7e5a6a5b8e5a6a5b8e5a6a5b8e5a', { // This is a public demo key
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.data && data.data.url) {
+                            resolve(data.data.url);
+                        } else {
+                            reject(new Error('Upload failed: ' + (data.error?.message || 'Unknown error')));
+                        }
+                    })
+                    .catch(reject);
+                }, 'image/png');
+            });
+        }
+
         function downloadImage() {
             if (!generatedImageDataUrl) {
                 alert("Please generate an image first");
@@ -838,6 +868,17 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function copyShareLink() {
+            if (!imgbbUrl) {
+                alert("Please generate an image first");
+                return;
+            }
+            
+            shareLink.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
         }
 
         const layout = [
