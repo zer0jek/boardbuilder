@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,28 +16,36 @@
             padding: 20px;
             text-align: center;
             margin-bottom: 20px;
+            border-radius: 5px;
         }
-        #gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .gallery-item img {
-            width: 100%;
-            height: auto;
-        }
-        .status {
-            margin: 10px 0;
+        #status {
+            margin: 15px 0;
             padding: 10px;
             border-radius: 4px;
-        }
-        .success {
-            background-color: #dff0d8;
-            color: #3c763d;
+            display: none;
         }
         .error {
-            background-color: #f2dede;
-            color: #a94442;
+            background-color: #ffebee;
+            color: #f44336;
+            display: block;
+        }
+        .success {
+            background-color: #e8f5e9;
+            color: #4caf50;
+            display: block;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -45,10 +53,8 @@
     <div class="upload-container">
         <input type="file" id="fileInput" accept="image/*">
         <button id="uploadBtn">Upload Image</button>
-        <div id="status" class="status"></div>
+        <div id="status"></div>
     </div>
-    
-    <div id="gallery"></div>
 
     <script>
         const backendUrl = window.location.hostname === 'localhost' 
@@ -57,11 +63,11 @@
 
         document.getElementById('uploadBtn').addEventListener('click', async () => {
             const fileInput = document.getElementById('fileInput');
+            const uploadBtn = document.getElementById('uploadBtn');
             const statusDiv = document.getElementById('status');
             
             if (!fileInput.files.length) {
-                statusDiv.textContent = 'Please select a file first';
-                statusDiv.className = 'status error';
+                showStatus('Proszę wybrać plik', 'error');
                 return;
             }
 
@@ -69,49 +75,48 @@
             formData.append('image', fileInput.files[0]);
 
             try {
-                statusDiv.textContent = 'Uploading...';
-                statusDiv.className = 'status';
-                
+                uploadBtn.disabled = true;
+                showStatus('Przesyłanie obrazu...');
+
                 const response = await fetch(`${backendUrl}/upload`, {
                     method: 'POST',
                     body: formData
                 });
 
-                const result = await response.json();
+                // First check if response is OK
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Upload failed');
+                }
 
-                if (response.ok) {
-                    statusDiv.textContent = 'Upload successful!';
-                    statusDiv.className = 'status success';
-                    loadGallery();
+                // Then try to parse JSON
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('Obraz przesłany pomyślnie!', 'success');
                 } else {
-                    throw new Error(result.error || 'Upload failed');
+                    throw new Error(result.error || 'Unknown error');
                 }
             } catch (error) {
-                statusDiv.textContent = `Error: ${error.message}`;
-                statusDiv.className = 'status error';
-                console.error('Upload error:', error);
+                console.error('Error:', error);
+                showStatus(`Błąd: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
             }
         });
 
-        async function loadGallery() {
-            try {
-                const response = await fetch(`${backendUrl}/gallery`);
-                const images = await response.json();
-                
-                const gallery = document.getElementById('gallery');
-                gallery.innerHTML = images.map(img => `
-                    <div class="gallery-item">
-                        <img src="${img.url}" alt="${img.name}">
-                        <p>${img.name}</p>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Gallery error:', error);
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
             }
         }
-
-        // Load gallery on page load
-        loadGallery();
     </script>
 </body>
 </html>
