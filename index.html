@@ -168,7 +168,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2;
-            box-shadow: 0 0 10px 3px currentColor;
         }
 
         .relic {
@@ -185,7 +184,6 @@
             image-rendering: crisp-edges;
             z-index: 2;
             filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
-            box-shadow: 0 0 10px 3px currentColor;
         }
 
         .units-container, .shapes-container {
@@ -492,11 +490,11 @@
     <div class="color-controls">
         <div class="color-control">
             <label for="dotColor">Omen Dot Color:</label>
-            <input type="color" id="dotColor" value="#ff0000">
+            <input type="color" id="dotColor" value="#000000">
         </div>
         <div class="color-control">
             <label for="relicColor">Relic Border Color:</label>
-            <input type="color" id="relicColor" value="#00ff00">
+            <input type="color" id="relicColor" value="#000000">
         </div>
     </div>
     
@@ -553,8 +551,8 @@
         let selectedUnit = null;
         let selectedShape = null;
         let removeMode = false;
-        let currentDotColor = "#ff0000";
-        let currentRelicColor = "#00ff00";
+        let currentDotColor = "#000000";
+        let currentRelicColor = "#000000";
 
         const unitNames = {
             1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
@@ -631,7 +629,7 @@
             
             const dot = document.createElement("div");
             dot.classList.add("omen-dot", "locked-color");
-            dot.style.color = currentDotColor;
+            dot.style.backgroundColor = currentDotColor;
             
             omenContainer.appendChild(omenImg);
             omenContainer.appendChild(dot);
@@ -660,21 +658,19 @@
             const relicDiv = document.createElement("div");
             relicDiv.classList.add("relic", "locked-color");
             relicDiv.style.borderColor = currentRelicColor;
-            relicDiv.style.color = currentRelicColor;
             relicDiv.style.backgroundImage = "url('relic.png')";
             cell.appendChild(relicDiv);
         }
 
         function updateAllOmenDots() {
             document.querySelectorAll('.omen-dot:not(.locked-color)').forEach(dot => {
-                dot.style.color = currentDotColor;
+                dot.style.backgroundColor = currentDotColor;
             });
         }
 
         function updateAllRelicBorders() {
             document.querySelectorAll('.relic:not(.locked-color)').forEach(relic => {
                 relic.style.borderColor = currentRelicColor;
-                relic.style.color = currentRelicColor;
             });
         }
 
@@ -779,7 +775,7 @@
             const originalText = generateBtn.textContent;
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
-
+            
             const options = {
                 useCORS: true,
                 scale: 2,
