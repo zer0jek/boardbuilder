@@ -137,6 +137,7 @@
             left: 10%;
             z-index: 3;
             image-rendering: crisp-edges;
+
         }
 
         .omen-unit {
@@ -144,6 +145,7 @@
             width: 80%;
             height: 80%;
             z-index: 4;
+            --omen-shadow-color: #000000;
         }
 
         .omen-image {
@@ -154,22 +156,12 @@
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 2;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
-        }
-
-        .omen-shadow {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background: currentColor;
-            opacity: 0.3;
-            border-radius: 50%;
             z-index: 1;
-            filter: blur(6px);
-            transform: scale(0.9);
+            filter: 
+                drop-shadow(1px 1px 2px var(--omen-shadow-color))
+                drop-shadow(-1px -1px 2px var(--omen-shadow-color))
+                drop-shadow(1px -1px 2px var(--omen-shadow-color))
+                drop-shadow(-1px 1px 2px var(--omen-shadow-color));
         }
 
         .relic-container {
@@ -179,6 +171,7 @@
             top: 10%;
             left: 10%;
             z-index: 2;
+            --relic-shadow-color: #000000;
         }
 
         .relic {
@@ -190,19 +183,11 @@
             background-position: center;
             image-rendering: crisp-edges;
             z-index: 2;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
-        }
-
-        .relic-shadow {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: currentColor;
-            opacity: 0.3;
-            border-radius: 4px;
-            z-index: 1;
-            filter: blur(6px);
-            transform: scale(1.05);
+            filter: 
+                drop-shadow(1px 1px 2px var(--relic-shadow-color))
+                drop-shadow(-1px -1px 2px var(--relic-shadow-color))
+                drop-shadow(1px -1px 2px var(--relic-shadow-color))
+                drop-shadow(-1px 1px 2px var(--relic-shadow-color));
         }
 
         .units-container, .shapes-container {
@@ -620,18 +605,12 @@
             
             const omenContainer = document.createElement("div");
             omenContainer.classList.add("omen-unit");
+            omenContainer.style.setProperty('--omen-shadow-color', currentDotColor);
             
-            // Add shadow first (behind the image)
-            const shadow = document.createElement("div");
-            shadow.classList.add("omen-shadow");
-            shadow.style.color = currentDotColor;
-            
-            // Then add the omen image
             const omenImg = new Image();
             omenImg.src = 'omen.png';
             omenImg.classList.add("omen-image");
             
-            omenContainer.appendChild(shadow);
             omenContainer.appendChild(omenImg);
             cell.appendChild(omenContainer);
         }
@@ -657,31 +636,25 @@
             
             const relicContainer = document.createElement("div");
             relicContainer.classList.add("relic-container");
+            relicContainer.style.setProperty('--relic-shadow-color', currentRelicColor);
             
-            // Add shadow first (behind the relic)
-            const shadow = document.createElement("div");
-            shadow.classList.add("relic-shadow");
-            shadow.style.color = currentRelicColor;
-            
-            // Then add the relic
             const relicDiv = document.createElement("div");
             relicDiv.classList.add("relic");
             relicDiv.style.backgroundImage = "url('relic.png')";
             
-            relicContainer.appendChild(shadow);
             relicContainer.appendChild(relicDiv);
             cell.appendChild(relicContainer);
         }
 
         function updateAllOmenDots() {
-            document.querySelectorAll('.omen-shadow').forEach(shadow => {
-                shadow.style.color = currentDotColor;
+            document.querySelectorAll('.omen-unit').forEach(omen => {
+                omen.style.setProperty('--omen-shadow-color', currentDotColor);
             });
         }
 
         function updateAllRelicBorders() {
-            document.querySelectorAll('.relic-shadow').forEach(shadow => {
-                shadow.style.color = currentRelicColor;
+            document.querySelectorAll('.relic-container').forEach(relic => {
+                relic.style.setProperty('--relic-shadow-color', currentRelicColor);
             });
         }
 
