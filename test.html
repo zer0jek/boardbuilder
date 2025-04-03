@@ -329,24 +329,7 @@
             margin-bottom: 15px;
         }
 
-        .share-link-container {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .share-link {
-            flex-grow: 1;
-            padding: 8px;
-            border: 1px solid #333;
-            border-radius: 4px;
-            font-family: monospace;
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-
-        .copy-btn {
+        .download-btn {
             background-color: #333;
             color: white;
             border: none;
@@ -357,9 +340,12 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
         }
 
-        .copy-btn:hover {
+        .download-btn:hover {
             background-color: #d32f2f;
         }
 
@@ -465,26 +451,6 @@
             background-position: center;
             margin-right: 5px;
         }
-
-        .download-btn {
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 10px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .download-btn:hover {
-            background-color: #d32f2f;
-        }
     </style>
 </head>
 <body>
@@ -538,14 +504,6 @@
     <div class="output-section" id="outputSection">
         <h3>Your Generated Board</h3>
         <img class="generated-image" id="generatedImage" src="" alt="Generated board image">
-        
-        <div class="share-link-container">
-            <input type="text" class="share-link" id="shareLink" readonly placeholder="Generating share link...">
-            <button class="copy-btn" onclick="copyShareLink()">
-                <i class="fas fa-copy"></i> Copy
-            </button>
-        </div>
-        
         <button class="download-btn" onclick="downloadImage()">
             <i class="fas fa-download"></i> Download Image
         </button>
@@ -566,7 +524,6 @@
         const relicColorPicker = document.getElementById("relicColor");
         const outputSection = document.getElementById("outputSection");
         const generatedImage = document.getElementById("generatedImage");
-        const shareLink = document.getElementById("shareLink");
         const generateBtn = document.getElementById("generateBtn");
         
         let selectedUnit = null;
@@ -575,7 +532,6 @@
         let currentDotColor = "#000000";
         let currentRelicColor = "#000000";
         let generatedImageDataUrl = null;
-        let imgbbUrl = null;
 
         const unitNames = {
             1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
@@ -798,7 +754,6 @@
             const originalText = generateBtn.textContent;
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
-            shareLink.value = "Generating image...";
             
             const options = {
                 useCORS: true,
@@ -813,47 +768,17 @@
                 .then(canvas => {
                     generatedImageDataUrl = canvas.toDataURL("image/png");
                     generatedImage.src = generatedImageDataUrl;
-                    return uploadToImgBB(canvas);
-                })
-                .then(url => {
-                    imgbbUrl = url;
-                    shareLink.value = url;
                     outputSection.style.display = "block";
                     outputSection.scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(error => {
-                    console.error("Error generating output:", error);
-                    shareLink.value = "Error: " + error.message + " - Try downloading instead";
-                    outputSection.style.display = "block";
+                    console.error("Error generating image:", error);
+                    alert("Error generating image: " + error.message);
                 })
                 .finally(() => {
                     generateBtn.innerHTML = originalText;
                     generateBtn.disabled = false;
                 });
-        }
-
-        function uploadToImgBB(canvas) {
-            return new Promise((resolve, reject) => {
-                canvas.toBlob(blob => {
-                    const formData = new FormData();
-                    formData.append('image', blob);
-                    
-                    // ImgBB API endpoint - no API key required for basic uploads
-                    fetch('https://api.imgbb.com/1/upload?key=2e7b7e5a6a5b8e5a6a5b8e5a6a5b8e5a', { // This is a public demo key
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.data && data.data.url) {
-                            resolve(data.data.url);
-                        } else {
-                            reject(new Error('Upload failed: ' + (data.error?.message || 'Unknown error')));
-                        }
-                    })
-                    .catch(reject);
-                }, 'image/png');
-            });
         }
 
         function downloadImage() {
@@ -868,17 +793,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
-
-        function copyShareLink() {
-            if (!imgbbUrl) {
-                alert("Please generate an image first");
-                return;
-            }
-            
-            shareLink.select();
-            document.execCommand('copy');
-            alert('Link copied to clipboard!');
         }
 
         const layout = [
