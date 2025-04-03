@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Board Creator - Default</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -216,6 +217,9 @@
             border-radius: 4px;
             transition: all 0.3s;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .buttons button:hover {
@@ -353,25 +357,30 @@
             border: none;
             border-radius: 2px;
         }
+
+        .bottom-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
     <div class="top-bar">
         <div class="top-bar-buttons">
-            <a href="tower.html"><button>Tower</button></a>
-            <a href="upload.html"><button>??</button></a>
-            <a href="https://discord.com" target="_blank"><button>Discord</button></a>
+            <a href="tower.html"><button><i class="fas fa-tower"></i> Tower</button></a>
+            <a href="upload.html"><button><i class="fas fa-question"></i> ??</button></a>
+            <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i> Discord</button></a>
         </div>
         <h1>Board Creator</h1>
     </div>
 
     <div class="buttons">
-        <button onclick="clearElements()">Clear All</button>
-        <button onclick="deselectAll()">Deselect All</button>
-        <button id="removeModeBtn" onclick="toggleRemoveMode()">Remove Mode: OFF</button>
-        <button onclick="saveAsImage()">Save as Image</button>
-        <button onclick="randomizePlacement()">Random Placement</button>
-        <button onclick="generateAndShare()" id="shareBtn">Generate Share Link</button>
+        <button onclick="clearElements()"><i class="fas fa-trash-alt"></i> Clear All</button>
+        <button onclick="deselectAll()"><i class="fas fa-times-circle"></i> Deselect All</button>
+        <button id="removeModeBtn" onclick="toggleRemoveMode()"><i class="fas fa-eraser"></i> Remove Mode: OFF</button>
+        <button onclick="randomizePlacement()"><i class="fas fa-random"></i> Random Placement</button>
     </div>
     
     <div class="color-controls">
@@ -406,13 +415,18 @@
         <img id="generated-image" src="" alt="Generated board image">
     </div>
     
+    <div class="bottom-buttons">
+        <button onclick="saveAsImage()"><i class="fas fa-image"></i> Save Image</button>
+        <button onclick="generateAndShare()" id="shareBtn"><i class="fas fa-share-alt"></i> Share Link</button>
+    </div>
+    
     <div class="share-section" id="shareSection">
         <h3>Share Your Board</h3>
         <input type="text" class="share-link" id="shareLink" readonly>
-        <button class="copy-btn" onclick="copyShareLink()">Copy Link</button>
+        <button class="copy-btn" onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
         <div class="share-buttons">
-            <button class="btn" onclick="shareOnTwitter()">Share on Twitter</button>
-            <button class="btn" onclick="shareOnDiscord()">Share on Discord</button>
+            <button class="btn" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button>
+            <button class="btn" onclick="shareOnDiscord()"><i class="fab fa-discord"></i> Discord</button>
         </div>
     </div>
     
