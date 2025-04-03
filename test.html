@@ -156,11 +156,6 @@
             top: 0;
             left: 0;
             z-index: 1;
-            filter: 
-                drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(-1px -1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(1px -1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(-1px 1px 1px rgba(0, 0, 0, 0.7));
         }
 
         .relic-container {
@@ -181,11 +176,6 @@
             background-position: center;
             image-rendering: crisp-edges;
             z-index: 2;
-            filter: 
-                drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(-1px -1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(1px -1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(-1px 1px 1px rgba(0, 0, 0, 0.7));
         }
 
         .units-container, .shapes-container {
@@ -300,13 +290,6 @@
             flex-direction: column;
             align-items: center;
             min-width: 120px;
-            transition: background-color 0.3s;
-        }
-
-        .color-control.active {
-            background-color: #333;
-            padding: 5px;
-            border-radius: 4px;
         }
 
         .color-control label {
@@ -423,15 +406,6 @@
             text-align: center;
         }
 
-        .color-preview {
-            width: 20px;
-            height: 20px;
-            border: 1px solid #333;
-            display: inline-block;
-            margin-left: 5px;
-            vertical-align: middle;
-        }
-
         @media (max-width: 600px) {
             .grid-container {
                 width: 100%;
@@ -489,15 +463,13 @@
     </div>
     
     <div class="color-controls">
-        <div class="color-control" id="omenColorControl">
-            <label for="dotColor">Omen Color</label>
+        <div class="color-control">
+            <label for="dotColor">Omen Shadow Color</label>
             <input type="color" id="dotColor" value="#ff0000">
-            <div class="color-preview" id="omenColorPreview" style="background-color: #ff0000;"></div>
         </div>
-        <div class="color-control" id="relicColorControl">
-            <label for="relicColor">Relic Color</label>
+        <div class="color-control">
+            <label for="relicColor">Relic Shadow Color</label>
             <input type="color" id="relicColor" value="#ffff00">
-            <div class="color-preview" id="relicColorPreview" style="background-color: #ffff00;"></div>
         </div>
     </div>
     
@@ -534,8 +506,8 @@
     <script>
         const config = {
             omenCount: { min: 0, max: 18 },
-            omenColor: "#ff0000",
-            relicColor: "#ffff00"
+            omenShadowColor: "#ff0000",
+            relicShadowColor: "#ffff00"
         };
 
         const grid = document.getElementById("grid");
@@ -624,13 +596,10 @@
             omenImg.src = 'omen.png';
             omenImg.classList.add("omen-image");
             
-            // Apply color filter to the omen
+            // Apply shadow color to the omen
             omenImg.style.filter = `
-                drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(-1px -1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(1px -1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(-1px 1px 1px rgba(0, 0, 0, 0.7))
-                ${getColorFilter(config.omenColor)}
+                drop-shadow(0 0 3px ${config.omenShadowColor})
+                drop-shadow(0 0 5px ${config.omenShadowColor})
             `;
             
             omenContainer.appendChild(omenImg);
@@ -663,13 +632,10 @@
             relicDiv.classList.add("relic");
             relicDiv.style.backgroundImage = "url('relic.png')";
             
-            // Apply color filter to the relic
+            // Apply shadow color to the relic
             relicDiv.style.filter = `
-                drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(-1px -1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(1px -1px 1px rgba(0, 0, 0, 0.7))
-                drop-shadow(-1px 1px 1px rgba(0, 0, 0, 0.7))
-                ${getColorFilter(config.relicColor)}
+                drop-shadow(0 0 3px ${config.relicShadowColor})
+                drop-shadow(0 0 5px ${config.relicShadowColor})
             `;
             
             relicContainer.appendChild(relicDiv);
@@ -688,8 +654,6 @@
                 document.querySelectorAll('.unit-option img, .shape-option').forEach(el => {
                     el.classList.remove('selected');
                 });
-                document.getElementById('relicColorControl').classList.remove('active');
-                document.getElementById('omenColorControl').classList.remove('active');
             }
         }
 
@@ -702,16 +666,6 @@
             selectedUnit = src;
             selectedShape = null;
             event.target.classList.add('selected');
-            
-            // Highlight color control if omen is selected
-            const unit = availableUnits.find(u => u.src === src);
-            if (unit && unit.id === 'omen') {
-                document.getElementById('omenColorControl').classList.add('active');
-                document.getElementById('relicColorControl').classList.remove('active');
-            } else {
-                document.getElementById('relicColorControl').classList.remove('active');
-                document.getElementById('omenColorControl').classList.remove('active');
-            }
         }
 
         function selectShape(type) {
@@ -723,18 +677,6 @@
             selectedShape = type;
             selectedUnit = null;
             event.currentTarget.classList.add('selected');
-            
-            // Highlight the appropriate color control
-            if (type === 'relic') {
-                document.getElementById('relicColorControl').classList.add('active');
-                document.getElementById('omenColorControl').classList.remove('active');
-            } else if (type === 'omen') {
-                document.getElementById('omenColorControl').classList.add('active');
-                document.getElementById('relicColorControl').classList.remove('active');
-            } else {
-                document.getElementById('relicColorControl').classList.remove('active');
-                document.getElementById('omenColorControl').classList.remove('active');
-            }
         }
 
         function placeElement(event) {
@@ -769,8 +711,6 @@
             document.querySelectorAll('.unit-option img, .shape-option').forEach(el => {
                 el.classList.remove('selected');
             });
-            document.getElementById('relicColorControl').classList.remove('active');
-            document.getElementById('omenColorControl').classList.remove('active');
         }
 
         function clearElements() {
@@ -844,45 +784,6 @@
             document.body.removeChild(link);
         }
 
-        // Helper function to create a color filter
-        function getColorFilter(color) {
-            return `
-                sepia(100%)
-                saturate(1000%)
-                hue-rotate(${getHueRotation(color)}deg)
-                brightness(0.8)
-                contrast(1.2)
-            `;
-        }
-        
-        // Helper function to calculate hue rotation from hex color
-        function getHueRotation(hexColor) {
-            // Convert hex to RGB
-            const r = parseInt(hexColor.substr(1, 2), 16) / 255;
-            const g = parseInt(hexColor.substr(3, 2), 16) / 255;
-            const b = parseInt(hexColor.substr(5, 2), 16) / 255;
-            
-            // Find max and min
-            const max = Math.max(r, g, b);
-            const min = Math.min(r, g, b);
-            
-            let h;
-            if (max === min) {
-                h = 0; // achromatic
-            } else {
-                const d = max - min;
-                switch (max) {
-                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                    case g: h = (b - r) / d + 2; break;
-                    case b: h = (r - g) / d + 4; break;
-                }
-                h /= 6;
-            }
-            
-            // Convert to degrees (0-360)
-            return Math.round(h * 360);
-        }
-
         const layout = [
             ["path", "green", "green", "green", "green", "green", "brown"],
             ["path", "path", "path", "green", "path", "path", "path"],
@@ -906,13 +807,11 @@
 
         // Initialize color pickers
         document.getElementById('dotColor').addEventListener('input', function(e) {
-            config.omenColor = e.target.value;
-            document.getElementById('omenColorPreview').style.backgroundColor = config.omenColor;
+            config.omenShadowColor = e.target.value;
         });
         
         document.getElementById('relicColor').addEventListener('input', function(e) {
-            config.relicColor = e.target.value;
-            document.getElementById('relicColorPreview').style.backgroundColor = config.relicColor;
+            config.relicShadowColor = e.target.value;
         });
 
         preloadImages();
