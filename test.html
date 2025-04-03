@@ -137,7 +137,6 @@
             left: 10%;
             z-index: 3;
             image-rendering: crisp-edges;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
 
         .omen-unit {
@@ -156,7 +155,19 @@
             top: 0;
             left: 0;
             z-index: 1;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
+            filter: drop-shadow(0 0 5px #d32f2f);
+        }
+
+        .omen-dot {
+            position: absolute;
+            width: 20%;
+            height: 20%;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            background-color: currentColor;
         }
 
         .relic {
@@ -165,32 +176,14 @@
             height: 80%;
             top: 10%;
             left: 10%;
-            background-image: url('relic.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+            border: 2px solid;
+            border-radius: 0;
             image-rendering: crisp-edges;
             z-index: 2;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
-        }
-
-        .glow-effect {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            border-radius: 50%;
-            z-index: 0;
-            opacity: 0.7;
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 10px 5px currentColor;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 5px 3px currentColor; }
-            50% { box-shadow: 0 0 15px 7px currentColor; }
-            100% { box-shadow: 0 0 5px 3px currentColor; }
+            filter: drop-shadow(0 0 5px #d32f2f);
         }
 
         .units-container, .shapes-container {
@@ -496,12 +489,12 @@
     
     <div class="color-controls">
         <div class="color-control">
-            <label for="omenGlowColor">Omen Glow Color:</label>
-            <input type="color" id="omenGlowColor" value="#ff0000">
+            <label for="dotColor">Omen Dot Color:</label>
+            <input type="color" id="dotColor" value="#000000">
         </div>
         <div class="color-control">
-            <label for="relicGlowColor">Relic Glow Color:</label>
-            <input type="color" id="relicGlowColor" value="#00ff00">
+            <label for="relicColor">Relic Border Color:</label>
+            <input type="color" id="relicColor" value="#000000">
         </div>
     </div>
     
@@ -548,8 +541,8 @@
         const unitsContainer = document.getElementById("units-container");
         const shapesContainer = document.getElementById("shapes-container");
         const removeModeBtn = document.getElementById("removeModeBtn");
-        const omenGlowColorPicker = document.getElementById("omenGlowColor");
-        const relicGlowColorPicker = document.getElementById("relicGlowColor");
+        const dotColorPicker = document.getElementById("dotColor");
+        const relicColorPicker = document.getElementById("relicColor");
         const outputSection = document.getElementById("outputSection");
         const generatedImage = document.getElementById("generatedImage");
         const shareLink = document.getElementById("shareLink");
@@ -558,8 +551,8 @@
         let selectedUnit = null;
         let selectedShape = null;
         let removeMode = false;
-        let currentOmenGlowColor = "#ff0000";
-        let currentRelicGlowColor = "#00ff00";
+        let currentDotColor = "#000000";
+        let currentRelicColor = "#000000";
 
         const unitNames = {
             1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
@@ -630,16 +623,16 @@
             const omenContainer = document.createElement("div");
             omenContainer.classList.add("omen-unit");
             
-            const glow = document.createElement("div");
-            glow.classList.add("glow-effect", "locked-color");
-            glow.style.color = currentOmenGlowColor;
-            
             const omenImg = new Image();
             omenImg.src = 'omen.png';
             omenImg.classList.add("omen-image");
             
-            omenContainer.appendChild(glow);
+            const dot = document.createElement("div");
+            dot.classList.add("omen-dot", "locked-color");
+            dot.style.backgroundColor = currentDotColor;
+            
             omenContainer.appendChild(omenImg);
+            omenContainer.appendChild(dot);
             cell.appendChild(omenContainer);
         }
 
@@ -662,35 +655,22 @@
             const existingRelic = cell.querySelector('.relic');
             if (existingRelic) existingRelic.remove();
             
-            const relicContainer = document.createElement("div");
-            relicContainer.classList.add("relic");
-            
-            const glow = document.createElement("div");
-            glow.classList.add("glow-effect", "locked-color");
-            glow.style.color = currentRelicGlowColor;
-            
-            const relicImg = document.createElement("div");
-            relicImg.style.width = "100%";
-            relicImg.style.height = "100%";
-            relicImg.style.backgroundImage = "url('relic.png')";
-            relicImg.style.backgroundSize = "contain";
-            relicImg.style.backgroundRepeat = "no-repeat";
-            relicImg.style.backgroundPosition = "center";
-            
-            relicContainer.appendChild(glow);
-            relicContainer.appendChild(relicImg);
-            cell.appendChild(relicContainer);
+            const relicDiv = document.createElement("div");
+            relicDiv.classList.add("relic", "locked-color");
+            relicDiv.style.borderColor = currentRelicColor;
+            relicDiv.style.backgroundImage = "url('relic.png')";
+            cell.appendChild(relicDiv);
         }
 
-        function updateAllOmenGlows() {
-            document.querySelectorAll('.omen-unit .glow-effect:not(.locked-color)').forEach(glow => {
-                glow.style.color = currentOmenGlowColor;
+        function updateAllOmenDots() {
+            document.querySelectorAll('.omen-dot:not(.locked-color)').forEach(dot => {
+                dot.style.backgroundColor = currentDotColor;
             });
         }
 
-        function updateAllRelicGlows() {
-            document.querySelectorAll('.relic .glow-effect:not(.locked-color)').forEach(glow => {
-                glow.style.color = currentRelicGlowColor;
+        function updateAllRelicBorders() {
+            document.querySelectorAll('.relic:not(.locked-color)').forEach(relic => {
+                relic.style.borderColor = currentRelicColor;
             });
         }
 
@@ -796,37 +776,30 @@
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
 
-            // Tymczasowo zatrzymujemy animację dla html2canvas
-            const allGlows = document.querySelectorAll('.glow-effect');
-            allGlows.forEach(glow => {
-                glow.style.animation = 'none';
-                glow.style.boxShadow = `0 0 10px 5px ${glow.style.color}`;
-            });
-
+            // Ustawienie foreignObjectRendering na true dla poprawnego renderowania efektów
             const options = {
                 useCORS: true,
                 scale: 2,
                 logging: true,
                 backgroundColor: null,
                 allowTaint: false,
-                foreignObjectRendering: false,
+                foreignObjectRendering: true,
                 onclone: function(clonedDoc) {
-                    // Upewniamy się, że efekty świecenia będą widoczne na zrzucie
-                    const clonedGlows = clonedDoc.querySelectorAll('.glow-effect');
-                    clonedGlows.forEach(glow => {
-                        glow.style.animation = 'none';
-                        glow.style.boxShadow = `0 0 10px 5px ${glow.style.color}`;
+                    // Upewniamy się, że style są zachowane
+                    const clonedOmenImages = clonedDoc.querySelectorAll('.omen-image');
+                    clonedOmenImages.forEach(img => {
+                        img.style.filter = 'drop-shadow(0 0 5px #d32f2f)';
+                    });
+
+                    const clonedRelics = clonedDoc.querySelectorAll('.relic');
+                    clonedRelics.forEach(relic => {
+                        relic.style.filter = 'drop-shadow(0 0 5px #d32f2f)';
                     });
                 }
             };
 
             html2canvas(document.getElementById("grid-container"), options)
                 .then(canvas => {
-                    // Przywracamy animację po zakończeniu generowania
-                    allGlows.forEach(glow => {
-                        glow.style.animation = 'pulse 2s infinite';
-                    });
-                    
                     return canvas.toDataURL("image/png");
                 })
                 .then(dataUrl => {
@@ -896,14 +869,14 @@
         preloadImages();
         generateUnitSelection();
         
-        omenGlowColorPicker.addEventListener("input", function() {
-            currentOmenGlowColor = this.value;
-            updateAllOmenGlows();
+        dotColorPicker.addEventListener("input", function() {
+            currentDotColor = this.value;
+            updateAllOmenDots();
         });
         
-        relicGlowColorPicker.addEventListener("input", function() {
-            currentRelicGlowColor = this.value;
-            updateAllRelicGlows();
+        relicColorPicker.addEventListener("input", function() {
+            currentRelicColor = this.value;
+            updateAllRelicBorders();
         });
     </script>
 </body>
