@@ -360,21 +360,6 @@
             background-color: #d32f2f;
         }
 
-        .share-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        .share-buttons button {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 12px;
-        }
-
         .loading {
             display: inline-block;
             width: 20px;
@@ -467,13 +452,23 @@
                 font-size: 15px;
             }
         }
+
+        .tower-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M5 3h14v2H5zm2 4h10v2H7zm2 4h6v2H9zm2 4h2v6h-2z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="top-bar">
         <h1>Board Creator</h1>
         <div class="top-bar-buttons">
-            <a href="tower.html"><button><i class="fas fa-tower"></i><span>Tower</span></button></a>
+            <a href="tower.html"><button><span class="tower-icon"></span><span>Tower</span></button></a>
             <a href="upload.html"><button><i class="fas fa-question"></i><span>??</span></button></a>
             <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i><span>Discord</span></button></a>
         </div>
@@ -525,15 +520,6 @@
             <input type="text" class="share-link" id="shareLink" readonly>
             <button class="copy-btn" onclick="copyShareLink()">
                 <i class="fas fa-copy"></i> Copy
-            </button>
-        </div>
-        
-        <div class="share-buttons">
-            <button class="btn" onclick="shareOnTwitter()">
-                <i class="fab fa-twitter"></i> Twitter
-            </button>
-            <button class="btn" onclick="shareOnDiscord()">
-                <i class="fab fa-discord"></i> Discord
             </button>
         </div>
     </div>
@@ -837,16 +823,6 @@
             shareLink.select();
             document.execCommand('copy');
             alert('Link copied to clipboard!');
-        }
-        
-        function shareOnTwitter() {
-            const text = "Check out my board creation!";
-            const url = shareLink.value;
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-        }
-        
-        function shareOnDiscord() {
-            alert('Copy the link and paste it in Discord!');
         }
 
         const layout = [
