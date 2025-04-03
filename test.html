@@ -60,6 +60,7 @@
             transition: all 0.3s;
             font-size: 12px;
             white-space: nowrap;
+            min-width: 70px;
         }
 
         .top-bar button i {
@@ -79,6 +80,7 @@
             .top-bar button {
                 padding: 6px;
                 font-size: 0;
+                min-width: auto;
             }
             
             .top-bar button i {
@@ -259,9 +261,10 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            flex: 1 0 auto;
+            flex: 1 1 auto;
             justify-content: center;
             min-width: 120px;
+            box-sizing: border-box;
         }
 
         .buttons button:hover {
@@ -453,11 +456,11 @@
             }
         }
 
-        .tower-icon {
+        .castle-icon {
             display: inline-block;
             width: 16px;
             height: 16px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M5 3h14v2H5zm2 4h10v2H7zm2 4h6v2H9zm2 4h2v6h-2z"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M19 10V7h-2v3h-3v2h3v3h2v-3h3v-2h-3zM5 10V3h3v2H7v3H5zm0 9v-3h3v3H5zm5 0v-3h4v3h-4zm6 0v-3h3v3h-3zm-6-5h4v-2h-4v2z"/></svg>');
             background-repeat: no-repeat;
             background-position: center;
             margin-right: 5px;
@@ -468,7 +471,7 @@
     <div class="top-bar">
         <h1>Board Creator</h1>
         <div class="top-bar-buttons">
-            <a href="tower.html"><button><span class="tower-icon"></span><span>Tower</span></button></a>
+            <a href="tower.html"><button><span class="castle-icon"></span><span>Tower</span></button></a>
             <a href="upload.html"><button><i class="fas fa-question"></i><span>??</span></button></a>
             <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i><span>Discord</span></button></a>
         </div>
@@ -670,7 +673,8 @@
 
         function toggleRemoveMode() {
             removeMode = !removeMode;
-            removeModeBtn.textContent = removeMode ? "Remove Mode: ON" : "Remove Mode: OFF";
+            const btnText = removeMode ? "ON" : "OFF";
+            removeModeBtn.innerHTML = `<i class="fas fa-eraser"></i> Remove Mode: ${btnText}`;
             removeModeBtn.style.backgroundColor = removeMode ? "#d32f2f" : "#5c2b2b";
             
             if (removeMode) {
