@@ -3,478 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Board Creator - Upload Obrazów</title>
+    <title>Anonimowy Upload Obrazów</title>
     <style>
-        :root {
-            --primary: #4CAF50;
-            --primary-dark: #45a049;
-            --secondary: #2196F3;
-            --secondary-dark: #0b7dda;
-            --error: #f44336;
-            --error-dark: #d32f2f;
-            --background: #f5f7fa;
-            --card: #ffffff;
-            --text: #333333;
-            --border: #e0e0e0;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         body {
-            background-color: var(--background);
-            color: var(--text);
-            line-height: 1.6;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
+            font-family: Arial, sans-serif;
+            max-width: 600px;
             margin: 0 auto;
             padding: 20px;
+            line-height: 1.6;
         }
-
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            padding: 8px 16px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .upload-card {
-            background-color: var(--card);
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        .upload-box {
+            border: 2px dashed #ccc;
             padding: 30px;
-            margin-bottom: 30px;
             text-align: center;
+            border-radius: 8px;
+            background: #f9f9f9;
         }
-
-        .file-upload-wrapper {
-            position: relative;
-            margin-bottom: 25px;
-        }
-
-        .file-upload-label {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: var(--primary);
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .file-upload-label:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
         #fileInput {
             display: none;
         }
-
-        .file-name {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        #uploadBtn {
-            padding: 12px 24px;
-            background-color: var(--secondary);
+        .upload-btn {
+            background: #4CAF50;
             color: white;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        #uploadBtn:hover:not(:disabled) {
-            background-color: var(--secondary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        #uploadBtn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .status {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 6px;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .status.error {
-            background-color: #ffebee;
-            color: var(--error);
-            border-left: 4px solid var(--error);
-            display: block;
-        }
-
-        .status.success {
-            background-color: #e8f5e9;
-            color: var(--primary-dark);
-            border-left: 4px solid var(--primary);
-            display: block;
-        }
-
-        .status.info {
-            background-color: #e3f2fd;
-            color: var(--secondary-dark);
-            border-left: 4px solid var(--secondary);
-            display: block;
-        }
-
-        .gallery-container {
-            background-color: var(--card);
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 30px;
-        }
-
-        .gallery-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .refresh-btn {
             padding: 10px 20px;
-            background-color: #607d8b;
-            color: white;
-            border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 16px;
+            margin: 10px 0;
         }
-
-        .refresh-btn:hover {
-            background-color: #455a64;
-            transform: translateY(-2px);
+        #imagePreview {
+            max-width: 100%;
+            max-height: 300px;
+            margin: 15px 0;
+            display: none;
         }
-
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+        #result {
+            margin-top: 20px;
+            word-break: break-all;
         }
-
-        .gallery-item {
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
         }
-
-        .gallery-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        .error {
+            background: #ffebee;
+            color: #f44336;
         }
-
-        .gallery-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-
-        .gallery-info {
-            padding: 15px;
-        }
-
-        .gallery-name {
-            font-size: 0.9rem;
-            color: var(--text);
-            word-break: break-word;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 30px;
-            color: #666;
-            grid-column: 1 / -1;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 30px;
-            color: #666;
-            grid-column: 1 / -1;
-        }
-
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .nav-links {
-                margin-top: 15px;
-            }
-            
-            .nav-links a {
-                margin: 0 10px;
-            }
-            
-            .gallery {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
+        .success {
+            background: #e8f5e9;
+            color: #4caf50;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Board Creator</h1>
-            <div class="nav-links">
-                <a href="index.html">Strona główna</a>
-                <a href="tower.html">Wieża</a>
-                <a href="other.html">Inne</a>
-            </div>
-        </header>
-
-        <main>
-            <div class="upload-card">
-                <div class="file-upload-wrapper">
-                    <label for="fileInput" class="file-upload-label">Wybierz plik</label>
-                    <input type="file" id="fileInput" accept="image/*">
-                    <div id="fileName" class="file-name"></div>
-                </div>
-                <button id="uploadBtn">Prześlij obraz</button>
-                <div id="status" class="status"></div>
-            </div>
-
-            <div class="gallery-container">
-                <div class="gallery-header">
-                    <h2>Galeria obrazów</h2>
-                    <button id="refreshBtn" class="refresh-btn">Odśwież</button>
-                </div>
-                <div class="gallery" id="gallery">
-                    <div class="loading">Ładowanie obrazów...</div>
-                </div>
-            </div>
-        </main>
+    <div class="upload-box">
+        <h2>Prześlij obraz anonimowo</h2>
+        <input type="file" id="fileInput" accept="image/*">
+        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Wybierz obraz</button>
+        <img id="imagePreview" alt="Podgląd">
+        <button class="upload-btn" id="uploadBtn">Wyślij</button>
+        <div id="status"></div>
+        <div id="result"></div>
     </div>
 
     <script>
-        // Konfiguracja środowiska
-        const isLocalDevelopment = window.location.hostname === 'localhost' || 
-                                window.location.hostname === '127.0.0.1';
-        const backendUrl = isLocalDevelopment
-            ? 'http://localhost:3000'
-            : '/.netlify/functions/server';
-
-        // Referencje do elementów DOM
         const fileInput = document.getElementById('fileInput');
-        const fileNameDiv = document.getElementById('fileName');
         const uploadBtn = document.getElementById('uploadBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const gallery = document.getElementById('gallery');
+        const imagePreview = document.getElementById('imagePreview');
         const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
 
-        // Obsługa wyboru pliku
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                fileNameDiv.textContent = file.name;
-                uploadBtn.disabled = false;
-            } else {
-                fileNameDiv.textContent = '';
-                uploadBtn.disabled = true;
+        // Podgląd obrazu
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(fileInput.files[0]);
             }
         });
 
-        // Obsługa uploadu
-        uploadBtn.addEventListener('click', async () => {
-            const file = fileInput.files[0];
-            if (!file) {
-                showStatus('Proszę wybrać plik przed wysłaniem', 'error');
+        // Wysyłanie obrazu
+        uploadBtn.addEventListener('click', async function() {
+            if (!fileInput.files.length) {
+                showStatus('Najpierw wybierz obraz', 'error');
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('image', file);
-
             try {
-                showStatus('Trwa przesyłanie obrazu...', 'info');
+                showStatus('Wysyłanie...');
                 uploadBtn.disabled = true;
 
-                const startTime = performance.now();
-                const response = await fetch(`${backendUrl}/upload`, {
+                // Używamy tymczasowego formularza ImgBB (bez klucza API)
+                const formData = new FormData();
+                formData.append('image', fileInput.files[0]);
+
+                const response = await fetch('https://imgbb.com/upload', {
                     method: 'POST',
                     body: formData
                 });
 
-                // Najpierw sprawdź status odpowiedzi
-                if (!response.ok) {
-                    // Spróbuj parsować błąd JSON, jeśli to możliwe
-                    const errorText = await response.text();
-                    try {
-                        const errorJson = JSON.parse(errorText);
-                        throw new Error(errorJson.error || 'Wystąpił błąd podczas przesyłania');
-                    } catch {
-                        throw new Error(errorText || `Błąd serwera: ${response.status}`);
-                    }
-                }
-
-                // Parsuj odpowiedź JSON
-                const result = await response.json();
-                const responseTime = ((performance.now() - startTime) / 1000).toFixed(2);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
                 
-                if (result.success) {
-                    showStatus(`Obraz przesłany pomyślnie! (${responseTime}s)`, 'success');
-                    fileInput.value = '';
-                    fileNameDiv.textContent = '';
-                    uploadBtn.disabled = true;
-                    await loadGallery();
+                // Pobieramy link z odpowiedzi
+                const directLink = doc.querySelector('input[type="text"][readonly]')?.value;
+                
+                if (directLink) {
+                    showStatus('Gotowe!', 'success');
+                    resultDiv.innerHTML = `
+                        <h3>Twój obraz:</h3>
+                        <a href="${directLink}" target="_blank">${directLink}</a>
+                        <h4>Kod do osadzenia:</h4>
+                        <textarea style="width:100%; height:60px;" readonly>&lt;img src="${directLink}" alt="Moja grafika"&gt;</textarea>
+                        <p><img src="${directLink}" style="max-width:100%; margin-top:10px;"></p>
+                    `;
                 } else {
-                    throw new Error(result.error || 'Nieznany błąd');
+                    throw new Error('Nie udało się uzyskać linku');
                 }
             } catch (error) {
-                console.error('Błąd przesyłania:', error);
                 showStatus(`Błąd: ${error.message}`, 'error');
+                console.error(error);
             } finally {
                 uploadBtn.disabled = false;
             }
         });
 
-        // Obsługa odświeżania galerii
-        refreshBtn.addEventListener('click', async () => {
-            await loadGallery();
-        });
-
-        // Ładowanie galerii obrazów
-        async function loadGallery() {
-            try {
-                gallery.innerHTML = '<div class="loading">Ładowanie obrazów...</div>';
-                refreshBtn.disabled = true;
-
-                const response = await fetch(`${backendUrl}/gallery`);
-                
-                // Sprawdź status odpowiedzi
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Błąd serwera: ${response.status} - ${errorText}`);
-                }
-
-                // Sprawdź typ zawartości
-                const contentType = response.headers.get('content-type');
-                if (!contentType?.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Oczekiwano JSON, otrzymano: ${contentType}`);
-                }
-
-                const images = await response.json();
-
-                if (!Array.isArray(images)) {
-                    throw new Error('Nieprawidłowy format odpowiedzi: oczekiwano tablicy');
-                }
-
-                if (images.length === 0) {
-                    gallery.innerHTML = '<div class="empty-state">Brak obrazów w galerii</div>';
-                    return;
-                }
-
-                gallery.innerHTML = '';
-                images.forEach(image => {
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item';
-                    
-                    const img = document.createElement('img');
-                    img.src = image.url;
-                    img.alt = image.name;
-                    img.className = 'gallery-img';
-                    img.loading = 'lazy';
-                    
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'gallery-info';
-                    
-                    const namePara = document.createElement('p');
-                    namePara.textContent = image.name;
-                    namePara.className = 'gallery-name';
-                    
-                    infoDiv.appendChild(namePara);
-                    galleryItem.appendChild(img);
-                    galleryItem.appendChild(infoDiv);
-                    gallery.appendChild(galleryItem);
-                });
-
-            } catch (error) {
-                console.error('Błąd ładowania galerii:', error);
-                gallery.innerHTML = `
-                    <div class="error-message">
-                        Błąd podczas ładowania galerii: ${error.message}
-                    </div>
-                `;
-            } finally {
-                refreshBtn.disabled = false;
-            }
-        }
-
-        // Wyświetlanie statusu
-        function showStatus(message, type = 'info') {
+        function showStatus(message, type) {
             statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            
-            // Automatyczne ukrywanie statusu po 5 sekundach (tylko dla success/info)
-            if (type !== 'error') {
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 5000);
-            }
+            statusDiv.className = type || '';
+            statusDiv.style.display = 'block';
         }
-
-        // Inicjalizacja - załaduj galerię przy starcie
-        document.addEventListener('DOMContentLoaded', () => {
-            loadGallery();
-        });
     </script>
 </body>
 </html>
