@@ -1,10 +1,10 @@
 [build]
   command = "cd server && npm install && cd .."
-  publish = "public"
+  publish = "."  # Publikuj główny folder
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server/:splat"
+  from = "/images/*"
+  to = "/public/images/:splat"
   status = 200
 
 [functions]
