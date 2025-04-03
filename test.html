@@ -16,7 +16,7 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
-            padding: 70px 15px 15px;
+            padding: 80px 10px 20px;
         }
 
         .top-bar {
@@ -26,7 +26,7 @@
             right: 0;
             background-color: #1a1a1a;
             color: white;
-            padding: 8px 20px;
+            padding: 8px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -37,31 +37,63 @@
 
         .top-bar h1 {
             margin: 0;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             color: #d32f2f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 50%;
+        }
+
+        .top-bar-buttons {
+            display: flex;
+            gap: 5px;
         }
 
         .top-bar button {
             background-color: #333;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 8px;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 14px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .top-bar button i {
+            margin-right: 3px;
         }
 
         .top-bar button:hover {
             background-color: #d32f2f;
         }
 
+        @media (max-width: 480px) {
+            .top-bar h1 {
+                font-size: 1rem;
+                max-width: 40%;
+            }
+            
+            .top-bar button {
+                padding: 6px;
+                font-size: 0;
+            }
+            
+            .top-bar button i {
+                margin-right: 0;
+                font-size: 14px;
+            }
+        }
+
         .grid-container {
             position: relative;
             width: 350px;
             height: 250px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border: 2px solid #333;
+            max-width: 100%;
         }
 
         .grid-background {
@@ -76,17 +108,16 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(7, 50px);
-            grid-template-rows: repeat(5, 50px);
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(5, 1fr);
             position: relative;
-            width: 350px;
-            height: 250px;
+            width: 100%;
+            height: 100%;
             z-index: 2;
+            aspect-ratio: 7/5;
         }
 
         .cell {
-            width: 50px;
-            height: 50px;
             position: relative;
             box-sizing: border-box;
         }
@@ -96,12 +127,12 @@
         }
 
         .unit {
-            width: 40px;
-            height: 40px;
+            width: 80%;
+            height: 80%;
             position: absolute;
             cursor: move;
-            top: 5px;
-            left: 5px;
+            top: 10%;
+            left: 10%;
             z-index: 3;
             image-rendering: crisp-edges;
             filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
@@ -109,8 +140,8 @@
 
         .omen-unit {
             position: relative;
-            width: 40px;
-            height: 40px;
+            width: 80%;
+            height: 80%;
             z-index: 4;
         }
 
@@ -128,8 +159,8 @@
 
         .omen-dot {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 20%;
+            height: 20%;
             border-radius: 50%;
             top: 50%;
             left: 50%;
@@ -139,10 +170,10 @@
 
         .relic {
             position: absolute;
-            width: 40px;
-            height: 40px;
-            top: 5px;
-            left: 5px;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -156,15 +187,16 @@
         .units-container, .shapes-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
             max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: 10px auto;
+            padding: 15px;
             background-color: #1e1e1e;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
             border: 1px solid #333;
+            width: 100%;
         }
 
         .unit-option, .shape-option {
@@ -174,6 +206,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            flex: 1 0 60px;
+            max-width: 80px;
         }
 
         .unit-option:hover, .shape-option:hover {
@@ -193,6 +227,9 @@
             font-size: 12px;
             font-weight: bold;
             color: #b0b0b0;
+            word-break: break-word;
+            text-align: center;
+            width: 100%;
         }
 
         .selected {
@@ -203,9 +240,11 @@
         .buttons {
             margin: 5px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
+            width: 100%;
+            max-width: 600px;
         }
 
         .buttons button {
@@ -220,6 +259,9 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            flex: 1 0 auto;
+            justify-content: center;
+            min-width: 120px;
         }
 
         .buttons button:hover {
@@ -236,67 +278,66 @@
 
         .color-controls {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             margin-top: 10px;
             background-color: #1e1e1e;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid #333;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
         }
 
         .color-control {
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-width: 120px;
         }
 
         .color-control label {
             margin-bottom: 5px;
             color: #b0b0b0;
-        }
-
-        #image-container {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #1e1e1e;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-
-        footer {
-            margin-top: 30px;
-            color: #666;
             font-size: 14px;
         }
 
-        .locked-color {
-            pointer-events: none;
-        }
-
-        .share-section {
+        .output-section {
             margin-top: 20px;
             padding: 15px;
             background-color: #1e1e1e;
             border-radius: 8px;
-            display: none;
-            max-width: 600px;
-            width: 100%;
             border: 1px solid #333;
+            width: 100%;
+            max-width: 600px;
+            display: none;
         }
 
-        .share-section h3 {
+        .output-section h3 {
             margin-top: 0;
             margin-bottom: 15px;
             color: #d32f2f;
         }
 
-        .share-link {
+        .generated-image {
+            max-width: 100%;
+            border: 1px solid #333;
+            margin-bottom: 15px;
+        }
+
+        .share-link-container {
+            display: flex;
+            gap: 8px;
             width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .share-link {
+            flex-grow: 1;
             padding: 8px;
             border: 1px solid #333;
             border-radius: 4px;
-            margin-bottom: 10px;
             font-family: monospace;
             background-color: #121212;
             color: #e0e0e0;
@@ -310,6 +351,9 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .copy-btn:hover {
@@ -321,6 +365,14 @@
             gap: 10px;
             justify-content: center;
             margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .share-buttons button {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 12px;
         }
 
         .loading {
@@ -358,29 +410,80 @@
             border-radius: 2px;
         }
 
-        .bottom-buttons {
-            margin-top: 20px;
+        .generate-btn {
+            margin: 15px 0;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
             display: flex;
-            gap: 10px;
+            align-items: center;
             justify-content: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .generate-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        footer {
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+            padding: 0 15px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .grid-container {
+                width: 100%;
+                height: auto;
+            }
+            
+            .unit-option, .shape-option {
+                flex: 1 0 50px;
+                max-width: 70px;
+            }
+            
+            .unit-option img, .shape-option img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .buttons button {
+                min-width: 100px;
+                padding: 8px;
+                font-size: 13px;
+            }
+            
+            .generate-btn {
+                padding: 10px 15px;
+                font-size: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="top-bar">
-        <div class="top-bar-buttons">
-            <a href="tower.html"><button><i class="fas fa-tower"></i> Tower</button></a>
-            <a href="upload.html"><button><i class="fas fa-question"></i> ??</button></a>
-            <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i> Discord</button></a>
-        </div>
         <h1>Board Creator</h1>
+        <div class="top-bar-buttons">
+            <a href="tower.html"><button><i class="fas fa-tower"></i><span>Tower</span></button></a>
+            <a href="upload.html"><button><i class="fas fa-question"></i><span>??</span></button></a>
+            <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i><span>Discord</span></button></a>
+        </div>
     </div>
 
     <div class="buttons">
-        <button onclick="clearElements()"><i class="fas fa-trash-alt"></i> Clear All</button>
-        <button onclick="deselectAll()"><i class="fas fa-times-circle"></i> Deselect All</button>
+        <button onclick="clearElements()"><i class="fas fa-trash-alt"></i> Clear</button>
+        <button onclick="deselectAll()"><i class="fas fa-times-circle"></i> Deselect</button>
         <button id="removeModeBtn" onclick="toggleRemoveMode()"><i class="fas fa-eraser"></i> Remove Mode: OFF</button>
-        <button onclick="randomizePlacement()"><i class="fas fa-random"></i> Random Placement</button>
+        <button onclick="randomizePlacement()"><i class="fas fa-random"></i> Randomize</button>
     </div>
     
     <div class="color-controls">
@@ -410,25 +513,32 @@
         </div>
     </div>
     
-    <div id="image-container">
-        <h3>Generated Board</h3>
-        <img id="generated-image" src="" alt="Generated board image">
-    </div>
+    <button class="generate-btn" onclick="generateOutput()" id="generateBtn">
+        <i class="fas fa-magic"></i> Generate Image
+    </button>
     
-    <div class="bottom-buttons">
-        <button onclick="saveAsImage()"><i class="fas fa-image"></i> Save Image</button>
-        <button onclick="generateAndShare()" id="shareBtn"><i class="fas fa-share-alt"></i> Share Link</button>
-    </div>
-    
-    <div class="share-section" id="shareSection">
-        <h3>Share Your Board</h3>
-        <input type="text" class="share-link" id="shareLink" readonly>
-        <button class="copy-btn" onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy Link</button>
+    <div class="output-section" id="outputSection">
+        <h3>Your Generated Board</h3>
+        <img class="generated-image" id="generatedImage" src="" alt="Generated board image">
+        
+        <div class="share-link-container">
+            <input type="text" class="share-link" id="shareLink" readonly>
+            <button class="copy-btn" onclick="copyShareLink()">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+        </div>
+        
         <div class="share-buttons">
-            <button class="btn" onclick="shareOnTwitter()"><i class="fab fa-twitter"></i> Twitter</button>
-            <button class="btn" onclick="shareOnDiscord()"><i class="fab fa-discord"></i> Discord</button>
+            <button class="btn" onclick="shareOnTwitter()">
+                <i class="fab fa-twitter"></i> Twitter
+            </button>
+            <button class="btn" onclick="shareOnDiscord()">
+                <i class="fab fa-discord"></i> Discord
+            </button>
         </div>
     </div>
+    
+    <footer>Made By 0jek</footer>
     
     <script>
         const config = {
@@ -441,9 +551,10 @@
         const removeModeBtn = document.getElementById("removeModeBtn");
         const dotColorPicker = document.getElementById("dotColor");
         const relicColorPicker = document.getElementById("relicColor");
-        const shareSection = document.getElementById("shareSection");
+        const outputSection = document.getElementById("outputSection");
+        const generatedImage = document.getElementById("generatedImage");
         const shareLink = document.getElementById("shareLink");
-        const shareBtn = document.getElementById("shareBtn");
+        const generateBtn = document.getElementById("generateBtn");
         
         let selectedUnit = null;
         let selectedShape = null;
@@ -667,33 +778,10 @@
             });
         }
 
-        function saveAsImage() {
-            const options = {
-                useCORS: true,
-                scale: 2,
-                logging: true,
-                backgroundColor: null,
-                allowTaint: false,
-                foreignObjectRendering: false
-            };
-
-            html2canvas(document.getElementById("grid-container"), options)
-                .then(canvas => {
-                    const generatedImage = document.getElementById("generated-image");
-                    generatedImage.src = canvas.toDataURL("image/png");
-                    document.getElementById("image-container").style.display = "block";
-                    generatedImage.scrollIntoView({ behavior: 'smooth' });
-                })
-                .catch(error => {
-                    console.error("Error generating image:", error);
-                    alert("Error generating image. Check console for details.");
-                });
-        }
-        
-        function generateAndShare() {
-            const originalText = shareBtn.textContent;
-            shareBtn.innerHTML = originalText + '<span class="loading"></span>';
-            shareBtn.disabled = true;
+        function generateOutput() {
+            const originalText = generateBtn.textContent;
+            generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
+            generateBtn.disabled = true;
             
             const options = {
                 useCORS: true,
@@ -709,6 +797,7 @@
                     return canvas.toDataURL("image/png");
                 })
                 .then(dataUrl => {
+                    generatedImage.src = dataUrl;
                     return fetch(dataUrl)
                         .then(res => res.blob());
                 })
@@ -727,21 +816,20 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.data && data.data.link) {
-                        const imageUrl = data.data.link;
-                        shareLink.value = imageUrl;
-                        shareSection.style.display = "block";
-                        shareSection.scrollIntoView({ behavior: 'smooth' });
+                        shareLink.value = data.data.link;
+                        outputSection.style.display = "block";
+                        outputSection.scrollIntoView({ behavior: 'smooth' });
                     } else {
                         throw new Error(data.data?.error || 'Failed to upload image');
                     }
                 })
                 .catch(error => {
-                    console.error("Error sharing image:", error);
-                    alert("Error sharing image: " + error.message);
+                    console.error("Error generating output:", error);
+                    alert("Error generating output: " + error.message);
                 })
                 .finally(() => {
-                    shareBtn.textContent = originalText;
-                    shareBtn.disabled = false;
+                    generateBtn.innerHTML = originalText;
+                    generateBtn.disabled = false;
                 });
         }
         
@@ -795,6 +883,5 @@
             updateAllRelicBorders();
         });
     </script>
-    <footer>Made By 0jek</footer>
 </body>
 </html>
