@@ -451,7 +451,7 @@
 </head>
 <body>
     <div class="top-bar">
-        <h1>Board Creator</h1>
+        <h1>Board1 Creator</h1>
         <div class="top-bar-buttons">
             <a href="tower.html"><button><span class="castle-icon"></span><span>Tower</span></button></a>
             <a href="upload.html"><button><i class="fas fa-question"></i><span>??</span></button></a>
@@ -568,11 +568,13 @@
             
             const omenCount = Math.floor(Math.random() * (config.omenCount.max - config.omenCount.min + 1)) + config.omenCount.min;
             
+            // Place omens
             for (let i = 0; i < Math.min(omenCount, shuffledCells.length); i++) {
                 const cell = shuffledCells[i];
                 placeOmen(cell);
             }
             
+            // Place units on remaining cells
             for (let i = omenCount; i < shuffledCells.length; i++) {
                 const cell = shuffledCells[i];
                 const unitIndex = Math.floor(Math.random() * (availableUnits.length - 1));
@@ -580,6 +582,7 @@
                 placeUnit(cell, unit);
             }
             
+            // Place relics on random cells (can be same as omens)
             const allGreenCells = [...greenCells].sort(() => Math.random() - 0.5);
             for (let i = 0; i < Math.min(omenCount, allGreenCells.length); i++) {
                 const cell = allGreenCells[i];
@@ -590,6 +593,7 @@
         function placeOmen(cell) {
             if (!cell.classList.contains('green')) return;
             
+            // Clear existing omen if any
             const existingOmen = cell.querySelector('.omen-unit');
             if (existingOmen) existingOmen.remove();
             
@@ -611,6 +615,7 @@
         function placeUnit(cell, unit) {
             if (!cell.classList.contains('green')) return;
             
+            // Clear existing unit if any
             const existingUnit = cell.querySelector('.unit');
             if (existingUnit) existingUnit.remove();
             
@@ -624,6 +629,7 @@
         function placeRelic(cell) {
             if (!cell.classList.contains('green')) return;
             
+            // Clear existing relic if any
             const existingRelic = cell.querySelector('.relic-container');
             if (existingRelic) existingRelic.remove();
             
@@ -685,6 +691,7 @@
             if (!cell.classList.contains('green')) return;
             
             if (removeMode) {
+                // Remove all elements from this specific cell only
                 cell.querySelectorAll('.unit, .omen-unit, .relic-container').forEach(el => el.remove());
                 return;
             }
@@ -744,9 +751,15 @@
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
             
-            // Apply shadows to the container before capturing
-            document.getElementById('grid-container').style.boxShadow = '0 0 20px rgba(0,0,0,0.7)';
+            // Temporarily enhance shadows for capture
+            document.querySelectorAll('.omen-image').forEach(img => {
+                img.style.filter = `drop-shadow(0 0 8px ${config.omenShadowColor})`;
+            });
             
+            document.querySelectorAll('.relic').forEach(relic => {
+                relic.style.filter = `drop-shadow(0 0 8px ${config.relicShadowColor})`;
+            });
+
             const options = {
                 useCORS: true,
                 scale: 2,
@@ -756,6 +769,12 @@
                 foreignObjectRendering: false,
                 onclone: function(clonedDoc) {
                     clonedDoc.getElementById('grid-container').style.boxShadow = '0 0 20px rgba(0,0,0,0.7)';
+                    clonedDoc.querySelectorAll('.omen-image').forEach(img => {
+                        img.style.filter = `drop-shadow(0 0 8px ${config.omenShadowColor})`;
+                    });
+                    clonedDoc.querySelectorAll('.relic').forEach(relic => {
+                        relic.style.filter = `drop-shadow(0 0 8px ${config.relicShadowColor})`;
+                    });
                 }
             };
 
@@ -765,10 +784,28 @@
                     generatedImage.src = generatedImageDataUrl;
                     outputSection.style.display = "block";
                     outputSection.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Restore original shadow settings
+                    document.querySelectorAll('.omen-image').forEach(img => {
+                        img.style.filter = `drop-shadow(0 0 5px ${config.omenShadowColor})`;
+                    });
+                    
+                    document.querySelectorAll('.relic').forEach(relic => {
+                        relic.style.filter = `drop-shadow(0 0 5px ${config.relicShadowColor})`;
+                    });
                 })
                 .catch(error => {
                     console.error("Error generating image:", error);
                     alert("Error generating image: " + error.message);
+                    
+                    // Restore original shadow settings in case of error
+                    document.querySelectorAll('.omen-image').forEach(img => {
+                        img.style.filter = `drop-shadow(0 0 5px ${config.omenShadowColor})`;
+                    });
+                    
+                    document.querySelectorAll('.relic').forEach(relic => {
+                        relic.style.filter = `drop-shadow(0 0 5px ${config.relicShadowColor})`;
+                    });
                 })
                 .finally(() => {
                     generateBtn.innerHTML = originalText;
@@ -814,10 +851,16 @@
         // Initialize color pickers
         document.getElementById('dotColor').addEventListener('input', function(e) {
             config.omenShadowColor = e.target.value;
+            document.querySelectorAll('.omen-image').forEach(img => {
+                img.style.filter = `drop-shadow(0 0 5px ${config.omenShadowColor})`;
+            });
         });
         
         document.getElementById('relicColor').addEventListener('input', function(e) {
             config.relicShadowColor = e.target.value;
+            document.querySelectorAll('.relic').forEach(relic => {
+                relic.style.filter = `drop-shadow(0 0 5px ${config.relicShadowColor})`;
+            });
         });
 
         preloadImages();
