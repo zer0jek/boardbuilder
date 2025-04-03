@@ -1,69 +1,103 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Board Creator - Default</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #4CAF50;
-            color: white;
-            padding: 8px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .top-bar-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .top-bar a {
-            text-decoration: none;
-        }
-        .top-bar button {
-            background-color: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        .top-bar button:hover {
-            background-color: rgba(255,255,255,0.3);
-        }
-        .top-bar h1 {
-            margin: 0;
-            font-size: 1.3rem;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-
         body {
             font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
-            padding: 70px 15px 15px;
-            background-color: white;
+            padding: 80px 10px 20px;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #1a1a1a;
+            color: white;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            border-bottom: 2px solid #d32f2f;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #d32f2f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 50%;
+        }
+
+        .top-bar-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .top-bar button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            white-space: nowrap;
+            min-width: 70px;
+        }
+
+        .top-bar button i {
+            margin-right: 3px;
+        }
+
+        .top-bar button:hover {
+            background-color: #d32f2f;
+        }
+
+        @media (max-width: 480px) {
+            .top-bar h1 {
+                font-size: 1rem;
+                max-width: 40%;
+            }
+            
+            .top-bar button {
+                padding: 6px;
+                font-size: 0;
+                min-width: auto;
+            }
+            
+            .top-bar button i {
+                margin-right: 0;
+                font-size: 14px;
+            }
         }
 
         .grid-container {
             position: relative;
             width: 350px;
             height: 250px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+            max-width: 100%;
         }
+
         .grid-background {
             position: absolute;
             width: 100%;
@@ -71,41 +105,48 @@
             background: url('default.png') no-repeat center center;
             background-size: cover;
             z-index: 1;
+            opacity: 0.8;
         }
+
         .grid {
             display: grid;
-            grid-template-columns: repeat(7, 50px);
-            grid-template-rows: repeat(5, 50px);
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(5, 1fr);
             position: relative;
-            width: 350px;
-            height: 250px;
+            width: 100%;
+            height: 100%;
             z-index: 2;
+            aspect-ratio: 7/5;
         }
+
         .cell {
-            width: 50px;
-            height: 50px;
             position: relative;
             box-sizing: border-box;
         }
+
         .cell.green {
             cursor: pointer;
         }
+
         .unit {
-            width: 40px;
-            height: 40px;
+            width: 80%;
+            height: 80%;
             position: absolute;
             cursor: move;
-            top: 5px;
-            left: 5px;
+            top: 10%;
+            left: 10%;
             z-index: 3;
             image-rendering: crisp-edges;
+            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
+
         .omen-unit {
             position: relative;
-            width: 40px;
-            height: 40px;
+            width: 80%;
+            height: 80%;
             z-index: 4;
         }
+
         .omen-image {
             width: 100%;
             height: 100%;
@@ -115,23 +156,26 @@
             top: 0;
             left: 0;
             z-index: 1;
+            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
+
         .omen-dot {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 20%;
+            height: 20%;
             border-radius: 50%;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2;
         }
+
         .relic {
             position: absolute;
-            width: 40px;
-            height: 40px;
-            top: 5px;
-            left: 5px;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -139,19 +183,24 @@
             border-radius: 0;
             image-rendering: crisp-edges;
             z-index: 2;
+            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
+
         .units-container, .shapes-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
             max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 10px auto;
+            padding: 15px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            width: 100%;
         }
+
         .unit-option, .shape-option {
             transition: transform 0.2s;
             cursor: pointer;
@@ -159,10 +208,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            flex: 1 0 60px;
+            max-width: 80px;
         }
+
         .unit-option:hover, .shape-option:hover {
             transform: scale(1.1);
         }
+
         .unit-option img, .shape-option img {
             width: 50px;
             height: 50px;
@@ -170,86 +223,268 @@
             border-radius: 5px;
             image-rendering: crisp-edges;
         }
+
         .unit-label {
             margin-top: 5px;
             font-size: 12px;
             font-weight: bold;
+            color: #b0b0b0;
+            word-break: break-word;
+            text-align: center;
+            width: 100%;
         }
+
         .selected {
-            border-color: #4CAF50 !important;
-            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6) !important;
+            border-color: #d32f2f !important;
+            box-shadow: 0 0 8px rgba(211, 47, 47, 0.6) !important;
         }
+
         .buttons {
             margin: 5px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
+            width: 100%;
+            max-width: 600px;
         }
+
         .buttons button {
             padding: 8px 12px;
             cursor: pointer;
-            background-color: #4CAF50;
+            background-color: #333;
             color: white;
             border: none;
             border-radius: 4px;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1 1 auto;
+            justify-content: center;
+            min-width: 120px;
+            box-sizing: border-box;
         }
+
         .buttons button:hover {
-            background-color: #45a049;
+            background-color: #d32f2f;
         }
+
         #removeModeBtn {
-            background-color: #e74c3c;
+            background-color: #5c2b2b;
         }
+
         #removeModeBtn:hover {
-            background-color: #c0392b;
+            background-color: #d32f2f;
         }
+
         .color-controls {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             margin-top: 10px;
+            background-color: #1e1e1e;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
         }
+
         .color-control {
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-width: 120px;
         }
-        #image-container {
-            display: none;
+
+        .color-control label {
+            margin-bottom: 5px;
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+
+        .output-section {
             margin-top: 20px;
             padding: 15px;
-            background-color: #f5f5f5;
+            background-color: #1e1e1e;
             border-radius: 8px;
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 600px;
+            display: none;
         }
+
+        .output-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #d32f2f;
+        }
+
+        .generated-image {
+            max-width: 100%;
+            border: 1px solid #333;
+            margin-bottom: 15px;
+        }
+
+        .share-link-container {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .share-link {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-family: monospace;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        .copy-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #d32f2f;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: 1px solid #333;
+            width: 50px;
+            height: 30px;
+            border-radius: 4px;
+            background: #121212;
+            cursor: pointer;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 2px;
+        }
+
+        .generate-btn {
+            margin: 15px 0;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .generate-btn:hover {
+            background-color: #d32f2f;
+        }
+
         footer {
             margin-top: 30px;
             color: #666;
             font-size: 14px;
+            padding: 0 15px;
+            text-align: center;
         }
-        .locked-color {
-            pointer-events: none;
+
+        @media (max-width: 600px) {
+            .grid-container {
+                width: 100%;
+                height: auto;
+            }
+            
+            .unit-option, .shape-option {
+                flex: 1 0 50px;
+                max-width: 70px;
+            }
+            
+            .unit-option img, .shape-option img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .buttons button {
+                min-width: 100px;
+                padding: 8px;
+                font-size: 13px;
+            }
+            
+            .generate-btn {
+                padding: 10px 15px;
+                font-size: 15px;
+            }
+        }
+
+        .stairs-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M5 3h14v2H5V3zm0 4h14v2H5V7zm0 4h14v2H5v-2zm0 4h14v2H5v-2zm0 4h14v2H5v-2z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
     <div class="top-bar">
-        <div class="top-bar-buttons">
-            <a href="tower.html"><button>Tower</button></a>
-            <a href="upload.html"><button>??</button></a>
-            <a href="test.html"><button>test</button></a>
-            <a href="https://discord.com" target="_blank"><button>Discord</button></a>
-            
-        </div>
         <h1>Board Creator</h1>
+        <div class="top-bar-buttons">
+            <a href="tower.html"><button>
+                <span class="stairs-icon"></span>
+                <span>Tower</span>
+            </button></a>
+            <a href="upload.html"><button><i class="fas fa-question"></i><span>??</span></button></a>
+            <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i><span>Discord</span></button></a>
+        </div>
     </div>
 
     <div class="buttons">
-        <button onclick="clearElements()">Clear All</button>
-        <button onclick="deselectAll()">Deselect All</button>
-        <button id="removeModeBtn" onclick="toggleRemoveMode()">Remove Mode: OFF</button>
-        <button onclick="saveAsImage()">Save as Image</button>
-        <button onclick="randomizePlacement()">Random Placement</button>
+        <button onclick="clearElements()"><i class="fas fa-trash-alt"></i> Clear</button>
+        <button onclick="deselectAll()"><i class="fas fa-times-circle"></i> Deselect</button>
+        <button id="removeModeBtn" onclick="toggleRemoveMode()"><i class="fas fa-eraser"></i> Remove Mode: OFF</button>
+        <button onclick="randomizePlacement()"><i class="fas fa-random"></i> Randomize</button>
     </div>
     
     <div class="color-controls">
@@ -279,10 +514,23 @@
         </div>
     </div>
     
-    <div id="image-container">
-        <h3>Generated Board</h3>
-        <img id="generated-image" src="" alt="Generated board image">
+    <button class="generate-btn" onclick="generateOutput()" id="generateBtn">
+        <i class="fas fa-magic"></i> Generate Image
+    </button>
+    
+    <div class="output-section" id="outputSection">
+        <h3>Your Generated Board</h3>
+        <img class="generated-image" id="generatedImage" src="" alt="Generated board image">
+        
+        <div class="share-link-container">
+            <input type="text" class="share-link" id="shareLink" readonly>
+            <button class="copy-btn" onclick="copyShareLink()">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+        </div>
     </div>
+    
+    <footer>Made By 0jek</footer>
     
     <script>
         const config = {
@@ -295,6 +543,10 @@
         const removeModeBtn = document.getElementById("removeModeBtn");
         const dotColorPicker = document.getElementById("dotColor");
         const relicColorPicker = document.getElementById("relicColor");
+        const outputSection = document.getElementById("outputSection");
+        const generatedImage = document.getElementById("generatedImage");
+        const shareLink = document.getElementById("shareLink");
+        const generateBtn = document.getElementById("generateBtn");
         
         let selectedUnit = null;
         let selectedShape = null;
@@ -363,6 +615,8 @@
         }
 
         function placeOmen(cell) {
+            if (!cell.classList.contains('green')) return;
+            
             const existingOmen = cell.querySelector('.omen-unit');
             if (existingOmen) existingOmen.remove();
             
@@ -383,6 +637,8 @@
         }
 
         function placeUnit(cell, unit) {
+            if (!cell.classList.contains('green')) return;
+            
             const existingUnit = cell.querySelector('.unit');
             if (existingUnit) existingUnit.remove();
             
@@ -394,6 +650,8 @@
         }
 
         function placeRelic(cell) {
+            if (!cell.classList.contains('green')) return;
+            
             const existingRelic = cell.querySelector('.relic');
             if (existingRelic) existingRelic.remove();
             
@@ -418,8 +676,9 @@
 
         function toggleRemoveMode() {
             removeMode = !removeMode;
-            removeModeBtn.textContent = removeMode ? "Remove Mode: ON" : "Remove Mode: OFF";
-            removeModeBtn.style.backgroundColor = removeMode ? "#c0392b" : "#e74c3c";
+            const btnText = removeMode ? "ON" : "OFF";
+            removeModeBtn.innerHTML = `<i class="fas fa-eraser"></i> Remove Mode: ${btnText}`;
+            removeModeBtn.style.backgroundColor = removeMode ? "#d32f2f" : "#5c2b2b";
             
             if (removeMode) {
                 selectedUnit = null;
@@ -454,6 +713,8 @@
 
         function placeElement(event) {
             const cell = event.currentTarget;
+            
+            if (!cell.classList.contains('green')) return;
             
             if (removeMode) {
                 cell.querySelectorAll('.unit, .omen-unit, .relic').forEach(el => el.remove());
@@ -510,7 +771,11 @@
             });
         }
 
-        function saveAsImage() {
+        function generateOutput() {
+            const originalText = generateBtn.textContent;
+            generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
+            generateBtn.disabled = true;
+            
             const options = {
                 useCORS: true,
                 scale: 2,
@@ -522,42 +787,75 @@
 
             html2canvas(document.getElementById("grid-container"), options)
                 .then(canvas => {
-                    const generatedImage = document.getElementById("generated-image");
-                    generatedImage.src = canvas.toDataURL("image/png");
-                    document.getElementById("image-container").style.display = "block";
-                    generatedImage.scrollIntoView({ behavior: 'smooth' });
+                    return canvas.toDataURL("image/png");
+                })
+                .then(dataUrl => {
+                    generatedImage.src = dataUrl;
+                    return fetch(dataUrl)
+                        .then(res => res.blob());
+                })
+                .then(blob => {
+                    const formData = new FormData();
+                    formData.append('image', blob);
+                    
+                    return fetch('https://api.imgur.com/3/image', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Client-ID 6a8a0d7a9a1e4a1'
+                        },
+                        body: formData
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.link) {
+                        shareLink.value = data.data.link;
+                        outputSection.style.display = "block";
+                        outputSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        throw new Error(data.data?.error || 'Failed to upload image');
+                    }
                 })
                 .catch(error => {
-                    console.error("Error generating image:", error);
-                    alert("Error generating image. Check console for details.");
+                    console.error("Error generating output:", error);
+                    alert("Error generating output: " + error.message);
+                })
+                .finally(() => {
+                    generateBtn.innerHTML = originalText;
+                    generateBtn.disabled = false;
                 });
         }
+        
+        function copyShareLink() {
+            shareLink.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
+        }
 
-        // Plansza 5x7 - wszystkie komórki klikalne
         const layout = [
-            ["green", "green", "green", "green", "green", "green", "green"],
-            ["green", "green", "green", "green", "green", "green", "green"],
-            ["green", "green", "green", "green", "green", "green", "green"],
-            ["green", "green", "green", "green", "green", "green", "green"],
-            ["green", "green", "green", "green", "green", "green", "green"]
+            ["path", "green", "green", "green", "green", "green", "brown"],
+            ["path", "path", "path", "green", "path", "path", "path"],
+            ["green", "green", "path", "green", "path", "green", "green"],
+            ["green", "green", "path", "green", "path", "green", "green"],
+            ["green", "green", "path", "path", "path", "green", "green"]
         ];
         
         layout.forEach((row, rowIndex) => {
             row.forEach((cellType, colIndex) => {
                 const cell = document.createElement("div");
-                cell.classList.add("cell", "green");
-                cell.addEventListener("click", placeElement);
+                cell.classList.add("cell", cellType);
+                if (cellType === "green") {
+                    cell.addEventListener("click", placeElement);
+                }
                 cell.dataset.row = rowIndex;
                 cell.dataset.col = colIndex;
                 grid.appendChild(cell);
             });
         });
 
-        // Inicjalizacja
         preloadImages();
         generateUnitSelection();
         
-        // Obsługa zmiany kolorów
         dotColorPicker.addEventListener("input", function() {
             currentDotColor = this.value;
             updateAllOmenDots();
@@ -568,6 +866,5 @@
             updateAllRelicBorders();
         });
     </script>
-    <footer>Made By 0jek</footer>
 </body>
 </html>
