@@ -3,985 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Board Creator - Default</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Game Board</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            padding: 80px 10px 20px;
         }
-
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #1a1a1a;
-            color: white;
-            padding: 8px 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            border-bottom: 2px solid #d32f2f;
-        }
-
-        .top-bar h1 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: #d32f2f;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 50%;
-        }
-
-        .top-bar-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .top-bar button {
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 6px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 12px;
-            white-space: nowrap;
-            min-width: 70px;
-        }
-
-        .top-bar button i {
-            margin-right: 3px;
-        }
-
-        .top-bar button:hover {
-            background-color: #d32f2f;
-        }
-
-        @media (max-width: 480px) {
-            .top-bar h1 {
-                font-size: 1rem;
-                max-width: 40%;
-            }
-            
-            .top-bar button {
-                padding: 6px;
-                font-size: 0;
-                min-width: auto;
-            }
-            
-            .top-bar button i {
-                margin-right: 0;
-                font-size: 14px;
-            }
-        }
-
-        .grid-container {
-            position: relative;
-            width: 350px;
-            height: 250px;
-            margin-bottom: 20px;
-            border: 2px solid #333;
-            max-width: 100%;
-        }
-
-        .grid-background {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: url('default.png') no-repeat center center;
-            background-size: cover;
-            z-index: 1;
-            opacity: 0.8;
-        }
-
-        .grid {
+        #gameBoard {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            grid-template-rows: repeat(5, 1fr);
+            grid-template-columns: repeat(7, 100px);
+            grid-template-rows: repeat(5, 100px);
+            background-image: url('default.png');
+            width: 700px;
+            height: 500px;
             position: relative;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            aspect-ratio: 7/5;
+            margin: 20px auto;
         }
-
-        .cell {
+        .square {
+            border: 1px solid #cccccc;
             position: relative;
-            box-sizing: border-box;
         }
-
-        .cell.green {
-            cursor: pointer;
-        }
-
         .unit {
             width: 80%;
             height: 80%;
             position: absolute;
-            cursor: move;
             top: 10%;
             left: 10%;
-            z-index: 3;
-            image-rendering: crisp-edges;
+            pointer-events: none;
         }
-
-        .omen-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            z-index: 4;
-        }
-
-        .omen-shadow {
-            position: absolute;
-            width: 80%;
-            height: 80%;
-            top: 10%;
-            left: 10%;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
-            z-index: 1;
-        }
-
-        .omen-unit {
-            position: absolute;
-            width: 80%;
-            height: 80%;
-            top: 10%;
-            left: 10%;
-            z-index: 2;
-        }
-
-        .omen-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            image-rendering: crisp-edges;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        .omen-dot {
-            position: absolute;
-            width: 20%;
-            height: 20%;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-        }
-
-        .relic-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            z-index: 4;
-        }
-
-        .relic-shadow {
-            position: absolute;
-            width: 80%;
-            height: 80%;
-            top: 10%;
-            left: 10%;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
-            z-index: 1;
-        }
-
-        .relic {
-            position: absolute;
-            width: 80%;
-            height: 80%;
-            top: 10%;
-            left: 10%;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border: 2px solid;
-            border-radius: 0;
-            image-rendering: crisp-edges;
-            z-index: 2;
-            background-image: url('relic.png');
-        }
-
-        .units-container, .shapes-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            max-width: 600px;
-            margin: 10px auto;
-            padding: 15px;
-            background-color: #1e1e1e;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            border: 1px solid #333;
-            width: 100%;
-        }
-
-        .unit-option, .shape-option {
-            transition: transform 0.2s;
-            cursor: pointer;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1 0 60px;
-            max-width: 80px;
-        }
-
-        .unit-option:hover, .shape-option:hover {
-            transform: scale(1.1);
-        }
-
-        .unit-option img, .shape-option img {
+        #unitSelection img {
             width: 50px;
-            height: 50px;
-            border: 2px solid transparent;
-            border-radius: 5px;
-            image-rendering: crisp-edges;
-        }
-
-        .unit-label {
-            margin-top: 5px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #b0b0b0;
-            word-break: break-word;
-            text-align: center;
-            width: 100%;
-        }
-
-        .selected {
-            border-color: #d32f2f !important;
-            box-shadow: 0 0 8px rgba(211, 47, 47, 0.6) !important;
-        }
-
-        .buttons {
+            cursor: pointer;
             margin: 5px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
-            max-width: 600px;
         }
-
-        .buttons button {
-            padding: 8px 12px;
-            cursor: pointer;
-            background-color: #333;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            transition: all 0.3s;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex: 1 1 auto;
-            justify-content: center;
-            min-width: 120px;
-            box-sizing: border-box;
+        #colorPicker, #shadowToggle {
+            margin: 20px;
         }
-
-        .buttons button:hover {
-            background-color: #d32f2f;
-        }
-
-        #removeModeBtn {
-            background-color: #5c2b2b;
-        }
-
-        #removeModeBtn:hover {
-            background-color: #d32f2f;
-        }
-
-        .color-controls {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-            background-color: #1e1e1e;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
-            max-width: 600px;
-        }
-
-        .color-control {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 120px;
-        }
-
-        .color-control label {
-            margin-bottom: 5px;
-            color: #b0b0b0;
-            font-size: 14px;
-        }
-
-        .output-section {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #1e1e1e;
-            border-radius: 8px;
-            border: 1px solid #333;
-            width: 100%;
-            max-width: 600px;
-            display: none;
-        }
-
-        .output-section h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #d32f2f;
-        }
-
-        .generated-image {
-            max-width: 100%;
-            border: 1px solid #333;
-            margin-bottom: 15px;
-        }
-
-        .share-link-container {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .share-link {
-            flex-grow: 1;
-            padding: 8px;
-            border: 1px solid #333;
-            border-radius: 4px;
-            font-family: monospace;
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-
-        .copy-btn {
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .copy-btn:hover {
-            background-color: #d32f2f;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #d32f2f;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: 1px solid #333;
-            width: 50px;
-            height: 30px;
-            border-radius: 4px;
-            background: #121212;
-            cursor: pointer;
-        }
-
-        input[type="color"]::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-
-        input[type="color"]::-webkit-color-swatch {
-            border: none;
-            border-radius: 2px;
-        }
-
-        .generate-btn {
-            margin: 15px 0;
-            padding: 10px 20px;
-            background-color: #333;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            max-width: 600px;
-        }
-
-        .generate-btn:hover {
-            background-color: #d32f2f;
-        }
-
-        footer {
-            margin-top: 30px;
-            color: #666;
-            font-size: 14px;
-            padding: 0 15px;
-            text-align: center;
-        }
-
-        .convert-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            justify-content: center;
-            width: 100%;
-            max-width: 600px;
-            flex-wrap: wrap;
-        }
-        
-        .convert-buttons button {
-            padding: 8px 12px;
-            background-color: #333;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex: 1 1 auto;
-            min-width: 200px;
-            justify-content: center;
-        }
-        
-        .convert-buttons button:hover {
-            background-color: #d32f2f;
-        }
-
-        @media (max-width: 600px) {
-            .grid-container {
-                width: 100%;
-                height: auto;
-            }
-            
-            .unit-option, .shape-option {
-                flex: 1 0 50px;
-                max-width: 70px;
-            }
-            
-            .unit-option img, .shape-option img {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .buttons button {
-                min-width: 100px;
-                padding: 8px;
-                font-size: 13px;
-            }
-            
-            .generate-btn {
-                padding: 10px 15px;
-                font-size: 15px;
-            }
-            
-            .convert-buttons button {
-                min-width: 150px;
-                font-size: 13px;
-            }
-        }
-
-        .castle-icon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M19 10V7h-2v3h-3v2h3v3h2v-3h3v-2h-3zM5 10V3h3v2H7v3H5zm0 9v-3h3v3H5zm5 0v-3h4v3h-4zm6 0v-3h3v3h-3zm-6-5h4v-2h-4v2z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: center;
-            margin-right: 5px;
+        #download {
+            margin: 20px;
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <h1>Board Creator</h1>
-        <div class="top-bar-buttons">
-            <a href="tower.html"><button><span class="castle-icon"></span><span>Tower</span></button></a>
-            <a href="test.html"><button><i class="fas fa-question"></i><span>??</span></button></a>
-            <a href="https://discord.com" target="_blank"><button><i class="fab fa-discord"></i><span>Discord</span></button></a>
-        </div>
-    </div>
 
-    <div class="buttons">
-        <button onclick="clearElements()"><i class="fas fa-trash-alt"></i> Clear</button>
-        <button onclick="deselectAll()"><i class="fas fa-times-circle"></i> Deselect</button>
-        <button id="removeModeBtn" onclick="toggleRemoveMode()"><i class="fas fa-eraser"></i> Remove Mode: OFF</button>
-        <button onclick="randomizePlacement()"><i class="fas fa-random"></i> Randomize</button>
-    </div>
-    
-    <div class="color-controls">
-        <div class="color-control">
-            <label for="dotColor">Omen Dot Color:</label>
-            <input type="color" id="dotColor" value="#000000">
-        </div>
-        <div class="color-control">
-            <label for="relicColor">Relic Border Color:</label>
-            <input type="color" id="relicColor" value="#000000">
-        </div>
-    </div>
-    
-    <div class="grid-container" id="grid-container">
-        <div class="grid-background"></div>
-        <div class="grid" id="grid"></div>
-    </div>
-    
-    <h2>Available Units</h2>
-    <div class="units-container" id="units-container"></div>
-    
-    <h2>Omen & Relic</h2>
-    <div class="shapes-container" id="shapes-container">
-        <div class="shape-option" onclick="selectShape('omen')">
-            <img src="omen.png" alt="Omen">
-            <p class="unit-label">Omen</p>
-        </div>
-        <div class="shape-option" onclick="selectShape('relic')">
-            <img src="relic.png" alt="Relic">
-            <p class="unit-label">Relic</p>
-        </div>
-    </div>
-    
-    <div class="convert-buttons">
-        <button onclick="convertOmenToRelic()"><i class="fas fa-exchange-alt"></i> Convert Omen to Relic</button>
-        <button onclick="convertRelicToOmen()"><i class="fas fa-exchange-alt"></i> Convert Relic to Omen</button>
-    </div>
-    
-    <button class="generate-btn" onclick="generateOutput()" id="generateBtn">
-        <i class="fas fa-magic"></i> Generate Image
-    </button>
-    
-    <div class="output-section" id="outputSection">
-        <h3>Your Generated Board</h3>
-        <img class="generated-image" id="generatedImage" src="" alt="Generated board image">
-        
-        <div class="share-link-container">
-            <input type="text" class="share-link" id="shareLink" readonly>
-            <button class="copy-btn" onclick="copyShareLink()">
-                <i class="fas fa-copy"></i> Copy
-            </button>
-        </div>
-    </div>
-    
-    <footer>Made By 0jek</footer>
-    
-    <script>
-        const config = {
-            omenCount: { min: 0, max: 18 }
-        };
+<h1>Game Board</h1>
 
-        const grid = document.getElementById("grid");
-        const unitsContainer = document.getElementById("units-container");
-        const shapesContainer = document.getElementById("shapes-container");
-        const removeModeBtn = document.getElementById("removeModeBtn");
-        const dotColorPicker = document.getElementById("dotColor");
-        const relicColorPicker = document.getElementById("relicColor");
-        const outputSection = document.getElementById("outputSection");
-        const generatedImage = document.getElementById("generatedImage");
-        const shareLink = document.getElementById("shareLink");
-        const generateBtn = document.getElementById("generateBtn");
-        
-        let selectedUnit = null;
-        let selectedShape = null;
-        let removeMode = false;
-        let currentDotColor = "#000000";
-        let currentRelicColor = "#000000";
+<div id="gameBoard"></div>
 
-        const unitNames = {
-            1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
-            6: "Blue Dragon", 7: "Big Hand", 8: "Space Soldier", 9: "Coin man", 10: "Cat",
-            11: "Witch", 12: "Mouse", 13: "Heli", 14: "Mimic", 15: "Duck",
-            16: "Clara", 17: "???", 18: "Nature Guardian", 19: "Destroyer", 20: "Gold Crow",
-            21: "Maniac", 22: "Draxar", 23: "Regik", 24: "Basilisk", 25: "???",
-            26: "???", 27: "???", 28: "???", 
-            'omen': "Omen"
-        };
+<div id="unitSelection"></div>
 
-        const availableUnits = [];
-        for (let i = 1; i <= 28; i++) {
-            availableUnits.push({
-                id: i,
-                src: `image${i}.png`,
-                name: unitNames[i] || `Unit ${i}`
-            });
+<label for="colorPicker">Choose Shadow Color:</label>
+<input type="color" id="colorPicker" value="#000000">
+<button id="shadowToggle">Toggle Shadow</button>
+<button id="clearUnits">Clear Units</button>
+<a id="download" href="#" download="gameBoard.png">Download Image</a>
+
+<script>
+    const gameBoard = document.getElementById('gameBoard');
+    const unitSelection = document.getElementById('unitSelection');
+    const downloadLink = document.getElementById('download');
+    const colorPicker = document.getElementById('colorPicker');
+    const shadowToggle = document.getElementById('shadowToggle');
+    const clearUnits = document.getElementById('clearUnits');
+    
+    let selectedUnitImage = '';
+    let shadowEnabled = false;
+    let shadowColor = '#000000';
+
+    // Generate unit images
+    for (let i = 0; i < 30; i++) {
+        const img = document.createElement('img');
+        img.src = `image${i}.png`;
+        img.id = `unit${i}`;
+        img.onclick = () => selectUnit(img.src);
+        unitSelection.appendChild(img);
+    }
+
+    // Create the game board squares
+    for (let i = 0; i < 35; i++) {
+        const square = document.createElement('div');
+        square.className = 'square';
+        square.onclick = () => placeUnit(square);
+        gameBoard.appendChild(square);
+    }
+
+    function selectUnit(src) {
+        selectedUnitImage = src;
+    }
+
+    function placeUnit(square) {
+        if (selectedUnitImage) {
+            const unit = document.createElement('img');
+            unit.src = selectedUnitImage;
+            unit.className = 'unit';
+            unit.style.filter = shadowEnabled ? `drop-shadow(0px 0px 10px ${shadowColor})` : 'none';
+            square.appendChild(unit);
         }
-        
-        availableUnits.push({
-            id: 'omen',
-            src: 'omen.png',
-            name: 'Omen'
+    }
+
+    shadowToggle.onclick = () => {
+        shadowEnabled = !shadowEnabled;
+        shadowToggle.innerText = shadowEnabled ? 'Disable Shadow' : 'Enable Shadow';
+    };
+
+    clearUnits.onclick = () => {
+        Array.from(document.querySelectorAll('.square')).forEach(square => {
+            while (square.firstChild) {
+                square.removeChild(square.firstChild);
+            }
         });
+    };
 
-        function preloadImages() {
-            const images = ['omen.png', 'relic.png', 'default.png', ...availableUnits.map(u => u.src)];
-            images.forEach(src => {
-                const img = new Image();
-                img.src = src;
-            });
-        }
-
-        function randomizePlacement() {
-            clearElements();
-            
-            const greenCells = Array.from(document.querySelectorAll('.cell.green'));
-            const shuffledCells = [...greenCells].sort(() => Math.random() - 0.5);
-            
-            const omenCount = Math.floor(Math.random() * (config.omenCount.max - config.omenCount.min + 1)) + config.omenCount.min;
-            
-            for (let i = 0; i < Math.min(omenCount, shuffledCells.length); i++) {
-                const cell = shuffledCells[i];
-                placeOmen(cell);
-            }
-            
-            for (let i = omenCount; i < shuffledCells.length; i++) {
-                const cell = shuffledCells[i];
-                const unitIndex = Math.floor(Math.random() * (availableUnits.length - 1));
-                const unit = availableUnits[unitIndex];
-                placeUnit(cell, unit);
-            }
-            
-            const allGreenCells = [...greenCells].sort(() => Math.random() - 0.5);
-            for (let i = 0; i < Math.min(omenCount, allGreenCells.length); i++) {
-                const cell = allGreenCells[i];
-                placeRelic(cell);
-            }
-        }
-
-        function placeOmen(cell) {
-            if (!cell.classList.contains('green')) return;
-            
-            const existingOmen = cell.querySelector('.omen-container');
-            if (existingOmen) existingOmen.remove();
-            
-            const omenContainer = document.createElement("div");
-            omenContainer.classList.add("omen-container");
-            
-            // Create shadow element
-            const shadowDiv = document.createElement("div");
-            shadowDiv.classList.add("omen-shadow");
-            
-            // Create omen image
-            const omenImg = new Image();
-            omenImg.src = 'omen.png';
-            omenImg.classList.add("omen-image");
-            
-            // Create omen unit container
-            const omenUnit = document.createElement("div");
-            omenUnit.classList.add("omen-unit");
-            omenUnit.appendChild(omenImg);
-            
-            // Create dot
-            const dot = document.createElement("div");
-            dot.classList.add("omen-dot", "locked-color");
-            dot.style.backgroundColor = currentDotColor;
-            omenUnit.appendChild(dot);
-            
-            omenContainer.appendChild(shadowDiv);
-            omenContainer.appendChild(omenUnit);
-            cell.appendChild(omenContainer);
-        }
-
-        function placeUnit(cell, unit) {
-            if (!cell.classList.contains('green')) return;
-            
-            const existingUnit = cell.querySelector('.unit');
-            if (existingUnit) existingUnit.remove();
-            
-            const img = document.createElement("img");
-            img.src = unit.src;
-            img.classList.add("unit");
-            img.style.imageRendering = "crisp-edges";
-            cell.appendChild(img);
-        }
-
-        function placeRelic(cell) {
-            if (!cell.classList.contains('green')) return;
-            
-            const existingRelic = cell.querySelector('.relic-container');
-            if (existingRelic) existingRelic.remove();
-            
-            const relicContainer = document.createElement("div");
-            relicContainer.classList.add("relic-container");
-            
-            // Create shadow element
-            const shadowDiv = document.createElement("div");
-            shadowDiv.classList.add("relic-shadow");
-            
-            // Create relic element
-            const relicDiv = document.createElement("div");
-            relicDiv.classList.add("relic", "locked-color");
-            relicDiv.style.borderColor = currentRelicColor;
-            
-            relicContainer.appendChild(shadowDiv);
-            relicContainer.appendChild(relicDiv);
-            cell.appendChild(relicContainer);
-        }
-
-        function convertOmenToRelic() {
-            document.querySelectorAll('.omen-container').forEach(omen => {
-                const cell = omen.parentElement;
-                omen.remove();
-                placeRelic(cell);
-            });
-        }
-        
-        function convertRelicToOmen() {
-            document.querySelectorAll('.relic-container').forEach(relic => {
-                const cell = relic.parentElement;
-                relic.remove();
-                placeOmen(cell);
-            });
-        }
-
-        function updateAllOmenDots() {
-            document.querySelectorAll('.omen-dot:not(.locked-color)').forEach(dot => {
-                dot.style.backgroundColor = currentDotColor;
-            });
-        }
-
-        function updateAllRelicBorders() {
-            document.querySelectorAll('.relic:not(.locked-color)').forEach(relic => {
-                relic.style.borderColor = currentRelicColor;
-            });
-        }
-
-        function toggleRemoveMode() {
-            removeMode = !removeMode;
-            const btnText = removeMode ? "ON" : "OFF";
-            removeModeBtn.innerHTML = `<i class="fas fa-eraser"></i> Remove Mode: ${btnText}`;
-            removeModeBtn.style.backgroundColor = removeMode ? "#d32f2f" : "#5c2b2b";
-            
-            if (removeMode) {
-                selectedUnit = null;
-                selectedShape = null;
-                document.querySelectorAll('.unit-option img, .shape-option').forEach(el => {
-                    el.classList.remove('selected');
-                });
-            }
-        }
-
-        function selectUnit(src, event) {
-            if (removeMode) toggleRemoveMode();
-            
-            document.querySelectorAll('.unit-option img, .shape-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-            selectedUnit = src;
-            selectedShape = null;
-            event.target.classList.add('selected');
-        }
-
-        function selectShape(type) {
-            if (removeMode) toggleRemoveMode();
-            
-            document.querySelectorAll('.shape-option, .unit-option img').forEach(el => {
-                el.classList.remove('selected');
-            });
-            selectedShape = type;
-            selectedUnit = null;
-            event.currentTarget.classList.add('selected');
-        }
-
-        function placeElement(event) {
-            const cell = event.currentTarget;
-            
-            if (!cell.classList.contains('green')) return;
-            
-            if (removeMode) {
-                cell.querySelectorAll('.unit, .omen-container, .relic-container').forEach(el => el.remove());
-                return;
-            }
-            
-            if (selectedUnit) {
-                const unit = availableUnits.find(u => u.src === selectedUnit);
-                if (unit) {
-                    if (unit.id === 'omen') {
-                        placeOmen(cell);
-                    } else {
-                        placeUnit(cell, unit);
-                    }
-                }
-            } 
-            else if (selectedShape) {
-                if (selectedShape === 'omen') {
-                    placeOmen(cell);
-                } else if (selectedShape === 'relic') {
-                    placeRelic(cell);
-                }
-            }
-        }
-
-        function deselectAll() {
-            selectedUnit = null;
-            selectedShape = null;
-            if (removeMode) toggleRemoveMode();
-            document.querySelectorAll('.unit-option img, .shape-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-        }
-
-        function clearElements() {
-            document.querySelectorAll(".unit, .omen-container, .relic-container").forEach(element => element.remove());
-        }
-
-        function generateUnitSelection() {
-            unitsContainer.innerHTML = '';
-            availableUnits.forEach((unit) => {
-                const unitOption = document.createElement("div");
-                unitOption.classList.add("unit-option");
-                
-                const img = document.createElement("img");
-                img.src = unit.src;
-                img.alt = unit.name;
-                img.title = unit.name;
-                img.addEventListener("click", (e) => selectUnit(unit.src, e));
-                
-                const label = document.createElement("p");
-                label.classList.add("unit-label");
-                label.textContent = unit.name;
-                
-                unitOption.appendChild(img);
-                unitOption.appendChild(label);
-                unitsContainer.appendChild(unitOption);
-            });
-        }
-
-        function generateOutput() {
-            const originalText = generateBtn.textContent;
-            generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
-            generateBtn.disabled = true;
-            
-            const options = {
-                useCORS: true,
-                scale: 2,
-                logging: true,
-                backgroundColor: null,
-                allowTaint: false,
-                foreignObjectRendering: false
-            };
-
-            html2canvas(document.getElementById("grid-container"), options)
-                .then(canvas => {
-                    return canvas.toDataURL("image/png");
-                })
-                .then(dataUrl => {
-                    generatedImage.src = dataUrl;
-                    return fetch(dataUrl)
-                        .then(res => res.blob());
-                })
-                .then(blob => {
-                    const formData = new FormData();
-                    formData.append('image', blob);
-                    
-                    return fetch('https://api.imgur.com/3/image', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Client-ID 6a8a0d7a9a1e4a1'
-                        },
-                        body: formData
-                    });
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data && data.data.link) {
-                        shareLink.value = data.data.link;
-                        outputSection.style.display = "block";
-                        outputSection.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        throw new Error(data.data?.error || 'Failed to upload image');
-                    }
-                })
-                .catch(error => {
-                    console.error("Error generating output:", error);
-                    alert("Error generating output: " + error.message);
-                })
-                .finally(() => {
-                    generateBtn.innerHTML = originalText;
-                    generateBtn.disabled = false;
-                });
-        }
-        
-        function copyShareLink() {
-            shareLink.select();
-            document.execCommand('copy');
-            alert('Link copied to clipboard!');
-        }
-
-        const layout = [
-            ["path", "green", "green", "green", "green", "green", "brown"],
-            ["path", "path", "path", "green", "path", "path", "path"],
-            ["green", "green", "path", "green", "path", "green", "green"],
-            ["green", "green", "path", "green", "path", "green", "green"],
-            ["green", "green", "path", "path", "path", "green", "green"]
-        ];
-        
-        layout.forEach((row, rowIndex) => {
-            row.forEach((cellType, colIndex) => {
-                const cell = document.createElement("div");
-                cell.classList.add("cell", cellType);
-                if (cellType === "green") {
-                    cell.addEventListener("click", placeElement);
-                }
-                cell.dataset.row = rowIndex;
-                cell.dataset.col = colIndex;
-                grid.appendChild(cell);
-            });
+    // Download image functionality
+    downloadLink.onclick = () => {
+        html2canvas(gameBoard).then(canvas => {
+            const dataURL = canvas.toDataURL('image/png');
+            downloadLink.href = dataURL;
+            // Show the generated image before downloading
+            const imgPreview = document.createElement('img');
+            imgPreview.src = dataURL;
+            imgPreview.style.width = '100%';
+            document.body.appendChild(imgPreview);
         });
+    };
 
-        preloadImages();
-        generateUnitSelection();
-        
-        dotColorPicker.addEventListener("input", function() {
-            currentDotColor = this.value;
-            updateAllOmenDots();
-        });
-        
-        relicColorPicker.addEventListener("input", function() {
-            currentRelicColor = this.value;
-            updateAllRelicBorders();
-        });
-    </script>
+    // Add color pick functionality
+    colorPicker.oninput = (event) => {
+        shadowColor = event.target.value;
+    };
+</script>
+
+<!-- Include html2canvas script for capturing the board -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 </body>
 </html>
