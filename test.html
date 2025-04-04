@@ -393,6 +393,15 @@
             background-position: center;
             margin-right: 5px;
         }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -471,6 +480,7 @@
         let selectedShape = null;
         let removeMode = false;
         let currentShadowColor = "#d32f2f";
+        let allImagesLoaded = false;
 
         const unitNames = {
             1: "Oni", 2: "Biker", 3: "Slime", 4: "Ice Knight", 5: "Asura",
@@ -499,9 +509,21 @@
 
         function preloadImages() {
             const images = ['omen.png', 'relic.png', 'default.png', ...availableUnits.map(u => u.src)];
+            let loadedCount = 0;
+            
             images.forEach(src => {
                 const img = new Image();
                 img.src = src;
+                img.onload = () => {
+                    loadedCount++;
+                    if (loadedCount === images.length) {
+                        allImagesLoaded = true;
+                    }
+                };
+                img.onerror = () => {
+                    console.error("Error loading image:", src);
+                    loadedCount++;
+                };
             });
         }
 
@@ -603,7 +625,7 @@
             event.target.classList.add('selected');
         }
 
-        function selectShape(type) {
+        function selectShape(type, event) {
             if (removeMode) toggleRemoveMode();
             
             document.querySelectorAll('.shape-option, .unit-option img').forEach(el => {
@@ -672,7 +694,12 @@
         }
 
         function generateOutput() {
-            const originalText = generateBtn.textContent;
+            if (!allImagesLoaded) {
+                alert('Please wait until all images are loaded');
+                return;
+            }
+
+            const originalText = generateBtn.innerHTML;
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
             
@@ -682,13 +709,16 @@
                 el.style.filter = `drop-shadow(0 0 4px ${color})`;
             });
 
+            // Force repaint to ensure shadows are applied
+            document.body.offsetHeight;
+
             const options = {
                 useCORS: true,
                 scale: 2,
                 logging: true,
                 backgroundColor: null,
                 allowTaint: false,
-                foreignObjectRendering: false,
+                foreignObjectRendering: true,
                 onclone: function(clonedDoc) {
                     // Ensure shadows are applied to the cloned elements
                     clonedDoc.querySelectorAll('.omen-image, .relic').forEach(el => {
@@ -698,20 +728,22 @@
                 }
             };
 
-            html2canvas(document.getElementById("grid-container"), options)
-                .then(canvas => {
-                    generatedImage.src = canvas.toDataURL("image/png");
-                    outputSection.style.display = "block";
-                    outputSection.scrollIntoView({ behavior: 'smooth' });
-                })
-                .catch(error => {
-                    console.error("Error generating output:", error);
-                    alert("Error generating output: " + error.message);
-                })
-                .finally(() => {
-                    generateBtn.innerHTML = originalText;
-                    generateBtn.disabled = false;
-                });
+            setTimeout(() => {
+                html2canvas(document.getElementById("grid-container"), options)
+                    .then(canvas => {
+                        generatedImage.src = canvas.toDataURL("image/png");
+                        outputSection.style.display = "block";
+                        outputSection.scrollIntoView({ behavior: 'smooth' });
+                    })
+                    .catch(error => {
+                        console.error("Error generating output:", error);
+                        alert("Error generating output: " + error.message);
+                    })
+                    .finally(() => {
+                        generateBtn.innerHTML = originalText;
+                        generateBtn.disabled = false;
+                    });
+            }, 100);
         }
 
         const layout = [
@@ -738,7 +770,19 @@
         // Initialize shadow color picker
         shadowColorPicker.addEventListener("input", function() {
             currentShadowColor = this.value;
-            // Color changes only affect new elements
+            // Update shadows for existing elements
+            document.querySelectorAll('.omen-image, .relic').forEach(el => {
+                el.dataset.shadowColor = currentShadowColor;
+                el.style.filter = `drop-shadow(0 0 4px ${currentShadowColor})`;
+            });
+        });
+
+        // Update shape-option click handlers
+        document.querySelectorAll('.shape-option').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const type = el.querySelector('img').alt.toLowerCase();
+                selectShape(type, e);
+            });
         });
 
         preloadImages();
