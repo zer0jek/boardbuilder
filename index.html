@@ -45,6 +45,7 @@
             box-shadow: 0 2px 10px var(--shadow-color);
             width: 100%;
             overflow: hidden;
+            position: relative;
         }
         
         #gameBoard {
@@ -73,6 +74,22 @@
             left: 10%;
             pointer-events: none;
             object-fit: contain;
+        }
+        
+        .unit-stack {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            bottom: 5px;
+            right: 5px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            z-index: 10;
         }
         
         #controls {
@@ -149,6 +166,14 @@
             background-color: #d32f2f;
         }
         
+        button.delete-mode {
+            background-color: #ff9800;
+        }
+        
+        button.delete-mode:hover {
+            background-color: #e68a00;
+        }
+        
         label {
             display: block;
             margin: 10px 0 5px;
@@ -219,6 +244,26 @@
             gap: 5px;
         }
         
+        #baseImageContainer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #baseImagePreview {
+            max-width: 100%;
+            max-height: 100px;
+            margin-top: 10px;
+            display: none;
+        }
+        
         @media (min-width: 768px) {
             .container {
                 flex-direction: row;
@@ -265,6 +310,11 @@
 <div class="container">
     <div id="gameBoardContainer">
         <div id="gameBoard"></div>
+        <div id="baseImageContainer">
+            <label for="baseImageUpload">Base Image (optional):</label>
+            <input type="file" id="baseImageUpload" accept="image/*">
+            <img id="baseImagePreview" alt="Base image preview">
+        </div>
     </div>
     
     <div id="controls">
@@ -283,7 +333,7 @@
             <div id="unitSelection"></div>
             <div class="button-group">
                 <button id="clearUnits" class="secondary">Clear All Units</button>
-                <button id="toggleLayer">Place Behind</button>
+                <button id="toggleDeleteMode" class="tertiary">Delete Mode: OFF</button>
             </div>
         </div>
         
@@ -318,18 +368,21 @@
     const colorPicker = document.getElementById('colorPicker');
     const shadowToggle = document.getElementById('shadowToggle');
     const clearUnits = document.getElementById('clearUnits');
-    const toggleLayer = document.getElementById('toggleLayer');
+    const toggleDeleteMode = document.getElementById('toggleDeleteMode');
     const downloadBtn = document.getElementById('download');
     const previewContainer = document.getElementById('previewContainer');
     const previewImage = document.getElementById('previewImage');
     const closePreview = document.getElementById('closePreview');
     const statusDiv = document.getElementById('status');
+    const baseImageUpload = document.getElementById('baseImageUpload');
+    const baseImagePreview = document.getElementById('baseImagePreview');
     
     let selectedUnitImage = '';
     let shadowEnabled = false;
     let shadowColor = '#000000';
     let currentBackground = 'default.png';
-    let placeBehind = false;
+    let deleteMode = false;
+    let baseImage = null;
 
     // Initialize the game board squares
     function initBoard() {
@@ -339,7 +392,7 @@
         for (let i = 0; i < 35; i++) {
             const square = document.createElement('div');
             square.className = 'square';
-            square.onclick = () => placeUnit(square);
+            square.onclick = () => handleSquareClick(square);
             gameBoard.appendChild(square);
         }
     }
@@ -354,6 +407,9 @@
             img.alt = `Unit ${i}`;
             img.id = `unit${i}`;
             img.onclick = () => selectUnit(img);
+            img.onerror = function() {
+                this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><rect width="50" height="50" fill="%23f0f0f0"/><text x="25" y="25" font-family="Arial" font-size="10" text-anchor="middle" fill="%23999">Unit ' + (i+1) + '</text></svg>';
+            };
             unitSelection.appendChild(img);
         }
     }
@@ -367,15 +423,28 @@
         // Select clicked unit
         imgElement.classList.add('selected');
         selectedUnitImage = imgElement.src;
+        
+        // Exit delete mode when selecting a unit
+        if (deleteMode) {
+            toggleDeleteMode.click();
+        }
+    }
+
+    function handleSquareClick(square) {
+        if (deleteMode) {
+            // Delete the last unit in this square
+            const units = square.querySelectorAll('.unit');
+            if (units.length > 0) {
+                units[units.length - 1].remove();
+                updateStackCounters();
+            }
+        } else if (selectedUnitImage) {
+            placeUnit(square);
+        }
     }
 
     function placeUnit(square) {
         if (selectedUnitImage) {
-            // Clear any existing unit in this square
-            while (square.firstChild) {
-                square.removeChild(square.firstChild);
-            }
-            
             const unit = document.createElement('img');
             unit.src = selectedUnitImage;
             unit.className = 'unit';
@@ -387,12 +456,25 @@
                 unit.dataset.shadow = shadowColor; // Store shadow color
             }
             
-            // Set z-index based on layer selection
-            unit.style.zIndex = placeBehind ? '0' : '1';
-            unit.dataset.layer = placeBehind ? 'back' : 'front';
-            
             square.appendChild(unit);
+            updateStackCounters();
         }
+    }
+
+    function updateStackCounters() {
+        // Remove all existing stack counters
+        document.querySelectorAll('.unit-stack').forEach(el => el.remove());
+        
+        // Count units in each square and add counters
+        document.querySelectorAll('.square').forEach(square => {
+            const units = square.querySelectorAll('.unit');
+            if (units.length > 1) {
+                const counter = document.createElement('div');
+                counter.className = 'unit-stack';
+                counter.textContent = units.length;
+                square.appendChild(counter);
+            }
+        });
     }
 
     function changeBackground(src) {
@@ -411,9 +493,18 @@
         shadowToggle.innerText = shadowEnabled ? 'Disable Shadow' : 'Enable Shadow';
     };
 
-    toggleLayer.onclick = () => {
-        placeBehind = !placeBehind;
-        toggleLayer.innerText = placeBehind ? 'Place in Front' : 'Place Behind';
+    toggleDeleteMode.onclick = () => {
+        deleteMode = !deleteMode;
+        toggleDeleteMode.innerText = `Delete Mode: ${deleteMode ? 'ON' : 'OFF'}`;
+        toggleDeleteMode.classList.toggle('delete-mode', deleteMode);
+        
+        // Deselect any selected unit when entering delete mode
+        if (deleteMode) {
+            Array.from(document.querySelectorAll('#unitSelection img')).forEach(img => {
+                img.classList.remove('selected');
+            });
+            selectedUnitImage = '';
+        }
     };
 
     clearUnits.onclick = () => {
@@ -428,33 +519,73 @@
         shadowColor = event.target.value;
     };
 
+    baseImageUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                baseImage = event.target.result;
+                baseImagePreview.src = baseImage;
+                baseImagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
     // Download image functionality
     downloadBtn.onclick = async () => {
         statusDiv.textContent = 'Generating image...';
         statusDiv.style.color = '#333';
         
         try {
-            // Load html2canvas dynamically
-            const html2canvas = await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+            // Load html2canvas from CDN
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            document.head.appendChild(script);
+            
+            await new Promise((resolve, reject) => {
+                script.onload = resolve;
+                script.onerror = reject;
+            });
             
             // Create a temporary container to capture
             const tempContainer = document.createElement('div');
-            document.body.appendChild(tempContainer);
-            tempContainer.style.position = 'fixed';
-            tempContainer.style.left = '0';
-            tempContainer.style.top = '0';
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
             tempContainer.style.width = '700px';
             tempContainer.style.height = '500px';
-            tempContainer.style.overflow = 'hidden';
+            document.body.appendChild(tempContainer);
             
-            // Create a new canvas-sized div with background
+            // Create canvas div with background
             const canvasDiv = document.createElement('div');
             canvasDiv.style.width = '700px';
             canvasDiv.style.height = '500px';
             canvasDiv.style.position = 'relative';
-            canvasDiv.style.backgroundImage = gameBoard.style.backgroundImage;
             canvasDiv.style.backgroundSize = 'cover';
-            tempContainer.appendChild(canvasDiv);
+            
+            // Add base image if exists
+            if (baseImage) {
+                const baseImg = document.createElement('img');
+                baseImg.src = baseImage;
+                baseImg.style.width = '100%';
+                baseImg.style.height = '100%';
+                baseImg.style.objectFit = 'cover';
+                baseImg.style.position = 'absolute';
+                baseImg.style.top = '0';
+                baseImg.style.left = '0';
+                canvasDiv.appendChild(baseImg);
+            }
+            
+            // Add game board background
+            const bgDiv = document.createElement('div');
+            bgDiv.style.width = '100%';
+            bgDiv.style.height = '100%';
+            bgDiv.style.position = 'absolute';
+            bgDiv.style.top = '0';
+            bgDiv.style.left = '0';
+            bgDiv.style.backgroundImage = gameBoard.style.backgroundImage;
+            bgDiv.style.backgroundSize = 'cover';
+            canvasDiv.appendChild(bgDiv);
             
             // Calculate square size
             const squareWidth = 700 / 7;
@@ -482,14 +613,13 @@
                     unitClone.style.filter = `drop-shadow(0px 0px 10px ${unit.dataset.shadow})`;
                 }
                 
-                // Apply layer
-                unitClone.style.zIndex = unit.dataset.layer === 'back' ? '0' : '1';
-                
                 canvasDiv.appendChild(unitClone);
             });
             
-            // Use html2canvas to capture the canvasDiv
-            html2canvas.default(canvasDiv, {
+            tempContainer.appendChild(canvasDiv);
+            
+            // Use html2canvas to capture
+            html2canvas(canvasDiv, {
                 backgroundColor: null,
                 scale: 2,
                 logging: false,
@@ -497,6 +627,8 @@
                 allowTaint: true
             }).then(canvas => {
                 document.body.removeChild(tempContainer);
+                document.head.removeChild(script);
+                
                 const dataURL = canvas.toDataURL('image/png');
                 
                 // Show preview
@@ -518,6 +650,7 @@
                 statusDiv.textContent = 'Error generating image.';
                 statusDiv.style.color = 'red';
                 document.body.removeChild(tempContainer);
+                document.head.removeChild(script);
             });
         } catch (err) {
             console.error('Error loading html2canvas:', err);
