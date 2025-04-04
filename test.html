@@ -77,6 +77,21 @@
             border-radius: 4px;
         }
         
+        .unit-stack {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            bottom: 5px;
+            right: 5px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        
         #controls {
             background-color: white;
             padding: 15px;
@@ -150,6 +165,14 @@
         
         button.secondary:hover {
             background-color: #d32f2f;
+        }
+        
+        button.tertiary {
+            background-color: #2196F3;
+        }
+        
+        button.tertiary:hover {
+            background-color: #0b7dda;
         }
         
         label {
@@ -293,6 +316,7 @@
             <div id="unitSelection"></div>
             <div class="button-group">
                 <button id="clearUnits" class="secondary">Clear All Units</button>
+                <button id="toggleStacking" class="tertiary">Disable Stacking</button>
             </div>
         </div>
         
@@ -327,6 +351,7 @@
     const colorPicker = document.getElementById('colorPicker');
     const shadowToggle = document.getElementById('shadowToggle');
     const clearUnits = document.getElementById('clearUnits');
+    const toggleStacking = document.getElementById('toggleStacking');
     const downloadBtn = document.getElementById('download');
     const previewContainer = document.getElementById('previewContainer');
     const previewImage = document.getElementById('previewImage');
@@ -337,6 +362,7 @@
     let shadowEnabled = false;
     let shadowColor = '#000000';
     let currentBackground = '';
+    let stackingEnabled = true;
 
     // Initialize the game board squares
     function initBoard() {
@@ -381,9 +407,11 @@
 
     function placeUnit(square) {
         if (selectedUnitImage) {
-            // Clear any existing unit in this square
-            while (square.firstChild) {
-                square.removeChild(square.firstChild);
+            if (!stackingEnabled) {
+                // Clear any existing unit in this square if stacking is disabled
+                while (square.firstChild) {
+                    square.removeChild(square.firstChild);
+                }
             }
             
             const unit = document.createElement('img');
@@ -401,7 +429,26 @@
             }
             
             square.appendChild(unit);
+            
+            // Update stack counter
+            updateStackCounters();
         }
+    }
+
+    function updateStackCounters() {
+        // Remove all existing stack counters
+        document.querySelectorAll('.unit-stack').forEach(el => el.remove());
+        
+        // Count units in each square and add counters
+        document.querySelectorAll('.square').forEach(square => {
+            const units = square.querySelectorAll('.unit');
+            if (units.length > 1) {
+                const counter = document.createElement('div');
+                counter.className = 'unit-stack';
+                counter.textContent = units.length;
+                square.appendChild(counter);
+            }
+        });
     }
 
     function changeBackground(src) {
@@ -430,6 +477,15 @@
         shadowToggle.innerText = shadowEnabled ? 'Disable Shadow' : 'Enable Shadow';
     };
 
+    toggleStacking.onclick = () => {
+        stackingEnabled = !stackingEnabled;
+        toggleStacking.innerText = stackingEnabled ? 'Disable Stacking' : 'Enable Stacking';
+        toggleStacking.className = stackingEnabled ? 'tertiary' : 'secondary';
+        
+        // Update counters when toggling stacking
+        updateStackCounters();
+    };
+
     clearUnits.onclick = () => {
         Array.from(document.querySelectorAll('.square')).forEach(square => {
             while (square.firstChild) {
@@ -448,8 +504,15 @@
         statusDiv.style.color = '#333';
         
         try {
-            // Load html2canvas dynamically
-            const html2canvas = await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+            // Load html2canvas from CDN
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            document.head.appendChild(script);
+            
+            await new Promise((resolve, reject) => {
+                script.onload = resolve;
+                script.onerror = reject;
+            });
             
             // Create a temporary container to capture
             const tempContainer = document.createElement('div');
@@ -484,18 +547,23 @@
                 bgImg.src = currentBackground;
             }
             
-            html2canvas.default(clone, {
+            // Hide stack counters for the screenshot
+            clone.querySelectorAll('.unit-stack').forEach(el => el.style.display = 'none');
+            
+            // Use html2canvas directly (not .default)
+            html2canvas(clone, {
                 backgroundColor: '#ffffff',
                 scale: 2, // Higher quality
                 logging: false,
                 useCORS: true,
                 allowTaint: true,
                 ignoreElements: (element) => {
-                    // Ignore elements with error placeholders if needed
                     return element.classList.contains('error-placeholder');
                 }
             }).then(canvas => {
                 document.body.removeChild(tempContainer);
+                document.head.removeChild(script);
+                
                 const dataURL = canvas.toDataURL('image/png');
                 
                 // Show preview
@@ -517,6 +585,7 @@
                 statusDiv.textContent = 'Error generating image.';
                 statusDiv.style.color = 'red';
                 document.body.removeChild(tempContainer);
+                document.head.removeChild(script);
             });
         } catch (err) {
             console.error('Error loading html2canvas:', err);
