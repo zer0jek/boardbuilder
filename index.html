@@ -137,14 +137,32 @@
             left: 10%;
             z-index: 3;
             image-rendering: crisp-edges;
+        }
+
+        .omen-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+        }
+
+        .omen-shadow {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
             filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
+            z-index: 1;
         }
 
         .omen-unit {
-            position: relative;
+            position: absolute;
             width: 80%;
             height: 80%;
-            z-index: 4;
+            top: 10%;
+            left: 10%;
+            z-index: 2;
         }
 
         .omen-image {
@@ -156,7 +174,6 @@
             top: 0;
             left: 0;
             z-index: 1;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
         }
 
         .omen-dot {
@@ -168,6 +185,23 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2;
+        }
+
+        .relic-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+        }
+
+        .relic-shadow {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
+            z-index: 1;
         }
 
         .relic {
@@ -183,7 +217,7 @@
             border-radius: 0;
             image-rendering: crisp-edges;
             z-index: 2;
-            filter: drop-shadow(0 0 2px rgba(211, 47, 47, 0.7));
+            background-image: url('relic.png');
         }
 
         .units-container, .shapes-container {
@@ -614,22 +648,34 @@
         function placeOmen(cell) {
             if (!cell.classList.contains('green')) return;
             
-            const existingOmen = cell.querySelector('.omen-unit');
+            const existingOmen = cell.querySelector('.omen-container');
             if (existingOmen) existingOmen.remove();
             
             const omenContainer = document.createElement("div");
-            omenContainer.classList.add("omen-unit");
+            omenContainer.classList.add("omen-container");
             
+            // Create shadow element
+            const shadowDiv = document.createElement("div");
+            shadowDiv.classList.add("omen-shadow");
+            
+            // Create omen image
             const omenImg = new Image();
             omenImg.src = 'omen.png';
             omenImg.classList.add("omen-image");
             
+            // Create omen unit container
+            const omenUnit = document.createElement("div");
+            omenUnit.classList.add("omen-unit");
+            omenUnit.appendChild(omenImg);
+            
+            // Create dot
             const dot = document.createElement("div");
             dot.classList.add("omen-dot", "locked-color");
             dot.style.backgroundColor = currentDotColor;
+            omenUnit.appendChild(dot);
             
-            omenContainer.appendChild(omenImg);
-            omenContainer.appendChild(dot);
+            omenContainer.appendChild(shadowDiv);
+            omenContainer.appendChild(omenUnit);
             cell.appendChild(omenContainer);
         }
 
@@ -649,14 +695,24 @@
         function placeRelic(cell) {
             if (!cell.classList.contains('green')) return;
             
-            const existingRelic = cell.querySelector('.relic');
+            const existingRelic = cell.querySelector('.relic-container');
             if (existingRelic) existingRelic.remove();
             
+            const relicContainer = document.createElement("div");
+            relicContainer.classList.add("relic-container");
+            
+            // Create shadow element
+            const shadowDiv = document.createElement("div");
+            shadowDiv.classList.add("relic-shadow");
+            
+            // Create relic element
             const relicDiv = document.createElement("div");
             relicDiv.classList.add("relic", "locked-color");
             relicDiv.style.borderColor = currentRelicColor;
-            relicDiv.style.backgroundImage = "url('relic.png')";
-            cell.appendChild(relicDiv);
+            
+            relicContainer.appendChild(shadowDiv);
+            relicContainer.appendChild(relicDiv);
+            cell.appendChild(relicContainer);
         }
 
         function updateAllOmenDots() {
@@ -714,7 +770,7 @@
             if (!cell.classList.contains('green')) return;
             
             if (removeMode) {
-                cell.querySelectorAll('.unit, .omen-unit, .relic').forEach(el => el.remove());
+                cell.querySelectorAll('.unit, .omen-container, .relic-container').forEach(el => el.remove());
                 return;
             }
             
@@ -743,7 +799,7 @@
         }
 
         function clearElements() {
-            document.querySelectorAll(".unit, .omen-unit, .relic").forEach(element => element.remove());
+            document.querySelectorAll(".unit, .omen-container, .relic-container").forEach(element => element.remove());
         }
 
         function generateUnitSelection() {
