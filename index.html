@@ -75,22 +75,6 @@
             object-fit: contain;
         }
         
-        .unit-stack {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            bottom: 5px;
-            right: 5px;
-            background-color: rgba(0,0,0,0.7);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            z-index: 10;
-        }
-        
         #controls {
             background-color: white;
             padding: 15px;
@@ -407,7 +391,6 @@
             const units = square.querySelectorAll('.unit');
             if (units.length > 0) {
                 units[units.length - 1].remove();
-                updateStackCounters();
             }
         } else if (selectedUnitImage) {
             placeUnit(square);
@@ -421,31 +404,13 @@
             unit.className = 'unit';
             unit.alt = 'Placed unit';
             
-            // Apply shadow with current settings (locked at placement time)
+            // Apply shadow with current settings (only visible in editor)
             if (shadowEnabled) {
                 unit.style.filter = `drop-shadow(0px 0px 10px ${shadowColor})`;
-                unit.dataset.shadow = shadowColor; // Store shadow color
             }
             
             square.appendChild(unit);
-            updateStackCounters();
         }
-    }
-
-    function updateStackCounters() {
-        // Remove all existing stack counters
-        document.querySelectorAll('.unit-stack').forEach(el => el.remove());
-        
-        // Count units in each square and add counters
-        document.querySelectorAll('.square').forEach(square => {
-            const units = square.querySelectorAll('.unit');
-            if (units.length > 1) {
-                const counter = document.createElement('div');
-                counter.className = 'unit-stack';
-                counter.textContent = units.length;
-                square.appendChild(counter);
-            }
-        });
     }
 
     function changeBackground(src) {
@@ -462,6 +427,15 @@
     shadowToggle.onclick = () => {
         shadowEnabled = !shadowEnabled;
         shadowToggle.innerText = shadowEnabled ? 'Disable Shadow' : 'Enable Shadow';
+        
+        // Update shadows on existing units
+        document.querySelectorAll('.unit').forEach(unit => {
+            if (shadowEnabled) {
+                unit.style.filter = `drop-shadow(0px 0px 10px ${shadowColor})`;
+            } else {
+                unit.style.filter = 'none';
+            }
+        });
     };
 
     toggleDeleteMode.onclick = () => {
@@ -488,6 +462,13 @@
 
     colorPicker.oninput = (event) => {
         shadowColor = event.target.value;
+        
+        // Update shadows on existing units if shadow is enabled
+        if (shadowEnabled) {
+            document.querySelectorAll('.unit').forEach(unit => {
+                unit.style.filter = `drop-shadow(0px 0px 10px ${shadowColor})`;
+            });
+        }
     };
 
     // Download image functionality
@@ -526,7 +507,7 @@
             const squareWidth = 700 / 7;
             const squareHeight = 500 / 5;
             
-            // Clone all units with their positions and effects
+            // Clone all units with their positions (without shadows)
             const units = gameBoard.querySelectorAll('.unit');
             units.forEach(unit => {
                 const unitClone = document.createElement('img');
@@ -543,10 +524,8 @@
                 unitClone.style.left = `${col * squareWidth + squareWidth * 0.1}px`;
                 unitClone.style.top = `${row * squareHeight + squareHeight * 0.1}px`;
                 
-                // Apply shadow if exists
-                if (unit.dataset.shadow) {
-                    unitClone.style.filter = `drop-shadow(0px 0px 10px ${unit.dataset.shadow})`;
-                }
+                // Explicitly remove any shadow effects
+                unitClone.style.filter = 'none';
                 
                 canvasDiv.appendChild(unitClone);
             });
