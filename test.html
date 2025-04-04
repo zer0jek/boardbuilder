@@ -3,24 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Board</title>
+    <title>Game Board Editor</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        #gameBoardContainer {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         #gameBoard {
             display: grid;
             grid-template-columns: repeat(7, 100px);
             grid-template-rows: repeat(5, 100px);
-            background-image: url('default.png');
             width: 700px;
             height: 500px;
             position: relative;
-            margin: 20px auto;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #333;
+            box-sizing: content-box;
         }
         .square {
-            border: 1px solid #cccccc;
+            border: 1px solid rgba(0,0,0,0.2);
             position: relative;
+            box-sizing: border-box;
         }
         .unit {
             width: 80%;
@@ -29,70 +52,239 @@
             top: 10%;
             left: 10%;
             pointer-events: none;
+            object-fit: contain;
+        }
+        #controls {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        .control-group {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .control-group h3 {
+            margin-top: 0;
+            color: #444;
+        }
+        #unitSelection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px;
         }
         #unitSelection img {
             width: 50px;
+            height: 50px;
             cursor: pointer;
-            margin: 5px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            object-fit: contain;
+            background-color: #f0f0f0;
+            border-radius: 4px;
         }
-        #colorPicker, #shadowToggle {
-            margin: 20px;
+        #unitSelection img:hover, #unitSelection img.selected {
+            border-color: #4CAF50;
+            transform: scale(1.05);
         }
-        #download {
-            margin: 20px;
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.secondary {
+            background-color: #f44336;
+        }
+        button.secondary:hover {
+            background-color: #d32f2f;
+        }
+        label {
             display: block;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            cursor: pointer;
+        }
+        #backgroundSelection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .bg-thumbnail {
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        .bg-thumbnail.selected {
+            border-color: #4CAF50;
+        }
+        #previewContainer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #previewImage {
+            max-width: 90%;
+            max-height: 90%;
+            border: 2px solid white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        #closePreview {
+            margin-top: 20px;
+            background-color: #f44336;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .status.success {
+            background-color: #dff0d8;
+            color: #3c763d;
         }
     </style>
 </head>
 <body>
 
-<h1>Game Board</h1>
+<h1>Game Board Editor</h1>
 
-<div id="gameBoard"></div>
+<div class="container">
+    <div id="gameBoardContainer">
+        <div id="gameBoard"></div>
+    </div>
+    
+    <div id="controls">
+        <div class="control-group">
+            <h3>Background</h3>
+            <div id="backgroundSelection">
+                <img src="default.png" class="bg-thumbnail selected" onclick="changeBackground(this.src)">
+                <img src="grass.png" class="bg-thumbnail" onclick="changeBackground(this.src)">
+                <img src="desert.png" class="bg-thumbnail" onclick="changeBackground(this.src)">
+                <img src="water.png" class="bg-thumbnail" onclick="changeBackground(this.src)">
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <h3>Units</h3>
+            <div id="unitSelection"></div>
+            <button id="clearUnits" class="secondary">Clear All Units</button>
+        </div>
+        
+        <div class="control-group">
+            <h3>Effects</h3>
+            <label for="colorPicker">Shadow Color:</label>
+            <input type="color" id="colorPicker" value="#000000">
+            <button id="shadowToggle">Enable Shadow</button>
+        </div>
+        
+        <div class="control-group">
+            <h3>Export</h3>
+            <button id="download">Generate & Download Image</button>
+            <div id="status" class="status"></div>
+        </div>
+    </div>
+</div>
 
-<div id="unitSelection"></div>
-
-<label for="colorPicker">Choose Shadow Color:</label>
-<input type="color" id="colorPicker" value="#000000">
-<button id="shadowToggle">Toggle Shadow</button>
-<button id="clearUnits">Clear Units</button>
-<a id="download" href="#" download="gameBoard.png">Download Image</a>
+<div id="previewContainer">
+    <img id="previewImage">
+    <button id="closePreview">Close Preview</button>
+</div>
 
 <script>
     const gameBoard = document.getElementById('gameBoard');
     const unitSelection = document.getElementById('unitSelection');
-    const downloadLink = document.getElementById('download');
+    const backgroundSelection = document.getElementById('backgroundSelection');
     const colorPicker = document.getElementById('colorPicker');
     const shadowToggle = document.getElementById('shadowToggle');
     const clearUnits = document.getElementById('clearUnits');
+    const downloadBtn = document.getElementById('download');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
+    const closePreview = document.getElementById('closePreview');
+    const statusDiv = document.getElementById('status');
     
     let selectedUnitImage = '';
     let shadowEnabled = false;
     let shadowColor = '#000000';
+    let currentBackground = 'default.png';
+
+    // Initialize the game board squares
+    function initBoard() {
+        gameBoard.innerHTML = '';
+        gameBoard.style.backgroundImage = `url('${currentBackground}')`;
+        
+        for (let i = 0; i < 35; i++) {
+            const square = document.createElement('div');
+            square.className = 'square';
+            square.onclick = () => placeUnit(square);
+            gameBoard.appendChild(square);
+        }
+    }
 
     // Generate unit images
-    for (let i = 0; i < 30; i++) {
-        const img = document.createElement('img');
-        img.src = `image${i}.png`;
-        img.id = `unit${i}`;
-        img.onclick = () => selectUnit(img.src);
-        unitSelection.appendChild(img);
+    function initUnits() {
+        unitSelection.innerHTML = '';
+        
+        for (let i = 0; i < 30; i++) {
+            const img = document.createElement('img');
+            img.src = `image${i}.png`;
+            img.id = `unit${i}`;
+            img.onclick = () => selectUnit(img);
+            unitSelection.appendChild(img);
+        }
     }
 
-    // Create the game board squares
-    for (let i = 0; i < 35; i++) {
-        const square = document.createElement('div');
-        square.className = 'square';
-        square.onclick = () => placeUnit(square);
-        gameBoard.appendChild(square);
-    }
-
-    function selectUnit(src) {
-        selectedUnitImage = src;
+    function selectUnit(imgElement) {
+        // Remove selection from all units
+        Array.from(document.querySelectorAll('#unitSelection img')).forEach(img => {
+            img.classList.remove('selected');
+        });
+        
+        // Select clicked unit
+        imgElement.classList.add('selected');
+        selectedUnitImage = imgElement.src;
     }
 
     function placeUnit(square) {
         if (selectedUnitImage) {
+            // Clear any existing unit in this square
+            while (square.firstChild) {
+                square.removeChild(square.firstChild);
+            }
+            
             const unit = document.createElement('img');
             unit.src = selectedUnitImage;
             unit.className = 'unit';
@@ -101,9 +293,25 @@
         }
     }
 
+    function changeBackground(src) {
+        currentBackground = src;
+        gameBoard.style.backgroundImage = `url('${currentBackground}')`;
+        
+        // Update thumbnail selection
+        Array.from(document.querySelectorAll('.bg-thumbnail')).forEach(img => {
+            img.classList.remove('selected');
+        });
+        event.target.classList.add('selected');
+    }
+
     shadowToggle.onclick = () => {
         shadowEnabled = !shadowEnabled;
         shadowToggle.innerText = shadowEnabled ? 'Disable Shadow' : 'Enable Shadow';
+        
+        // Update all existing units
+        Array.from(document.querySelectorAll('.unit')).forEach(unit => {
+            unit.style.filter = shadowEnabled ? `drop-shadow(0px 0px 10px ${shadowColor})` : 'none';
+        });
     };
 
     clearUnits.onclick = () => {
@@ -114,27 +322,73 @@
         });
     };
 
-    // Download image functionality
-    downloadLink.onclick = () => {
-        html2canvas(gameBoard).then(canvas => {
-            const dataURL = canvas.toDataURL('image/png');
-            downloadLink.href = dataURL;
-            // Show the generated image before downloading
-            const imgPreview = document.createElement('img');
-            imgPreview.src = dataURL;
-            imgPreview.style.width = '100%';
-            document.body.appendChild(imgPreview);
-        });
-    };
-
-    // Add color pick functionality
     colorPicker.oninput = (event) => {
         shadowColor = event.target.value;
+        
+        // Update all existing units if shadow is enabled
+        if (shadowEnabled) {
+            Array.from(document.querySelectorAll('.unit')).forEach(unit => {
+                unit.style.filter = `drop-shadow(0px 0px 10px ${shadowColor})`;
+            });
+        }
     };
-</script>
 
-<!-- Include html2canvas script for capturing the board -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    // Download image functionality
+    downloadBtn.onclick = async () => {
+        statusDiv.textContent = 'Generating image...';
+        statusDiv.className = 'status';
+        
+        try {
+            // Load html2canvas dynamically
+            const html2canvas = await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+            
+            // Add temporary class to ensure everything is visible
+            gameBoard.classList.add('capture-mode');
+            
+            html2canvas.default(gameBoard, {
+                backgroundColor: null,
+                scale: 1,
+                logging: false,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                // Remove temporary class
+                gameBoard.classList.remove('capture-mode');
+                
+                const dataURL = canvas.toDataURL('image/png');
+                previewImage.src = dataURL;
+                previewContainer.style.display = 'flex';
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.href = dataURL;
+                link.download = 'game-board.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                statusDiv.textContent = 'Image generated and downloaded successfully!';
+                statusDiv.className = 'status success';
+            }).catch(err => {
+                console.error('Error generating image:', err);
+                statusDiv.textContent = 'Error generating image. See console for details.';
+                statusDiv.className = 'status';
+            });
+        } catch (err) {
+            console.error('Error loading html2canvas:', err);
+            statusDiv.textContent = 'Error loading image generator. See console for details.';
+            statusDiv.className = 'status';
+        }
+    };
+
+    closePreview.onclick = () => {
+        previewContainer.style.display = 'none';
+    };
+
+    // Initialize the app
+    initBoard();
+    initUnits();
+</script>
 
 </body>
 </html>
