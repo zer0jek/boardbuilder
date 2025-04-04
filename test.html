@@ -298,6 +298,7 @@
             border: 1px solid #333;
             width: 100%;
             max-width: 600px;
+            display: none;
         }
 
         .generated-image {
@@ -538,11 +539,11 @@
             
             const omenContainer = document.createElement("div");
             omenContainer.classList.add("omen-unit");
-            omenContainer.dataset.shadowColor = currentShadowColor; // Store current color
             
             const omenImg = new Image();
             omenImg.src = 'omen.png';
             omenImg.classList.add("omen-image");
+            omenImg.dataset.shadowColor = currentShadowColor;
             omenImg.style.filter = `drop-shadow(0 0 4px ${currentShadowColor})`;
             
             omenContainer.appendChild(omenImg);
@@ -570,8 +571,8 @@
             
             const relicDiv = document.createElement("div");
             relicDiv.classList.add("relic");
-            relicDiv.dataset.shadowColor = currentShadowColor; // Store current color
             relicDiv.style.backgroundImage = "url('relic.png')";
+            relicDiv.dataset.shadowColor = currentShadowColor;
             relicDiv.style.filter = `drop-shadow(0 0 4px ${currentShadowColor})`;
             cell.appendChild(relicDiv);
         }
@@ -675,13 +676,26 @@
             generateBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Generating...';
             generateBtn.disabled = true;
             
+            // Apply shadows to all elements before capturing
+            document.querySelectorAll('.omen-image, .relic').forEach(el => {
+                const color = el.dataset.shadowColor || currentShadowColor;
+                el.style.filter = `drop-shadow(0 0 4px ${color})`;
+            });
+
             const options = {
                 useCORS: true,
                 scale: 2,
                 logging: true,
                 backgroundColor: null,
                 allowTaint: false,
-                foreignObjectRendering: false
+                foreignObjectRendering: false,
+                onclone: function(clonedDoc) {
+                    // Ensure shadows are applied to the cloned elements
+                    clonedDoc.querySelectorAll('.omen-image, .relic').forEach(el => {
+                        const color = el.dataset.shadowColor || currentShadowColor;
+                        el.style.filter = `drop-shadow(0 0 4px ${color})`;
+                    });
+                }
             };
 
             html2canvas(document.getElementById("grid-container"), options)
@@ -724,7 +738,7 @@
         // Initialize shadow color picker
         shadowColorPicker.addEventListener("input", function() {
             currentShadowColor = this.value;
-            // Shadow color changes will only affect new elements
+            // Color changes only affect new elements
         });
 
         preloadImages();
