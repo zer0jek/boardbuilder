@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edytor Planszy</title>
+    <title>Board Editor</title>
     <style>
-        body {
+       body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
@@ -34,45 +34,55 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 10px;
+            overflow: hidden; /* Dodane aby przyciąć tło */
         }
         
         .board {
             display: grid;
             position: relative;
             border: 1px solid #ddd;
-            z-index: 1;
+            z-index: 2; /* Wyżej niż tło */
             background-color: transparent;
         }
         
         .board-background {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 10px; /* Dopasowane do paddingu kontenera */
+            left: 10px; /* Dopasowane do paddingu kontenera */
+            width: calc(100% - 20px); /* Odejmujemy padding */
+            height: calc(100% - 20px); /* Odejmujemy padding */
             background-size: cover;
             background-position: center;
-            z-index: 0;
+            z-index: 1; /* Pod planszą */
+            border-radius: 4px;
         }
         
-        .unit {
+       .unit {
             position: absolute;
-            max-width: 60%;
-            max-height: 60%;
+            max-width: 80%; /* Zwiększone z 60% */
+            max-height: 80%; /* Zwiększone z 60% */
             object-fit: contain;
-            z-index: 2;
+            z-index: 3;
             image-rendering: crisp-edges;
             background-color: transparent;
             margin: auto;
             pointer-events: none;
         }
-        
-        .unit-image0 {
-            width: 80%;
-            height: 80%;
-            z-index: 1;
-            border: 2px solid;
-            background-color: transparent;
+
+        .unit-image17 {
+            position: relative;
+        }
+
+        .unit-image17::after {
+            content: "•";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px; /* Zwiększony rozmiar kropki */
+            color: inherit;
+            z-index: 4; /* Wyższy niż jednostka */
+            text-shadow: 0 0 3px white; /* Dodanie cienia dla lepszej widoczności */
         }
         
         .cell {
@@ -83,15 +93,7 @@
             overflow: visible;
         }
         
-        .unit-image17::after {
-            content: "•";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: inherit;
-        }
+        
         
         .controls-panel {
             background-color: white;
@@ -118,6 +120,9 @@
             margin-bottom: 10px;
             display: flex;
             align-items: center;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #666;
         }
         
         .section-title::before {
@@ -146,16 +151,19 @@
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
+            background-color: #f9f9f9;
         }
         
         .unit-option:hover {
             border-color: #4a90e2;
             transform: scale(1.05);
+            background-color: white;
         }
         
         .unit-option.selected {
             border-color: #4a90e2;
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+            background-color: white;
         }
         
         select, input[type="color"] {
@@ -165,6 +173,7 @@
             border-radius: 4px;
             margin-bottom: 10px;
             background-color: white;
+            font-size: 13px;
         }
         
         .checkbox-container {
@@ -175,6 +184,11 @@
         
         .checkbox-container input {
             margin-right: 8px;
+        }
+        
+        .checkbox-container label {
+            font-size: 13px;
+            color: #555;
         }
         
         .button-group {
@@ -193,6 +207,7 @@
             font-weight: bold;
             transition: background-color 0.2s;
             flex: 1;
+            font-size: 13px;
         }
         
         button:hover {
@@ -213,6 +228,10 @@
         }
         
         button.danger:hover {
+            background-color: #c0392b;
+        }
+        
+        button.active {
             background-color: #c0392b;
         }
         
@@ -239,6 +258,13 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .color-picker-container label {
+            font-size: 13px;
+            color: #555;
+            white-space: nowrap;
         }
         
         .color-preview {
@@ -255,27 +281,56 @@
         }
         
         .background-options {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
+            flex-direction: column;
             gap: 10px;
         }
         
         .background-option {
-            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            background-size: cover;
-            background-position: center;
             cursor: pointer;
+            transition: all 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .background-option:hover {
+            background-color: white;
+            border-color: #bbb;
         }
         
         .background-option.selected {
-            border: 2px solid #4a90e2;
+            border: 1px solid #4a90e2;
+            background-color: #f0f7ff;
+        }
+        
+        .background-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 3px;
+            background-size: cover;
+            background-position: center;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .background-name {
+            font-size: 13px;
+            color: #333;
+        }
+        
+        .background-type {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
         }
     </style>
 </head>
 <body>
-    <h1>Edytor Planszy</h1>
+    <h1>Board Editor</h1>
     <div class="container">
         <div class="board-container">
             <div class="board-background" id="boardBackground"></div>
@@ -284,7 +339,7 @@
         
         <div class="controls-panel">
             <div class="section">
-                <div class="section-title">Rozmiar planszy</div>
+                <div class="section-title">Board Size</div>
                 <select id="gridSizeSelect">
                     <option value="7x5">7x5 (Default)</option>
                     <option value="7x7">7x7 (Tower)</option>
@@ -292,22 +347,35 @@
             </div>
             
             <div class="section">
-                <div class="section-title">Tło planszy</div>
+                <div class="section-title">Board Background</div>
                 <div class="background-options" id="backgroundOptions">
-                    <div class="background-option selected" style="background-image: url('default.png');" data-bg="default.png"></div>
-                    <div class="background-option" style="background-image: url('default0.png');" data-bg="default0.png"></div>
+                    <div class="background-option selected" data-bg="default.png">
+                        <div class="background-preview" style="background-image: url('default.png');"></div>
+                        <div>
+                            <div class="background-name">Normal</div>
+                            <div class="background-type">7x5</div>
+                        </div>
+                    </div>
+                    <div class="background-option" data-bg="default0.png">
+                        <div class="background-preview" style="background-image: url('default0.png');"></div>
+                        <div>
+                            <div class="background-name">Hard</div>
+                            <div class="background-type">7x5</div>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
             
             <div class="section">
-                <div class="section-title">Jednostki</div>
+                <div class="section-title">Units</div>
                 <div class="unit-palette" id="unitPalette"></div>
             </div>
             
             <div class="section">
-                <div class="section-title">Efekty</div>
+                <div class="section-title">Effects</div>
                 <div class="color-picker-container">
-                    <label for="shapeColor">Kolor kształtów:</label>
+                    <label for="shapeColor">Shape Color:</label>
                     <input type="color" id="shapeColor" value="#ff0000">
                     <div class="color-preview" id="colorPreview" style="background-color: #ff0000;"></div>
                 </div>
@@ -321,36 +389,49 @@
             <div class="divider"></div>
             
             <div class="section">
-                <div class="section-title">Eksport</div>
+                <div class="section-title">Export</div>
                 <button id="generateImage">Generate & Download</button>
                 <div class="button-group">
-                    <button id="clearBoard" class="secondary">Wyczyść planszę</button>
-                    <button id="toggleDeleteMode" class="danger">Tryb usuwania</button>
+                    <button id="clearBoard" class="secondary">Clear Board</button>
+                    <button id="toggleDeleteMode" class="danger">Delete Mode</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="imageOutput">
-        <h3>Wygenerowany obraz</h3>
+        <h3>Generated Image</h3>
         <canvas id="outputCanvas"></canvas>
-        <a id="downloadLink" download="game_board.png" style="display: block; margin-top: 10px;">
-            <button>Pobierz obraz</button>
-        </a>
+        
     </div>
 
     <script>
-        // Konfiguracja
+        // Configuration
         const config = {
             gridSizes: {
-                '7x5': { cols: 7, rows: 5, backgrounds: ['default.png', 'default0.png'] },
-                '7x7': { cols: 7, rows: 7, backgrounds: ['tower.png', 'tower1.png'] }
+                '7x5': { 
+                    cols: 7, 
+                    rows: 5, 
+                    backgrounds: [
+                        { id: 'default.png', name: 'Normal', type: '7x5' },
+                        { id: 'default0.png', name: 'Hard', type: '7x5' }
+                        
+                    ] 
+                },
+                '7x7': { 
+                    cols: 7, 
+                    rows: 7, 
+                    backgrounds: [
+                        { id: 'tower.png', name: 'Tower', type: '7x7' },
+                        { id: 'tower1.png', name: 'Tower', type: '7x7' }
+                    ] 
+                }
             },
             unitCount: 25,
             cellSize: 80
         };
         
-        // Stan aplikacji
+        // Application state
         let state = {
             selectedUnit: null,
             currentColor: '#ff0000',
@@ -361,7 +442,7 @@
             backgroundImage: null
         };
         
-        // Elementy DOM
+        // DOM elements
         const gameBoard = document.getElementById('gameBoard');
         const boardBackground = document.getElementById('boardBackground');
         const unitPalette = document.getElementById('unitPalette');
@@ -377,7 +458,7 @@
         const imageOutput = document.getElementById('imageOutput');
         const enableShadow = document.getElementById('enableShadow');
         
-        // Inicjalizacja
+        // Initialization
         function init() {
             createUnitPalette();
             loadBackgroundImage().then(() => {
@@ -386,7 +467,7 @@
             });
         }
         
-        // Ładuje obraz tła
+        // Load background image
         function loadBackgroundImage() {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -404,7 +485,7 @@
             });
         }
         
-        // Tworzy paletę jednostek
+        // Create unit palette
         function createUnitPalette() {
             unitPalette.innerHTML = '';
             for (let i = 0; i < config.unitCount; i++) {
@@ -413,12 +494,12 @@
                 unitDiv.dataset.unit = `image${i}`;
                 unitDiv.style.backgroundImage = `url('image${i}.png')`;
                 unitDiv.addEventListener('click', () => {
-                    // Usuń klasę selected ze wszystkich opcji
+                    // Remove selected class from all options
                     document.querySelectorAll('.unit-option').forEach(opt => {
                         opt.classList.remove('selected');
                     });
                     
-                    // Dodaj klasę selected do aktualnie wybranej opcji
+                    // Add selected class to current option
                     unitDiv.classList.add('selected');
                     
                     state.selectedUnit = `image${i}`;
@@ -429,7 +510,7 @@
             }
         }
         
-        // Tworzy planszę
+        // Create game board
         function createBoard() {
             const gridSize = config.gridSizes[state.currentGridSize];
             gameBoard.innerHTML = '';
@@ -438,11 +519,11 @@
             gameBoard.style.width = `${gridSize.cols * config.cellSize}px`;
             gameBoard.style.height = `${gridSize.rows * config.cellSize}px`;
             
-            // Dostosuj rozmiar kontenera tła
+            // Adjust background container size
             boardBackground.style.width = `${gridSize.cols * config.cellSize}px`;
             boardBackground.style.height = `${gridSize.rows * config.cellSize}px`;
             
-            // Inicjalizacja pustej planszy
+            // Initialize empty board
             state.units = {};
             
             for (let y = 0; y < gridSize.rows; y++) {
@@ -454,15 +535,15 @@
                     cell.dataset.id = `cell-${x}-${y}`;
                     gameBoard.appendChild(cell);
                     
-                    // Inicjalizacja pustej tablicy jednostek dla komórki
+                    // Initialize empty unit array for the cell
                     state.units[`cell-${x}-${y}`] = [];
                 }
             }
         }
         
-        // Ustawia nasłuchiwanie zdarzeń
+        // Set up event listeners
         function setupEventListeners() {
-            // Kliknięcie w komórkę - dodanie lub usunięcie jednostki
+            // Cell click - add or remove unit
             gameBoard.addEventListener('click', (e) => {
                 let cell = e.target;
                 while (cell && !cell.classList.contains('cell')) {
@@ -473,25 +554,25 @@
                 const cellId = cell.dataset.id;
                 
                 if (state.deleteMode) {
-                    // Usuń wszystkie jednostki z komórki
+                    // Remove all units from cell
                     state.units[cellId] = [];
                     renderUnits();
                 } else if (state.selectedUnit) {
-                    // Dodaj nową jednostkę do komórki
+                    // Add new unit to cell
                     addUnitToCell(cellId, state.selectedUnit, state.currentColor);
                 }
             });
             
-            // Wybór koloru
+            // Color selection
             shapeColor.addEventListener('input', (e) => {
                 state.currentColor = e.target.value;
                 colorPreview.style.backgroundColor = state.currentColor;
             });
             
-            // Generowanie obrazu
+            // Generate image
             generateImageBtn.addEventListener('click', generateImage);
             
-            // Czyszczenie planszy
+            // Clear board
             clearBoardBtn.addEventListener('click', () => {
                 Object.keys(state.units).forEach(key => {
                     state.units[key] = [];
@@ -499,12 +580,12 @@
                 renderUnits();
             });
             
-            // Przełączanie trybu usuwania
+            // Toggle delete mode
             toggleDeleteModeBtn.addEventListener('click', () => {
                 state.deleteMode = !state.deleteMode;
                 if (state.deleteMode) {
                     toggleDeleteModeBtn.classList.add('active');
-                    // Usuń zaznaczenie jednostki
+                    // Remove unit selection
                     document.querySelectorAll('.unit-option').forEach(opt => {
                         opt.classList.remove('selected');
                     });
@@ -514,64 +595,88 @@
                 }
             });
             
-            // Zmiana tła poprzez kliknięcie w opcje tła
+            // Background selection
             backgroundOptions.addEventListener('click', (e) => {
                 const bgOption = e.target.closest('.background-option');
                 if (!bgOption) return;
                 
-                // Usuń klasę selected ze wszystkich opcji tła
+                // Remove selected class from all options
                 document.querySelectorAll('.background-option').forEach(opt => {
                     opt.classList.remove('selected');
                 });
                 
-                // Dodaj klasę selected do wybranej opcji
+                // Add selected class to chosen option
                 bgOption.classList.add('selected');
                 
                 state.currentBackground = bgOption.dataset.bg;
                 loadBackgroundImage();
             });
             
-            // Zmiana rozmiaru planszy
+            // Board size change
             gridSizeSelect.addEventListener('change', async (e) => {
                 state.currentGridSize = e.target.value;
                 const gridConfig = config.gridSizes[state.currentGridSize];
                 
-                // Zaktualizuj dostępne tła
+                // Update available backgrounds
                 backgroundOptions.innerHTML = '';
-                gridConfig.backgrounds.forEach((bg, index) => {
+                gridConfig.backgrounds.forEach((bg) => {
                     const bgOption = document.createElement('div');
-                    bgOption.className = `background-option ${index === 0 ? 'selected' : ''}`;
-                    bgOption.style.backgroundImage = `url('${bg}')`;
-                    bgOption.dataset.bg = bg;
+                    bgOption.className = 'background-option';
+                    bgOption.dataset.bg = bg.id;
+                    
+                    const bgPreview = document.createElement('div');
+                    bgPreview.className = 'background-preview';
+                    bgPreview.style.backgroundImage = `url('${bg.id}')`;
+                    
+                    const bgInfo = document.createElement('div');
+                    
+                    const bgName = document.createElement('div');
+                    bgName.className = 'background-name';
+                    bgName.textContent = bg.name;
+                    
+                    const bgType = document.createElement('div');
+                    bgType.className = 'background-type';
+                    bgType.textContent = bg.type;
+                    
+                    bgInfo.appendChild(bgName);
+                    bgInfo.appendChild(bgType);
+                    
+                    bgOption.appendChild(bgPreview);
+                    bgOption.appendChild(bgInfo);
+                    
+                    // Select first background by default
+                    if (gridConfig.backgrounds.indexOf(bg) === 0) {
+                        bgOption.classList.add('selected');
+                        state.currentBackground = bg.id;
+                    }
+                    
                     backgroundOptions.appendChild(bgOption);
                 });
                 
-                // Ustaw domyślne tło dla nowego rozmiaru
-                state.currentBackground = gridConfig.backgrounds[0];
                 await loadBackgroundImage();
                 createBoard();
             });
         }
         
-        // Dodaje jednostkę do komórki
+        // Add unit to cell
         function addUnitToCell(cellId, unit, color) {
-            // Jeśli dodajemy image0, zastępujemy istniejące image0
+            // If adding image0, replace existing image0
             if (unit === 'image0') {
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== 'image0');
-                state.units[cellId].unshift({ unit, color }); // image0 zawsze na spodzie
+                state.units[cellId].unshift({ unit, color }); // image0 always on bottom
             } else {
-                // Dodajemy nową jednostkę na wierzch
+                // Add new unit on top
                 state.units[cellId].push({ unit, color });
                 
-                // Ogranicz liczbę jednostek w komórce (opcjonalne)
+                // Limit number of units per cell (optional)
                 if (state.units[cellId].length > 3) {
-                    state.units[cellId].shift(); // Usuń najstarszą jednostkę
+                    state.units[cellId].shift(); // Remove oldest unit
                 }
             }
             renderUnits();
         }
         
-        // Renderuje jednostki na planszy
+        // Render units on board
         function renderUnits() {
             document.querySelectorAll('.unit').forEach(el => el.remove());
             
@@ -584,25 +689,25 @@
                     const unitImg = document.createElement('img');
                     unitImg.className = `unit ${unitData.unit}`;
                     unitImg.src = `${unitData.unit}.png`;
-                    unitImg.style.zIndex = index + 1; // Zachowaj kolejność warstw
+                    unitImg.style.zIndex = index + 1;
                     
-                    // Specjalne style dla image0
+                    // Zwiększony rozmiar jednostek
                     if (unitData.unit === 'image0') {
-                        unitImg.style.width = '80%';
-                        unitImg.style.height = '80%';
+                        unitImg.style.width = '90%'; /* Zwiększone z 80% */
+                        unitImg.style.height = '90%'; /* Zwiększone z 80% */
                         unitImg.style.border = `2px solid ${unitData.color}`;
                         unitImg.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
                     } else {
-                        // Style dla innych jednostek
-                        unitImg.style.maxWidth = '60%';
-                        unitImg.style.maxHeight = '60%';
+                        unitImg.style.maxWidth = '80%'; /* Zwiększone z 60% */
+                        unitImg.style.maxHeight = '80%'; /* Zwiększone z 60% */
                         unitImg.style.margin = 'auto';
                         unitImg.style.position = 'absolute';
                     }
                     
-                    // Kolor dla image17
+                    // Poprawiona widoczność kropki dla image17
                     if (unitData.unit === 'image17') {
                         unitImg.style.color = unitData.color;
+                        unitImg.style.position = 'relative';
                     }
                     
                     cell.appendChild(unitImg);
@@ -610,23 +715,23 @@
             });
         }
         
-        // Generuje obraz planszy
+        // Generate board image
         function generateImage() {
             const gridSize = config.gridSizes[state.currentGridSize];
             const canvas = outputCanvas;
             const ctx = canvas.getContext('2d');
             
-            // Ustaw rozmiar canvas na rozmiar planszy
+            // Set canvas size to match board size
             canvas.width = gridSize.cols * config.cellSize;
             canvas.height = gridSize.rows * config.cellSize;
             
-            // 1. Najpierw białe tło
+            // 1. First white background
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 2. Następnie tło planszy (jeśli istnieje)
+            // 2. Then board background (if exists)
             if (state.backgroundImage) {
-                // Oblicz proporcje dla zachowania aspect ratio
+                // Calculate proportions to maintain aspect ratio
                 const bgRatio = state.backgroundImage.width / state.backgroundImage.height;
                 const boardRatio = canvas.width / canvas.height;
                 
@@ -644,7 +749,7 @@
                     offsetY = 0;
                 }
                 
-                // Narysuj tło wycentrowane
+                // Draw centered background
                 ctx.drawImage(
                     state.backgroundImage,
                     offsetX,
@@ -654,11 +759,11 @@
                 );
             }
             
-            // 3. Następnie wszystkie jednostki
+            // 3. Then all units
             let unitsToDraw = 0;
             let unitsDrawn = 0;
             
-            // Policz wszystkie jednostki do narysowania
+            // Count all units to draw
             Object.values(state.units).forEach(units => {
                 unitsToDraw += units.length;
             });
@@ -675,22 +780,22 @@
                         const posX = parseInt(x) * config.cellSize;
                         const posY = parseInt(y) * config.cellSize;
                         
-                        // Oblicz rozmiar zachowując proporcje
+                        // Calculate size maintaining proportions
                         const unitRatio = unitImg.naturalWidth / unitImg.naturalHeight;
                         let drawWidth, drawHeight;
                         
                         if (unitRatio > 1) {
-                            drawWidth = config.cellSize * 0.8;
+                            drawWidth = config.cellSize * 0.9;
                             drawHeight = drawWidth / unitRatio;
                         } else {
-                            drawHeight = config.cellSize * 0.8;
+                            drawHeight = config.cellSize * 0.9;
                             drawWidth = drawHeight * unitRatio;
                         }
                         
                         const offsetX = (config.cellSize - drawWidth) / 2;
                         const offsetY = (config.cellSize - drawHeight) / 2;
                         
-                        // Narysuj obraz jednostki
+                        // Draw unit image
                         ctx.drawImage(
                             unitImg, 
                             posX + offsetX, 
@@ -699,7 +804,7 @@
                             drawHeight
                         );
                         
-                        // Dla image0 narysuj kwadratową obwódkę
+                        // For image0 draw square border
                         if (unitData.unit === 'image0') {
                             ctx.strokeStyle = unitData.color;
                             ctx.lineWidth = 2;
@@ -711,7 +816,7 @@
                             );
                         }
                         
-                        // Dla image17 narysuj kropkę
+                        // For image17 draw dot
                         if (unitData.unit === 'image17') {
                             ctx.fillStyle = unitData.color;
                             ctx.beginPath();
@@ -727,7 +832,7 @@
                         
                         unitsDrawn++;
                         if (unitsDrawn === unitsToDraw) {
-                            // 4. Na końcu siatkę (na wierzchu jednostek)
+                            // 4. Finally grid (on top of units)
                             ctx.strokeStyle = 'rgba(204, 204, 204, 0.5)';
                             ctx.lineWidth = 1;
                             
@@ -751,11 +856,11 @@
                 });
             });
             
-            // Pokaż sekcję z wygenerowanym obrazem
+            // Show generated image section
             imageOutput.style.display = 'block';
         }
         
-        // Aktualizuje link do pobrania obrazu
+        // Update image download link
         function updateDownloadLink() {
             outputCanvas.toBlob(function(blob) {
                 const url = URL.createObjectURL(blob);
@@ -763,7 +868,7 @@
             }, 'image/png');
         }
         
-        // Inicjalizacja aplikacji
+        // Initialize application
         init();
     </script>
 </body>
