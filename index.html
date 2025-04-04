@@ -423,8 +423,9 @@
             
             // Apply shadow with current settings (locked at placement time)
             if (shadowEnabled) {
-                unit.style.filter = `drop-shadow(0px 0px 10px ${shadowColor})`;
+                unit.style.filter = `drop-shadow(2px 2px 5px ${shadowColor})`;
                 unit.dataset.shadow = shadowColor; // Store shadow color
+                unit.dataset.shadowEnabled = 'true';
             }
             
             square.appendChild(unit);
@@ -490,7 +491,6 @@
         shadowColor = event.target.value;
     };
 
-    // Download image functionality
     downloadBtn.onclick = async () => {
         statusDiv.textContent = 'Generating image...';
         statusDiv.style.color = '#333';
@@ -521,6 +521,7 @@
             canvasDiv.style.position = 'relative';
             canvasDiv.style.backgroundImage = gameBoard.style.backgroundImage;
             canvasDiv.style.backgroundSize = 'cover';
+            canvasDiv.style.overflow = 'hidden';
             
             // Calculate square size
             const squareWidth = 700 / 7;
@@ -529,26 +530,33 @@
             // Clone all units with their positions and effects
             const units = gameBoard.querySelectorAll('.unit');
             units.forEach(unit => {
-                const unitClone = document.createElement('img');
-                unitClone.src = unit.src;
-                unitClone.style.position = 'absolute';
-                unitClone.style.width = `${squareWidth * 0.8}px`;
-                unitClone.style.height = `${squareHeight * 0.8}px`;
+                const unitContainer = document.createElement('div');
+                unitContainer.style.position = 'absolute';
+                unitContainer.style.width = `${squareWidth * 0.8}px`;
+                unitContainer.style.height = `${squareHeight * 0.8}px`;
                 
                 // Calculate position based on grid
                 const square = unit.parentElement;
                 const col = Array.from(square.parentElement.children).indexOf(square) % 7;
                 const row = Math.floor(Array.from(square.parentElement.children).indexOf(square) / 7);
                 
-                unitClone.style.left = `${col * squareWidth + squareWidth * 0.1}px`;
-                unitClone.style.top = `${row * squareHeight + squareHeight * 0.1}px`;
+                unitContainer.style.left = `${col * squareWidth + squareWidth * 0.1}px`;
+                unitContainer.style.top = `${row * squareHeight + squareHeight * 0.1}px`;
+                
+                // Create image element
+                const unitClone = document.createElement('img');
+                unitClone.src = unit.src;
+                unitClone.style.width = '100%';
+                unitClone.style.height = '100%';
+                unitClone.style.objectFit = 'contain';
                 
                 // Apply shadow if exists
-                if (unit.dataset.shadow) {
-                    unitClone.style.filter = `drop-shadow(0px 0px 10px ${unit.dataset.shadow})`;
+                if (unit.dataset.shadowEnabled === 'true') {
+                    unitContainer.style.filter = `drop-shadow(2px 2px 5px ${unit.dataset.shadow})`;
                 }
                 
-                canvasDiv.appendChild(unitClone);
+                unitContainer.appendChild(unitClone);
+                canvasDiv.appendChild(unitContainer);
             });
             
             tempContainer.appendChild(canvasDiv);
@@ -559,8 +567,39 @@
                 scale: 2,
                 logging: false,
                 useCORS: true,
-                allowTaint: true
+                allowTaint: true,
+                ignoreElements: (element) => {
+                    return element.classList && element.classList.contains('unit-stack');
+                }
             }).then(canvas => {
+                // Now add stack counters manually
+                const ctx = canvas.getContext('2d');
+                ctx.font = '20px Arial';
+                ctx.fillStyle = 'white';
+                
+                document.querySelectorAll('.square').forEach(square => {
+                    const units = square.querySelectorAll('.unit');
+                    if (units.length > 1) {
+                        const col = Array.from(square.parentElement.children).indexOf(square) % 7;
+                        const row = Math.floor(Array.from(square.parentElement.children).indexOf(square) / 7);
+                        
+                        const x = (col + 0.8) * squareWidth * 2 - 20;
+                        const y = (row + 0.8) * squareHeight * 2 - 20;
+                        
+                        // Draw counter background
+                        ctx.beginPath();
+                        ctx.arc(x, y, 20, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                        ctx.fill();
+                        
+                        // Draw counter text
+                        ctx.fillStyle = 'white';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(units.length.toString(), x, y);
+                    }
+                });
+                
                 document.body.removeChild(tempContainer);
                 document.head.removeChild(script);
                 
