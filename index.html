@@ -75,22 +75,6 @@
             object-fit: contain;
         }
         
-        .unit-stack {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            bottom: 5px;
-            right: 5px;
-            background-color: rgba(0,0,0,0.7);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            z-index: 10;
-        }
-        
         #controls {
             background-color: white;
             padding: 15px;
@@ -407,7 +391,6 @@
             const units = square.querySelectorAll('.unit');
             if (units.length > 0) {
                 units[units.length - 1].remove();
-                updateStackCounters();
             }
         } else if (selectedUnitImage) {
             placeUnit(square);
@@ -429,24 +412,7 @@
             }
             
             square.appendChild(unit);
-            updateStackCounters();
         }
-    }
-
-    function updateStackCounters() {
-        // Remove all existing stack counters
-        document.querySelectorAll('.unit-stack').forEach(el => el.remove());
-        
-        // Count units in each square and add counters
-        document.querySelectorAll('.square').forEach(square => {
-            const units = square.querySelectorAll('.unit');
-            if (units.length > 1) {
-                const counter = document.createElement('div');
-                counter.className = 'unit-stack';
-                counter.textContent = units.length;
-                square.appendChild(counter);
-            }
-        });
     }
 
     function changeBackground(src) {
@@ -567,39 +533,8 @@
                 scale: 2,
                 logging: false,
                 useCORS: true,
-                allowTaint: true,
-                ignoreElements: (element) => {
-                    return element.classList && element.classList.contains('unit-stack');
-                }
+                allowTaint: true
             }).then(canvas => {
-                // Now add stack counters manually
-                const ctx = canvas.getContext('2d');
-                ctx.font = '20px Arial';
-                ctx.fillStyle = 'white';
-                
-                document.querySelectorAll('.square').forEach(square => {
-                    const units = square.querySelectorAll('.unit');
-                    if (units.length > 1) {
-                        const col = Array.from(square.parentElement.children).indexOf(square) % 7;
-                        const row = Math.floor(Array.from(square.parentElement.children).indexOf(square) / 7);
-                        
-                        const x = (col + 0.8) * squareWidth * 2 - 20;
-                        const y = (row + 0.8) * squareHeight * 2 - 20;
-                        
-                        // Draw counter background
-                        ctx.beginPath();
-                        ctx.arc(x, y, 20, 0, Math.PI * 2);
-                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                        ctx.fill();
-                        
-                        // Draw counter text
-                        ctx.fillStyle = 'white';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(units.length.toString(), x, y);
-                    }
-                });
-                
                 document.body.removeChild(tempContainer);
                 document.head.removeChild(script);
                 
