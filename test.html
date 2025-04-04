@@ -5,46 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Board Editor</title>
     <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #f44336;
+            --border-color: #cccccc;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 15px;
             background-color: #f5f5f5;
+            min-height: 100vh;
         }
+        
         h1 {
             text-align: center;
             color: #333;
+            margin-bottom: 20px;
         }
+        
         .container {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 20px;
-            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
         }
+        
         #gameBoardContainer {
             background-color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px var(--shadow-color);
+            width: 100%;
+            overflow: hidden;
         }
+        
         #gameBoard {
             display: grid;
-            grid-template-columns: repeat(7, 100px);
-            grid-template-rows: repeat(5, 100px);
-            width: 700px;
-            height: 500px;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            width: 100%;
+            aspect-ratio: 7/5;
             position: relative;
             background-size: cover;
             background-position: center;
             border: 2px solid #333;
-            box-sizing: content-box;
+            margin: 0 auto;
         }
+        
         .square {
             border: 1px solid rgba(0,0,0,0.2);
             position: relative;
-            box-sizing: border-box;
         }
+        
         .unit {
             width: 80%;
             height: 80%;
@@ -54,30 +74,37 @@
             pointer-events: none;
             object-fit: contain;
         }
+        
         #controls {
             background-color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            width: 300px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            width: 100%;
         }
+        
         .control-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding: 10px;
             border-bottom: 1px solid #eee;
         }
+        
         .control-group h3 {
             margin-top: 0;
             color: #444;
+            font-size: 1.1rem;
         }
+        
         #unitSelection {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
-            max-height: 300px;
+            gap: 8px;
+            max-height: 200px;
             overflow-y: auto;
             padding: 5px;
+            justify-content: center;
         }
+        
         #unitSelection img {
             width: 50px;
             height: 50px;
@@ -88,60 +115,76 @@
             background-color: #f0f0f0;
             border-radius: 4px;
         }
-        #unitSelection img:hover, #unitSelection img.selected {
-            border-color: #4CAF50;
+        
+        #unitSelection img:hover, 
+        #unitSelection img.selected {
+            border-color: var(--primary-color);
             transform: scale(1.05);
         }
+        
         button {
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 15px;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
             font-size: 14px;
-            margin: 4px 2px;
+            margin: 5px;
             cursor: pointer;
             border-radius: 4px;
             transition: background-color 0.3s;
+            width: calc(50% - 10px);
         }
+        
         button:hover {
             background-color: #45a049;
         }
+        
         button.secondary {
-            background-color: #f44336;
+            background-color: var(--secondary-color);
         }
+        
         button.secondary:hover {
             background-color: #d32f2f;
         }
+        
         label {
             display: block;
             margin: 10px 0 5px;
             color: #555;
+            font-size: 14px;
         }
+        
         input[type="color"] {
             width: 100%;
             height: 40px;
             cursor: pointer;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
         }
+        
         #backgroundSelection {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 10px;
+            justify-content: center;
         }
+        
         .bg-thumbnail {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             cursor: pointer;
             border: 2px solid transparent;
             border-radius: 4px;
             object-fit: cover;
         }
+        
         .bg-thumbnail.selected {
-            border-color: #4CAF50;
+            border-color: var(--primary-color);
         }
+        
         #previewContainer {
             display: none;
             position: fixed;
@@ -155,25 +198,63 @@
             align-items: center;
             flex-direction: column;
         }
+        
         #previewImage {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 95%;
+            max-height: 80%;
             border: 2px solid white;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
+        
         #closePreview {
             margin-top: 20px;
-            background-color: #f44336;
+            background-color: var(--secondary-color);
+            padding: 10px 20px;
         }
-        .status {
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 4px;
-            text-align: center;
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 5px;
         }
-        .status.success {
-            background-color: #dff0d8;
-            color: #3c763d;
+        
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            
+            #gameBoardContainer {
+                flex: 2;
+            }
+            
+            #controls {
+                flex: 1;
+                position: sticky;
+                top: 20px;
+            }
+            
+            button {
+                width: auto;
+                min-width: 120px;
+            }
+            
+            #unitSelection {
+                max-height: 300px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #unitSelection img, 
+            .bg-thumbnail {
+                width: 40px;
+                height: 40px;
+            }
+            
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -190,36 +271,42 @@
         <div class="control-group">
             <h3>Background</h3>
             <div id="backgroundSelection">
-                <img src="default.png" class="bg-thumbnail selected" onclick="changeBackground(this.src)">
-                <img src="grass.png" class="bg-thumbnail" onclick="changeBackground(this.src)">
-                <img src="desert.png" class="bg-thumbnail" onclick="changeBackground(this.src)">
-                <img src="water.png" class="bg-thumbnail" onclick="changeBackground(this.src)">
+                <img src="default.png" class="bg-thumbnail selected" onclick="changeBackground(this.src)" alt="Default">
+                <img src="grass.png" class="bg-thumbnail" onclick="changeBackground(this.src)" alt="Grass">
+                <img src="desert.png" class="bg-thumbnail" onclick="changeBackground(this.src)" alt="Desert">
+                <img src="water.png" class="bg-thumbnail" onclick="changeBackground(this.src)" alt="Water">
             </div>
         </div>
         
         <div class="control-group">
             <h3>Units</h3>
             <div id="unitSelection"></div>
-            <button id="clearUnits" class="secondary">Clear All Units</button>
+            <div class="button-group">
+                <button id="clearUnits" class="secondary">Clear All Units</button>
+            </div>
         </div>
         
         <div class="control-group">
             <h3>Effects</h3>
             <label for="colorPicker">Shadow Color:</label>
             <input type="color" id="colorPicker" value="#000000">
-            <button id="shadowToggle">Enable Shadow</button>
+            <div class="button-group">
+                <button id="shadowToggle">Enable Shadow</button>
+            </div>
         </div>
         
         <div class="control-group">
             <h3>Export</h3>
-            <button id="download">Generate & Download Image</button>
-            <div id="status" class="status"></div>
+            <div class="button-group">
+                <button id="download">Generate & Download</button>
+            </div>
+            <div id="status"></div>
         </div>
     </div>
 </div>
 
 <div id="previewContainer">
-    <img id="previewImage">
+    <img id="previewImage" alt="Preview">
     <button id="closePreview">Close Preview</button>
 </div>
 
@@ -261,6 +348,7 @@
         for (let i = 0; i < 30; i++) {
             const img = document.createElement('img');
             img.src = `image${i}.png`;
+            img.alt = `Unit ${i}`;
             img.id = `unit${i}`;
             img.onclick = () => selectUnit(img);
             unitSelection.appendChild(img);
@@ -288,7 +376,14 @@
             const unit = document.createElement('img');
             unit.src = selectedUnitImage;
             unit.className = 'unit';
-            unit.style.filter = shadowEnabled ? `drop-shadow(0px 0px 10px ${shadowColor})` : 'none';
+            unit.alt = 'Placed unit';
+            
+            // Apply shadow with current settings (locked at placement time)
+            if (shadowEnabled) {
+                unit.style.filter = `drop-shadow(0px 0px 10px ${shadowColor})`;
+                unit.dataset.shadow = shadowColor; // Store shadow color
+            }
+            
             square.appendChild(unit);
         }
     }
@@ -307,11 +402,6 @@
     shadowToggle.onclick = () => {
         shadowEnabled = !shadowEnabled;
         shadowToggle.innerText = shadowEnabled ? 'Disable Shadow' : 'Enable Shadow';
-        
-        // Update all existing units
-        Array.from(document.querySelectorAll('.unit')).forEach(unit => {
-            unit.style.filter = shadowEnabled ? `drop-shadow(0px 0px 10px ${shadowColor})` : 'none';
-        });
     };
 
     clearUnits.onclick = () => {
@@ -324,38 +414,51 @@
 
     colorPicker.oninput = (event) => {
         shadowColor = event.target.value;
-        
-        // Update all existing units if shadow is enabled
-        if (shadowEnabled) {
-            Array.from(document.querySelectorAll('.unit')).forEach(unit => {
-                unit.style.filter = `drop-shadow(0px 0px 10px ${shadowColor})`;
-            });
-        }
     };
 
     // Download image functionality
     downloadBtn.onclick = async () => {
         statusDiv.textContent = 'Generating image...';
-        statusDiv.className = 'status';
+        statusDiv.style.color = '#333';
         
         try {
             // Load html2canvas dynamically
             const html2canvas = await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
             
-            // Add temporary class to ensure everything is visible
-            gameBoard.classList.add('capture-mode');
+            // Create a temporary container to capture
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.width = '700px';
+            tempContainer.style.height = '500px';
+            document.body.appendChild(tempContainer);
             
-            html2canvas.default(gameBoard, {
+            // Clone the game board with fixed size for better quality
+            const clone = gameBoard.cloneNode(true);
+            clone.style.width = '700px';
+            clone.style.height = '500px';
+            clone.style.position = 'relative';
+            tempContainer.appendChild(clone);
+            
+            // Apply all shadows again to the clone
+            const units = clone.querySelectorAll('.unit');
+            units.forEach(unit => {
+                if (unit.dataset.shadow) {
+                    unit.style.filter = `drop-shadow(0px 0px 10px ${unit.dataset.shadow})`;
+                }
+            });
+            
+            html2canvas.default(clone, {
                 backgroundColor: null,
-                scale: 1,
+                scale: 2, // Higher quality
                 logging: false,
                 useCORS: true,
                 allowTaint: true
             }).then(canvas => {
-                // Remove temporary class
-                gameBoard.classList.remove('capture-mode');
-                
+                document.body.removeChild(tempContainer);
                 const dataURL = canvas.toDataURL('image/png');
+                
+                // Show preview
                 previewImage.src = dataURL;
                 previewContainer.style.display = 'flex';
                 
@@ -367,17 +470,18 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                statusDiv.textContent = 'Image generated and downloaded successfully!';
-                statusDiv.className = 'status success';
+                statusDiv.textContent = 'Image generated successfully!';
+                statusDiv.style.color = 'green';
             }).catch(err => {
                 console.error('Error generating image:', err);
-                statusDiv.textContent = 'Error generating image. See console for details.';
-                statusDiv.className = 'status';
+                statusDiv.textContent = 'Error generating image.';
+                statusDiv.style.color = 'red';
+                document.body.removeChild(tempContainer);
             });
         } catch (err) {
             console.error('Error loading html2canvas:', err);
-            statusDiv.textContent = 'Error loading image generator. See console for details.';
-            statusDiv.className = 'status';
+            statusDiv.textContent = 'Error loading image generator.';
+            statusDiv.style.color = 'red';
         }
     };
 
