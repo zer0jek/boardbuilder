@@ -549,7 +549,8 @@
             shadowPlacementMode: false,
             activeShadowOrigin: null,
             nextObjectId: 1,
-            objectPairs: {} // Tracks pairs of O# and S# units
+            objectPairs: {}, // Tracks pairs of O# and S# units
+            availableIds: [] // Tracks available IDs for reuse
         };
         
         // DOM elements
@@ -637,6 +638,7 @@
             // Initialize empty board
             state.units = {};
             state.objectPairs = {};
+            state.availableIds = [];
             
             for (let y = 0; y < gridSize.rows; y++) {
                 for (let x = 0; x < gridSize.cols; x++) {
@@ -651,6 +653,16 @@
                     state.units[`cell-${x}-${y}`] = [];
                 }
             }
+        }
+        
+        // Get next available ID
+        function getNextId() {
+            // First try to reuse available IDs
+            if (state.availableIds.length > 0) {
+                return state.availableIds.shift();
+            }
+            // Otherwise create new ID
+            return `O${state.nextObjectId++}`;
         }
         
         // Set up event listeners
@@ -669,16 +681,20 @@
                     // Check if we're deleting an image0 or image17 and handle pairs
                     const units = state.units[cellId];
                     units.forEach(unit => {
-                        if (unit.id && (unit.unit === 'image0' || unit.unit === 'image17')) {
-                            const pairId = unit.unit === 'image17' ? `S${unit.id.substring(1)}` : `O${unit.id.substring(1)}`;
-                            
-                            // Remove from objectPairs
-                            delete state.objectPairs[unit.id];
-                            
-                            // Find and remove the paired unit if it exists
-                            Object.keys(state.units).forEach(key => {
-                                state.units[key] = state.units[key].filter(u => u.id !== pairId);
-                            });
+                        if (unit.id && unit.unit === 'image0') {
+                            // When deleting image0, just remove the pair reference
+                            const originId = state.objectPairs[unit.id];
+                            if (originId) {
+                                delete state.objectPairs[unit.id];
+                                delete state.objectPairs[originId];
+                                
+                                // Add the ID back to available IDs for reuse
+                                const idNum = parseInt(unit.id.substring(1));
+                                if (!state.availableIds.includes(idNum)) {
+                                    state.availableIds.push(idNum);
+                                    state.availableIds.sort((a, b) => a - b);
+                                }
+                            }
                         }
                     });
                     
@@ -709,7 +725,7 @@
                     renderUnits();
                 } else if (state.selectedUnit) {
                     // Add new unit to cell
-                    const unitId = state.selectedUnit === 'image17' ? `O${state.nextObjectId++}` : null;
+                    const unitId = state.selectedUnit === 'image17' ? getNextId() : null;
                     addUnitToCell(cellId, state.selectedUnit, state.currentColor, unitId);
                 }
             });
@@ -730,6 +746,7 @@
                 });
                 state.nextObjectId = 1;
                 state.objectPairs = {};
+                state.availableIds = [];
                 renderUnits();
             });
             
