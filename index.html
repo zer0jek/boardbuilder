@@ -341,7 +341,7 @@
                 overflow-x: auto;
                 padding: 5px;
             }
-            
+        
             .board {
                 margin: 0 auto;
             }
@@ -409,14 +409,17 @@
                     <div class="color-preview" id="colorPreview" style="background-color: #ff0000;"></div>
                 </div>
                 
-                
+                <div class="checkbox-container">
+                    <input type="checkbox" id="enableShadow">
+                    <label for="enableShadow">Enable Shadow</label>
+                </div>
             </div>
             
             <div class="divider"></div>
             
             <div class="section">
                 <div class="section-title">Export</div>
-                <button id="generateImage">Generate & Download</button>
+                <button id="generateImage">Generate & Copy to Clipboard</button>
                 <div class="button-group">
                     <button id="clearBoard" class="secondary">Clear Board</button>
                     <button id="toggleDeleteMode" class="danger">Delete Mode</button>
@@ -454,7 +457,7 @@
                 }
             },
             unitCount: 25,
-            cellSize: window.innerWidth < 600 ? 50 : 80 // Mniejszy rozmiar komórki na telefonach
+            cellSize: window.innerWidth < 600 ? 50 : 80
         };
         
         // Application state
@@ -480,7 +483,6 @@
         const backgroundOptions = document.getElementById('backgroundOptions');
         const gridSizeSelect = document.getElementById('gridSizeSelect');
         const outputCanvas = document.getElementById('outputCanvas');
-        const downloadLink = document.getElementById('downloadLink');
         const imageOutput = document.getElementById('imageOutput');
         const enableShadow = document.getElementById('enableShadow');
         
@@ -738,10 +740,10 @@
                         unitImg.style.position = 'absolute';
                     }
                     
-                    // Poprawiona widoczność kropki dla image17
+                    // Dodanie kropki dla image17
                     if (unitData.unit === 'image17') {
+                        unitImg.classList.add('unit-image17');
                         unitImg.style.color = unitData.color;
-                        unitImg.style.position = 'relative';
                     }
                     
                     cell.appendChild(unitImg);
@@ -884,7 +886,7 @@
                                 ctx.stroke();
                             }
                             
-                            updateDownloadLink();
+                            copyToClipboard();
                         }
                     };
                 });
@@ -894,11 +896,16 @@
             imageOutput.style.display = 'block';
         }
         
-        // Update image download link
-        function updateDownloadLink() {
+        // Copy image to clipboard
+        function copyToClipboard() {
             outputCanvas.toBlob(function(blob) {
-                const url = URL.createObjectURL(blob);
-                downloadLink.href = url;
+                const item = new ClipboardItem({ 'image/png': blob });
+                navigator.clipboard.write([item]).then(function() {
+                    alert('Image copied to clipboard!');
+                }, function(error) {
+                    console.error('Could not copy image: ', error);
+                    alert('Failed to copy image to clipboard. Please try again.');
+                });
             }, 'image/png');
         }
         
