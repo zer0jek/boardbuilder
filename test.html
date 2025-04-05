@@ -359,14 +359,11 @@
         /* Unit ID display */
         .unit-id {
             position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
             font-size: 12px;
             font-weight: bold;
             background-color: white;
             padding: 2px 6px;
-            border-radius: 10px;
+            border-radius: 50%;
             border: 1px solid #ddd;
             z-index: 5;
             white-space: nowrap;
@@ -375,8 +372,17 @@
             align-items: center;
             width: 24px;
             height: 24px;
-            border-radius: 50%;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .unit-id.image17 {
+            top: -10px;
+            right: -10px;
+        }
+
+        .unit-id.image0 {
+            bottom: -10px;
+            left: -10px;
         }
 
         /* Responsywne style */
@@ -407,11 +413,19 @@
             }
             
             .unit-id {
-                font-size: 7px;
-                left: 0px;
-                top: 0px;
+                font-size: 10px;
                 width: 20px;
                 height: 20px;
+            }
+            
+            .unit-id.image17 {
+                top: -8px;
+                right: -8px;
+            }
+
+            .unit-id.image0 {
+                bottom: -8px;
+                left: -8px;
             }
             
             .shadow-button {
@@ -660,7 +674,7 @@
         function getNextId() {
             // First try to reuse available IDs
             if (state.availableIds.length > 0) {
-                return state.availableIds.shift();
+                return `O${state.availableIds.shift()}`;
             }
             // Otherwise create new ID
             return `O${state.nextObjectId++}`;
@@ -936,10 +950,10 @@
                         }
                     }
                     
-                    // Add ID display if exists (always visible)
+                    // Add ID display if exists
                     if (unitData.id) {
                         const idElement = document.createElement('div');
-                        idElement.className = 'unit-id';
+                        idElement.className = `unit-id ${unitData.unit}`;
                         idElement.textContent = unitData.id;
                         cell.appendChild(idElement);
                     }
@@ -1064,12 +1078,12 @@
                             
                             // Draw ID if exists (with white circle background)
                             if (unitData.id) {
-                                // Draw white circle background
+                                // Draw white circle background (bottom left)
                                 ctx.fillStyle = 'white';
                                 ctx.beginPath();
                                 ctx.arc(
-                                    posX + (config.cellSize * scaleFactor) / 2,
-                                    posY - (10 * scaleFactor),
+                                    posX + (10 * scaleFactor),
+                                    posY + (config.cellSize * scaleFactor) - (10 * scaleFactor),
                                     12 * scaleFactor,
                                     0,
                                     Math.PI * 2
@@ -1086,8 +1100,8 @@
                                 ctx.textBaseline = 'middle';
                                 ctx.fillText(
                                     unitData.id,
-                                    posX + (config.cellSize * scaleFactor) / 2,
-                                    posY - (10 * scaleFactor)
+                                    posX + (10 * scaleFactor),
+                                    posY + (config.cellSize * scaleFactor) - (10 * scaleFactor)
                                 );
                             }
                         }
@@ -1107,12 +1121,12 @@
                             
                             // Draw ID if exists (with white circle background)
                             if (unitData.id) {
-                                // Draw white circle background
+                                // Draw white circle background (top right)
                                 ctx.fillStyle = 'white';
                                 ctx.beginPath();
                                 ctx.arc(
-                                    posX + (config.cellSize * scaleFactor) / 2,
-                                    posY - (10 * scaleFactor),
+                                    posX + (config.cellSize * scaleFactor) - (10 * scaleFactor),
+                                    posY + (10 * scaleFactor),
                                     12 * scaleFactor,
                                     0,
                                     Math.PI * 2
@@ -1129,8 +1143,8 @@
                                 ctx.textBaseline = 'middle';
                                 ctx.fillText(
                                     unitData.id,
-                                    posX + (config.cellSize * scaleFactor) / 2,
-                                    posY - (10 * scaleFactor)
+                                    posX + (config.cellSize * scaleFactor) - (10 * scaleFactor),
+                                    posY + (10 * scaleFactor)
                                 );
                             }
                         }
