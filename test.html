@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Board Editor</title>
     <style>
-        footer{
+        footer {
             position: center;
             color: grey;
             text-align: center;
         }
-       body {
+        body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
@@ -63,10 +63,8 @@
             z-index: 1;
         }
         
-       .unit {
+        .unit {
             position: absolute;
-            max-width: 80%;
-            max-height: 80%;
             object-fit: contain;
             z-index: 3;
             image-rendering: crisp-edges;
@@ -76,17 +74,17 @@
         }
 
         .unit-image0 {
-            width: 90%;
-            height: 90%;
+            width: 95%;
+            height: 95%;
             z-index: 2;
-            filter: drop-shadow(0 0 15px var(--unit-color, #ff0000));
+            filter: drop-shadow(0 0 25px var(--unit-color, #ff0000));
         }
 
         .unit-image17 {
-            width: 90%;
-            height: 90%;
+            width: 95%;
+            height: 95%;
             z-index: 4;
-            filter: drop-shadow(0 0 20px var(--unit-color, #ff0000));
+            filter: drop-shadow(0 0 30px var(--unit-color, #ff0000));
         }
         
         .cell {
@@ -708,10 +706,10 @@
                 'image24': 'Unit 24'
             },
             unitDescriptions: {
-                'image0': 'This is a shadow unit that appears below other units. It creates a shadow effect with customizable color.',
+                'image0': 'This is a shadow unit that appears below other units. It creates a large shadow effect with customizable color.',
                 'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
-                'image17': 'Special unit that can create connected shadow units. Click the + button to place a connected shadow unit.',
+                'image17': 'Special unit that can create connected shadow units. Click the + button to place a connected shadow unit. Always appears above shadow units.',
                 // Add descriptions for other units as needed
             }
         };
@@ -839,6 +837,13 @@
                     state.deleteMode = false;
                     state.shadowPlacementMode = false;
                     toggleDeleteModeBtn.classList.remove('active');
+                    
+                    // Reset color when selecting image0 or image17
+                    if (state.selectedUnit === 'image0' || state.selectedUnit === 'image17') {
+                        state.currentColor = '#ff0000'; // Reset to default color
+                        shapeColor.value = '#ff0000';
+                        colorPreview.style.backgroundColor = '#ff0000';
+                    }
                 });
                 unitPalette.appendChild(unitDiv);
             }
@@ -891,19 +896,22 @@
                 if (state.deleteMode) {
                     // Check if we're deleting an image17 that has a connected image0
                     const units = state.units[cellId];
+                    let hadConnection = false;
+                    
                     units.forEach(unit => {
                         if (unit.unit === 'image17' && state.unitPairs[cellId]) {
                             // Remove the connected image0
                             const shadowCellId = state.unitPairs[cellId];
                             state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
                             delete state.unitPairs[cellId];
-                            renderUnits();
+                            hadConnection = true;
                         }
                         if (unit.unit === 'image0') {
                             // Find and remove the connection if this image0 was created by an image17
                             for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
                                 if (shadowCellId === cellId) {
                                     delete state.unitPairs[originCellId];
+                                    hadConnection = true;
                                     break;
                                 }
                             }
@@ -912,10 +920,15 @@
                     
                     // Remove all units from cell
                     state.units[cellId] = [];
-                    renderUnits();
+                    
+                    // If we removed a connection, re-render to show the shadow button again
+                    if (hadConnection) {
+                        renderUnits();
+                    }
                 } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
                     // Place image0 connected to image17
                     const originCellId = state.activeShadowOrigin.cellId;
+                    const originColor = state.activeShadowOrigin.unitData.color; // Use the origin unit's color
                     
                     // Remove any existing connected image0
                     if (state.unitPairs[originCellId]) {
@@ -923,8 +936,8 @@
                         state.units[oldShadowCellId] = state.units[oldShadowCellId].filter(u => u.unit !== 'image0');
                     }
                     
-                    // Add new image0 to current cell
-                    addUnitToCell(cellId, 'image0', state.currentColor);
+                    // Add new image0 to current cell with the origin unit's color
+                    addUnitToCell(cellId, 'image0', originColor);
                     
                     // Track the pair
                     state.unitPairs[originCellId] = cellId;
@@ -945,6 +958,7 @@
             shapeColor.addEventListener('input', (e) => {
                 state.currentColor = e.target.value;
                 colorPreview.style.backgroundColor = state.currentColor;
+                renderUnits(); // Update shadows with new color
             });
             
             // Generate image
@@ -974,10 +988,15 @@
                     
                     // Show all shadow buttons
                     document.querySelectorAll('.shadow-button').forEach(btn => {
-                        btn.style.display = 'block';
+                        btn.style.display = 'none';
                     });
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
+                    
+                    // Show all shadow buttons again
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
                 }
             });
             
@@ -1091,15 +1110,18 @@
         
         // Add unit to cell
         function addUnitToCell(cellId, unit, color) {
-            const unitData = { unit, color };
+            // Check if there's an existing unit of the same type in the cell
+            const existingUnit = state.units[cellId].find(u => u.unit === unit);
             
-            // If adding image0 or image17, replace existing one
+            // If adding image0 or image17, replace existing one but keep its color if it exists
             if (unit === 'image0' || unit === 'image17') {
+                const existingColor = existingUnit ? existingUnit.color : color;
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
+                state.units[cellId].push({ unit, color: existingColor });
+            } else {
+                // For other units, just add them with the current color
+                state.units[cellId].push({ unit, color });
             }
-            
-            // Add new unit
-            state.units[cellId].push(unitData);
             
             // Limit number of units per cell (optional)
             if (state.units[cellId].length > 3) {
@@ -1114,54 +1136,72 @@
             document.querySelectorAll('.unit').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
             
+            // First render all image0 units (shadows)
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
                 if (!cell) return;
                 
                 const units = state.units[cellId];
-                units.forEach((unitData, index) => {
-                    const unitImg = document.createElement('img');
-                    unitImg.className = `unit ${unitData.unit}`;
-                    unitImg.src = `${unitData.unit}.png`;
-                    unitImg.style.zIndex = index + 1;
-                    unitImg.style.setProperty('--unit-color', unitData.color);
-                    
-                    // Apply specific styles for image0 and image17
-                    if (unitData.unit === 'image0' || unitData.unit === 'image17') {
+                units.forEach((unitData) => {
+                    if (unitData.unit === 'image0') {
+                        const unitImg = document.createElement('img');
+                        unitImg.className = `unit ${unitData.unit}`;
+                        unitImg.src = `${unitData.unit}.png`;
+                        unitImg.style.setProperty('--unit-color', unitData.color);
                         unitImg.classList.add(unitData.unit);
-                    } else {
-                        unitImg.style.maxWidth = '80%';
-                        unitImg.style.maxHeight = '80%';
-                        unitImg.style.margin = 'auto';
-                        unitImg.style.position = 'absolute';
+                        cell.appendChild(unitImg);
                     }
-                    
-                    // Add shadow placement button for image17 if it doesn't have a connected image0
-                    if (unitData.unit === 'image17' && !state.unitPairs[cellId]) {
-                        const shadowBtn = document.createElement('button');
-                        shadowBtn.className = 'shadow-button';
-                        shadowBtn.textContent = '+';
-                        shadowBtn.title = 'Place connected shadow';
-                        shadowBtn.style.display = state.deleteMode ? 'none' : 'block';
+                });
+            });
+            
+            // Then render all other units (including image17)
+            Object.keys(state.units).forEach(cellId => {
+                const cell = document.querySelector(`[data-id="${cellId}"]`);
+                if (!cell) return;
+                
+                const units = state.units[cellId];
+                units.forEach((unitData) => {
+                    if (unitData.unit !== 'image0') {
+                        const unitImg = document.createElement('img');
+                        unitImg.className = `unit ${unitData.unit}`;
+                        unitImg.src = `${unitData.unit}.png`;
+                        unitImg.style.setProperty('--unit-color', unitData.color);
                         
-                        shadowBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            state.shadowPlacementMode = true;
-                            state.activeShadowOrigin = { cellId, unitData };
+                        if (unitData.unit === 'image17') {
+                            unitImg.classList.add(unitData.unit);
                             
-                            // Hide all other shadow buttons
-                            document.querySelectorAll('.shadow-button').forEach(btn => {
-                                btn.style.display = 'none';
-                            });
-                            
-                            // Show message
-                            alert('Click on another cell to place the connected shadow (image0) for this unit');
-                        });
+                            // Add shadow placement button if this image17 doesn't have a connected image0
+                            if (!state.unitPairs[cellId] && !state.deleteMode) {
+                                const shadowBtn = document.createElement('button');
+                                shadowBtn.className = 'shadow-button';
+                                shadowBtn.textContent = '+';
+                                shadowBtn.title = 'Place connected shadow';
+                                
+                                shadowBtn.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    state.shadowPlacementMode = true;
+                                    state.activeShadowOrigin = { cellId, unitData };
+                                    
+                                    // Hide all other shadow buttons
+                                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                                        btn.style.display = 'none';
+                                    });
+                                    
+                                    // Show message
+                                    alert('Click on another cell to place the connected shadow (image0) for this unit');
+                                });
+                                
+                                cell.appendChild(shadowBtn);
+                            }
+                        } else {
+                            unitImg.style.maxWidth = '80%';
+                            unitImg.style.maxHeight = '80%';
+                            unitImg.style.margin = 'auto';
+                            unitImg.style.position = 'absolute';
+                        }
                         
-                        cell.appendChild(shadowBtn);
+                        cell.appendChild(unitImg);
                     }
-                    
-                    cell.appendChild(unitImg);
                 });
             });
         }
@@ -1292,10 +1332,10 @@
                 let drawWidth, drawHeight;
                 
                 if (unitRatio > 1) {
-                    drawWidth = config.cellSize * 0.9 * scaleFactor;
+                    drawWidth = config.cellSize * 0.95 * scaleFactor;
                     drawHeight = drawWidth / unitRatio;
                 } else {
-                    drawHeight = config.cellSize * 0.9 * scaleFactor;
+                    drawHeight = config.cellSize * 0.95 * scaleFactor;
                     drawWidth = drawHeight * unitRatio;
                 }
                 
@@ -1304,7 +1344,7 @@
                 
                 // Draw shadow/glow effect first
                 if (unitData.unit === 'image0' || unitData.unit === 'image17') {
-                    const shadowSize = unitData.unit === 'image0' ? 15 : 20;
+                    const shadowSize = unitData.unit === 'image0' ? 25 : 30;
                     const steps = 5;
                     const centerX = posX + (config.cellSize * scaleFactor) / 2;
                     const centerY = posY + (config.cellSize * scaleFactor) / 2;
