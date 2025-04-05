@@ -385,6 +385,80 @@
             left: -10px;
         }
 
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .units-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .unit-info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .unit-info-image {
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 5px;
+        }
+
+        .unit-info-name {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+        }
+
         /* Responsywne style */
         @media (max-width: 600px) {
             .container {
@@ -434,6 +508,19 @@
                 font-size: 10px;
                 top: -8px;
                 right: -8px;
+            }
+
+            .modal-content {
+                width: 90%;
+            }
+
+            .units-info-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+
+            .unit-info-image {
+                width: 40px;
+                height: 40px;
             }
         }
     </style>
@@ -486,8 +573,14 @@
                 </select>
             </div>
             
+            <div class="button-group">
+                <button id="clearBoard" class="secondary">Clear Board</button>
+                <button id="toggleDeleteMode" class="danger">Delete Mode</button>
+            </div>
+
             <div class="section">
                 <div class="section-title">Units</div>
+                <button id="unitsInfoBtn" class="secondary" style="margin-bottom: 10px;">Units Info</button>
                 <div class="unit-palette" id="unitPalette"></div>
             </div>
             
@@ -505,10 +598,6 @@
             <div class="section">
                 <div class="section-title">Export</div>
                 <button id="generateImage">Generate & Copy to Clipboard</button>
-                <div class="button-group">
-                    <button id="clearBoard" class="secondary">Clear Board</button>
-                    <button id="toggleDeleteMode" class="danger">Delete Mode</button>
-                </div>
             </div>
         </div>
     </div>
@@ -516,6 +605,19 @@
     <div id="imageOutput">
         <h3>Generated Image</h3>
         <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <!-- Units Info Modal -->
+    <div class="modal" id="unitsInfoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Units Information</div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="units-info-grid" id="unitsInfoGrid">
+                <!-- Units will be added here dynamically -->
+            </div>
+        </div>
     </div>
 
     <script>
@@ -548,7 +650,34 @@
                 }
             },
             unitCount: 25,
-            cellSize: window.innerWidth < 600 ? 50 : 80
+            cellSize: window.innerWidth < 600 ? 50 : 80,
+            unitNames: {
+                'image0': 'Shadow',
+                'image1': 'Unit 1',
+                'image2': 'Unit 2',
+                'image3': 'Unit 3',
+                'image4': 'Unit 4',
+                'image5': 'Unit 5',
+                'image6': 'Unit 6',
+                'image7': 'Unit 7',
+                'image8': 'Unit 8',
+                'image9': 'Unit 9',
+                'image10': 'Unit 10',
+                'image11': 'Unit 11',
+                'image12': 'Unit 12',
+                'image13': 'Unit 13',
+                'image14': 'Unit 14',
+                'image15': 'Unit 15',
+                'image16': 'Unit 16',
+                'image17': 'Special Unit',
+                'image18': 'Unit 18',
+                'image19': 'Unit 19',
+                'image20': 'Unit 20',
+                'image21': 'Unit 21',
+                'image22': 'Unit 22',
+                'image23': 'Unit 23',
+                'image24': 'Unit 24'
+            }
         };
         
         // Application state
@@ -583,6 +712,10 @@
         const imageOutput = document.getElementById('imageOutput');
         const enableShadow = document.getElementById('enableShadow');
         const qualitySelect = document.getElementById('qualitySelect');
+        const unitsInfoBtn = document.getElementById('unitsInfoBtn');
+        const unitsInfoModal = document.getElementById('unitsInfoModal');
+        const unitsInfoGrid = document.getElementById('unitsInfoGrid');
+        const closeModalBtn = document.querySelector('.close-modal');
         
         // Initialization
         function init() {
@@ -590,7 +723,30 @@
             loadBackgroundImage().then(() => {
                 createBoard();
                 setupEventListeners();
+                createUnitsInfo();
             });
+        }
+        
+        // Create units info modal content
+        function createUnitsInfo() {
+            unitsInfoGrid.innerHTML = '';
+            for (let i = 0; i < config.unitCount; i++) {
+                const unitKey = `image${i}`;
+                const unitItem = document.createElement('div');
+                unitItem.className = 'unit-info-item';
+                
+                const unitImage = document.createElement('div');
+                unitImage.className = 'unit-info-image';
+                unitImage.style.backgroundImage = `url('${unitKey}.png')`;
+                
+                const unitName = document.createElement('div');
+                unitName.className = 'unit-info-name';
+                unitName.textContent = config.unitNames[unitKey] || unitKey;
+                
+                unitItem.appendChild(unitImage);
+                unitItem.appendChild(unitName);
+                unitsInfoGrid.appendChild(unitItem);
+            }
         }
         
         // Load background image
@@ -852,6 +1008,23 @@
             // Quality selection
             qualitySelect.addEventListener('change', (e) => {
                 state.exportQuality = parseInt(e.target.value);
+            });
+
+            // Units info button
+            unitsInfoBtn.addEventListener('click', () => {
+                unitsInfoModal.style.display = 'flex';
+            });
+
+            // Close modal button
+            closeModalBtn.addEventListener('click', () => {
+                unitsInfoModal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === unitsInfoModal) {
+                    unitsInfoModal.style.display = 'none';
+                }
             });
 
             // Handle window resize
