@@ -364,12 +364,19 @@
             transform: translateX(-50%);
             font-size: 12px;
             font-weight: bold;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: white;
             padding: 2px 6px;
             border-radius: 10px;
             border: 1px solid #ddd;
             z-index: 5;
             white-space: nowrap;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         /* Responsywne style */
@@ -402,7 +409,8 @@
             .unit-id {
                 font-size: 10px;
                 top: -12px;
-                padding: 1px 4px;
+                width: 20px;
+                height: 20px;
             }
             
             .shadow-button {
@@ -540,7 +548,8 @@
             exportQuality: 2,
             shadowPlacementMode: false,
             activeShadowOrigin: null,
-            nextObjectId: 1
+            nextObjectId: 1,
+            objectPairs: {} // Tracks pairs of O# and S# units
         };
         
         // DOM elements
@@ -627,6 +636,7 @@
             
             // Initialize empty board
             state.units = {};
+            state.objectPairs = {};
             
             for (let y = 0; y < gridSize.rows; y++) {
                 for (let x = 0; x < gridSize.cols; x++) {
@@ -656,22 +666,47 @@
                 const cellId = cell.dataset.id;
                 
                 if (state.deleteMode) {
+                    // Check if we're deleting an image0 or image17 and handle pairs
+                    const units = state.units[cellId];
+                    units.forEach(unit => {
+                        if (unit.id && (unit.unit === 'image0' || unit.unit === 'image17')) {
+                            const pairId = unit.unit === 'image17' ? `S${unit.id.substring(1)}` : `O${unit.id.substring(1)}`;
+                            
+                            // Remove from objectPairs
+                            delete state.objectPairs[unit.id];
+                            
+                            // Find and remove the paired unit if it exists
+                            Object.keys(state.units).forEach(key => {
+                                state.units[key] = state.units[key].filter(u => u.id !== pairId);
+                            });
+                        }
+                    });
+                    
                     // Remove all units from cell
                     state.units[cellId] = [];
                     renderUnits();
                 } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
                     // Place shadow (image0) with corresponding ID
                     const originId = state.activeShadowOrigin.unitData.id;
-                    addUnitToCell(cellId, 'image0', state.activeShadowOrigin.unitData.color, `S${originId.substring(1)}`);
+                    const shadowId = `S${originId.substring(1)}`;
+                    
+                    // Remove any existing shadow with this ID
+                    Object.keys(state.units).forEach(key => {
+                        state.units[key] = state.units[key].filter(u => u.id !== shadowId);
+                    });
+                    
+                    addUnitToCell(cellId, 'image0', state.activeShadowOrigin.unitData.color, shadowId);
+                    
+                    // Track the pair
+                    state.objectPairs[originId] = shadowId;
+                    state.objectPairs[shadowId] = originId;
                     
                     // Exit shadow placement mode
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
                     
                     // Show all shadow buttons again
-                    document.querySelectorAll('.shadow-button').forEach(btn => {
-                        btn.style.display = 'block';
-                    });
+                    renderUnits();
                 } else if (state.selectedUnit) {
                     // Add new unit to cell
                     const unitId = state.selectedUnit === 'image17' ? `O${state.nextObjectId++}` : null;
@@ -694,6 +729,7 @@
                     state.units[key] = [];
                 });
                 state.nextObjectId = 1;
+                state.objectPairs = {};
                 renderUnits();
             });
             
@@ -853,28 +889,33 @@
                         unitImg.classList.add('unit-image17');
                         unitImg.style.color = unitData.color;
                         
-                        // Add shadow placement button (always visible)
-                        const shadowBtn = document.createElement('button');
-                        shadowBtn.className = 'shadow-button';
-                        shadowBtn.textContent = '+';
-                        shadowBtn.title = 'Place shadow';
-                        shadowBtn.style.display = 'block';
+                        // Check if this image17 has a paired shadow (image0)
+                        const hasShadow = state.objectPairs[unitData.id];
                         
-                        shadowBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            state.shadowPlacementMode = true;
-                            state.activeShadowOrigin = { cellId, unitData };
+                        // Add shadow placement button (only show if no shadow exists)
+                        if (!hasShadow) {
+                            const shadowBtn = document.createElement('button');
+                            shadowBtn.className = 'shadow-button';
+                            shadowBtn.textContent = '+';
+                            shadowBtn.title = 'Place shadow';
+                            shadowBtn.style.display = 'block';
                             
-                            // Hide all other shadow buttons
-                            document.querySelectorAll('.shadow-button').forEach(btn => {
-                                btn.style.display = 'none';
+                            shadowBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                state.shadowPlacementMode = true;
+                                state.activeShadowOrigin = { cellId, unitData };
+                                
+                                // Hide all other shadow buttons
+                                document.querySelectorAll('.shadow-button').forEach(btn => {
+                                    btn.style.display = 'none';
+                                });
+                                
+                                // Show message
+                                alert('Click on another cell to place the shadow (image0) for this object');
                             });
                             
-                            // Show message
-                            alert('Click on another cell to place the shadow (image0) for this object');
-                        });
-                        
-                        cell.appendChild(shadowBtn);
+                            cell.appendChild(shadowBtn);
+                        }
                     }
                     
                     // Add ID display if exists (always visible)
@@ -1003,15 +1044,32 @@
                                 drawHeight - (4 * scaleFactor)
                             );
                             
-                            // Draw ID if exists
+                            // Draw ID if exists (with white circle background)
                             if (unitData.id) {
+                                // Draw white circle background
+                                ctx.fillStyle = 'white';
+                                ctx.beginPath();
+                                ctx.arc(
+                                    posX + (config.cellSize * scaleFactor) / 2,
+                                    posY - (10 * scaleFactor),
+                                    12 * scaleFactor,
+                                    0,
+                                    Math.PI * 2
+                                );
+                                ctx.fill();
+                                ctx.strokeStyle = '#ddd';
+                                ctx.lineWidth = 1 * scaleFactor;
+                                ctx.stroke();
+                                
+                                // Draw ID text
                                 ctx.font = `bold ${12 * scaleFactor}px Arial`;
                                 ctx.fillStyle = 'black';
                                 ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
                                 ctx.fillText(
                                     unitData.id,
                                     posX + (config.cellSize * scaleFactor) / 2,
-                                    posY - (5 * scaleFactor)
+                                    posY - (10 * scaleFactor)
                                 );
                             }
                         }
@@ -1029,15 +1087,32 @@
                             );
                             ctx.fill();
                             
-                            // Draw ID if exists
+                            // Draw ID if exists (with white circle background)
                             if (unitData.id) {
+                                // Draw white circle background
+                                ctx.fillStyle = 'white';
+                                ctx.beginPath();
+                                ctx.arc(
+                                    posX + (config.cellSize * scaleFactor) / 2,
+                                    posY - (10 * scaleFactor),
+                                    12 * scaleFactor,
+                                    0,
+                                    Math.PI * 2
+                                );
+                                ctx.fill();
+                                ctx.strokeStyle = '#ddd';
+                                ctx.lineWidth = 1 * scaleFactor;
+                                ctx.stroke();
+                                
+                                // Draw ID text
                                 ctx.font = `bold ${12 * scaleFactor}px Arial`;
                                 ctx.fillStyle = 'black';
                                 ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
                                 ctx.fillText(
                                     unitData.id,
                                     posX + (config.cellSize * scaleFactor) / 2,
-                                    posY - (5 * scaleFactor)
+                                    posY - (10 * scaleFactor)
                                 );
                             }
                         }
