@@ -335,47 +335,6 @@
             margin-top: 2px;
         }
 
-        /* Shadow button styles */
-        .shadow-button {
-            position: absolute;
-            top: -15px;
-            right: -15px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 12px;
-            cursor: pointer;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .shadow-button:hover {
-            background-color: #3a7bc8;
-        }
-
-        /* Omen number styles */
-        .omen-number {
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            background-color: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 5;
-        }
-
         /* Responsywne style */
         @media (max-width: 600px) {
             .container {
@@ -424,8 +383,7 @@
             </div>
             
             <div class="section">
-                <div class="section-title">Board Background
-                <a href="test.html"><button>test</button></a>
+                <div class="section-title">Board Creator</div>
                 </div>
                 <div class="background-options" id="backgroundOptions">
                     <div class="background-option selected" data-bg="default.png">
@@ -528,8 +486,7 @@
             currentBackground: 'default.png',
             units: {},
             backgroundImage: null,
-            exportQuality: 2,
-            omenCounter: 1 // Counter for omen numbers
+            exportQuality: 2
         };
         
         // DOM elements
@@ -667,7 +624,6 @@
                 Object.keys(state.units).forEach(key => {
                     state.units[key] = [];
                 });
-                state.omenCounter = 1; // Reset omen counter
                 renderUnits();
             });
             
@@ -783,10 +739,6 @@
         // Render units on board
         function renderUnits() {
             document.querySelectorAll('.unit').forEach(el => el.remove());
-            document.querySelectorAll('.shadow-button').forEach(el => el.remove());
-            document.querySelectorAll('.omen-number').forEach(el => el.remove());
-            
-            let omenCount = 1; // Counter for omen numbers
             
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
@@ -805,12 +757,6 @@
                         unitImg.style.height = '90%';
                         unitImg.style.border = `2px solid ${unitData.color}`;
                         unitImg.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-                        
-                        // Add omen number
-                        const omenNumber = document.createElement('div');
-                        omenNumber.className = 'omen-number';
-                        omenNumber.textContent = `O${omenCount++}`;
-                        unitImg.appendChild(omenNumber);
                     } else {
                         unitImg.style.maxWidth = '80%';
                         unitImg.style.maxHeight = '80%';
@@ -822,32 +768,11 @@
                     if (unitData.unit === 'image17') {
                         unitImg.classList.add('unit-image17');
                         unitImg.style.color = unitData.color;
-                        
-                        // Add shadow button
-                        const shadowButton = document.createElement('button');
-                        shadowButton.className = 'shadow-button';
-                        shadowButton.textContent = 'S';
-                        shadowButton.title = 'Place Shadow';
-                        
-                        shadowButton.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            
-                            // Add image0 to this cell
-                            addUnitToCell(cellId, 'image0', state.currentColor);
-                            
-                            // Remove the button
-                            shadowButton.remove();
-                        });
-                        
-                        cell.appendChild(shadowButton);
                     }
                     
                     cell.appendChild(unitImg);
                 });
             });
-            
-            // Update the global omen counter
-            state.omenCounter = omenCount;
         }
         
         // Generate board image
@@ -910,7 +835,6 @@
             // 3. Then all units
             let unitsToDraw = 0;
             let unitsDrawn = 0;
-            let omenCount = 1;
             
             // Count all units to draw
             Object.values(state.units).forEach(units => {
@@ -963,28 +887,6 @@
                                 drawWidth - (4 * scaleFactor), 
                                 drawHeight - (4 * scaleFactor)
                             );
-                            
-                            // Draw omen number
-                            ctx.fillStyle = '#e74c3c';
-                            ctx.beginPath();
-                            ctx.arc(
-                                posX + (config.cellSize * scaleFactor * 0.1),
-                                posY + (config.cellSize * scaleFactor * 0.1),
-                                10 * scaleFactor,
-                                0,
-                                Math.PI * 2
-                            );
-                            ctx.fill();
-                            
-                            ctx.fillStyle = 'white';
-                            ctx.font = `${10 * scaleFactor}px Arial`;
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'middle';
-                            ctx.fillText(
-                                `O${omenCount++}`,
-                                posX + (config.cellSize * scaleFactor * 0.1),
-                                posY + (config.cellSize * scaleFactor * 0.1)
-                            );
                         }
                         
                         // For image17 draw dot with scaled size
@@ -1003,6 +905,24 @@
                         
                         unitsDrawn++;
                         if (unitsDrawn === unitsToDraw) {
+                            // 4. Finally grid (on top of units)
+                          /*  ctx.strokeStyle = 'rgba(204, 204, 204, 0.5)';
+                            ctx.lineWidth = 1 * scaleFactor;
+                            
+                            for (let x = 0; x <= gridSize.cols; x++) {
+                                ctx.beginPath();
+                                ctx.moveTo(x * config.cellSize * scaleFactor, 0);
+                                ctx.lineTo(x * config.cellSize * scaleFactor, gridSize.rows * config.cellSize * scaleFactor);
+                                ctx.stroke();
+                            }
+                            
+                            for (let y = 0; y <= gridSize.rows; y++) {
+                                ctx.beginPath();
+                                ctx.moveTo(0, y * config.cellSize * scaleFactor);
+                                ctx.lineTo(gridSize.cols * config.cellSize * scaleFactor, y * config.cellSize * scaleFactor);
+                                ctx.stroke(); 
+                            }*/
+                            
                             copyToClipboard();
                         }
                     };
