@@ -335,6 +335,40 @@
             margin-top: 2px;
         }
 
+        /* Shadow placement button */
+        .shadow-button {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+            display: none;
+        }
+
+        .shadow-button:hover {
+            background-color: #3a7bc8;
+        }
+
+        /* Unit ID display */
+        .unit-id {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 10px;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 1px 3px;
+            border-radius: 3px;
+            z-index: 5;
+        }
+
         /* Responsywne style */
         @media (max-width: 600px) {
             .container {
@@ -486,7 +520,10 @@
             currentBackground: 'default.png',
             units: {},
             backgroundImage: null,
-            exportQuality: 2
+            exportQuality: 2,
+            shadowPlacementMode: false,
+            activeShadowOrigin: null,
+            nextObjectId: 1
         };
         
         // DOM elements
@@ -551,6 +588,7 @@
                     
                     state.selectedUnit = `image${i}`;
                     state.deleteMode = false;
+                    state.shadowPlacementMode = false;
                     toggleDeleteModeBtn.classList.remove('active');
                 });
                 unitPalette.appendChild(unitDiv);
@@ -604,9 +642,18 @@
                     // Remove all units from cell
                     state.units[cellId] = [];
                     renderUnits();
+                } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
+                    // Place shadow (image0) with corresponding ID
+                    const originId = state.activeShadowOrigin.unitData.id;
+                    addUnitToCell(cellId, 'image0', state.activeShadowOrigin.unitData.color, `S${originId.substring(1)}`);
+                    
+                    // Exit shadow placement mode
+                    state.shadowPlacementMode = false;
+                    state.activeShadowOrigin = null;
                 } else if (state.selectedUnit) {
                     // Add new unit to cell
-                    addUnitToCell(cellId, state.selectedUnit, state.currentColor);
+                    const unitId = state.selectedUnit === 'image17' ? `O${state.nextObjectId++}` : null;
+                    addUnitToCell(cellId, state.selectedUnit, state.currentColor, unitId);
                 }
             });
             
@@ -624,6 +671,7 @@
                 Object.keys(state.units).forEach(key => {
                     state.units[key] = [];
                 });
+                state.nextObjectId = 1;
                 renderUnits();
             });
             
@@ -637,6 +685,8 @@
                         opt.classList.remove('selected');
                     });
                     state.selectedUnit = null;
+                    state.shadowPlacementMode = false;
+                    state.activeShadowOrigin = null;
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
                 }
@@ -719,14 +769,19 @@
         }
         
         // Add unit to cell
-        function addUnitToCell(cellId, unit, color) {
+        function addUnitToCell(cellId, unit, color, id = null) {
+            const unitData = { unit, color };
+            if (id) {
+                unitData.id = id;
+            }
+            
             // If adding image0, replace existing image0
             if (unit === 'image0') {
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== 'image0');
-                state.units[cellId].unshift({ unit, color }); // image0 always on bottom
+                state.units[cellId].unshift(unitData); // image0 always on bottom
             } else {
                 // Add new unit on top
-                state.units[cellId].push({ unit, color });
+                state.units[cellId].push(unitData);
                 
                 // Limit number of units per cell (optional)
                 if (state.units[cellId].length > 3) {
@@ -739,6 +794,8 @@
         // Render units on board
         function renderUnits() {
             document.querySelectorAll('.unit').forEach(el => el.remove());
+            document.querySelectorAll('.shadow-button').forEach(el => el.remove());
+            document.querySelectorAll('.unit-id').forEach(el => el.remove());
             
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
@@ -768,6 +825,48 @@
                     if (unitData.unit === 'image17') {
                         unitImg.classList.add('unit-image17');
                         unitImg.style.color = unitData.color;
+                        
+                        // Add shadow placement button
+                        const shadowBtn = document.createElement('button');
+                        shadowBtn.className = 'shadow-button';
+                        shadowBtn.textContent = '+';
+                        shadowBtn.title = 'Place shadow';
+                        shadowBtn.style.display = 'none';
+                        
+                        shadowBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            state.shadowPlacementMode = true;
+                            state.activeShadowOrigin = { cellId, unitData };
+                            
+                            // Hide all other shadow buttons
+                            document.querySelectorAll('.shadow-button').forEach(btn => {
+                                btn.style.display = 'none';
+                            });
+                            
+                            // Show message or change cursor
+                            alert('Click on another cell to place the shadow (image0) for this object');
+                        });
+                        
+                        cell.appendChild(shadowBtn);
+                        
+                        // Show/hide button on hover
+                        unitImg.addEventListener('mouseenter', () => {
+                            shadowBtn.style.display = 'block';
+                        });
+                        
+                        unitImg.addEventListener('mouseleave', () => {
+                            if (!state.shadowPlacementMode || state.activeShadowOrigin?.cellId !== cellId) {
+                                shadowBtn.style.display = 'none';
+                            }
+                        });
+                    }
+                    
+                    // Add ID display if exists
+                    if (unitData.id) {
+                        const idElement = document.createElement('div');
+                        idElement.className = 'unit-id';
+                        idElement.textContent = unitData.id;
+                        unitImg.appendChild(idElement);
                     }
                     
                     cell.appendChild(unitImg);
@@ -887,6 +986,17 @@
                                 drawWidth - (4 * scaleFactor), 
                                 drawHeight - (4 * scaleFactor)
                             );
+                            
+                            // Draw ID if exists
+                            if (unitData.id) {
+                                ctx.font = `${10 * scaleFactor}px Arial`;
+                                ctx.fillStyle = 'black';
+                                ctx.fillText(
+                                    unitData.id,
+                                    posX + offsetX + (5 * scaleFactor),
+                                    posY + offsetY + (12 * scaleFactor)
+                                );
+                            }
                         }
                         
                         // For image17 draw dot with scaled size
@@ -901,28 +1011,21 @@
                                 Math.PI * 2
                             );
                             ctx.fill();
+                            
+                            // Draw ID if exists
+                            if (unitData.id) {
+                                ctx.font = `${10 * scaleFactor}px Arial`;
+                                ctx.fillStyle = 'black';
+                                ctx.fillText(
+                                    unitData.id,
+                                    posX + (5 * scaleFactor),
+                                    posY + (12 * scaleFactor)
+                                );
+                            }
                         }
                         
                         unitsDrawn++;
                         if (unitsDrawn === unitsToDraw) {
-                            // 4. Finally grid (on top of units)
-                          /*  ctx.strokeStyle = 'rgba(204, 204, 204, 0.5)';
-                            ctx.lineWidth = 1 * scaleFactor;
-                            
-                            for (let x = 0; x <= gridSize.cols; x++) {
-                                ctx.beginPath();
-                                ctx.moveTo(x * config.cellSize * scaleFactor, 0);
-                                ctx.lineTo(x * config.cellSize * scaleFactor, gridSize.rows * config.cellSize * scaleFactor);
-                                ctx.stroke();
-                            }
-                            
-                            for (let y = 0; y <= gridSize.rows; y++) {
-                                ctx.beginPath();
-                                ctx.moveTo(0, y * config.cellSize * scaleFactor);
-                                ctx.lineTo(gridSize.cols * config.cellSize * scaleFactor, y * config.cellSize * scaleFactor);
-                                ctx.stroke(); 
-                            }*/
-                            
                             copyToClipboard();
                         }
                     };
