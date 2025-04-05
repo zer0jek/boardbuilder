@@ -40,7 +40,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 10px;
             margin: 0 auto;
-            overflow: hidden; /* Dodane aby zawartość nie wystawała */
+            overflow: hidden;
         }
         
         .board {
@@ -57,7 +57,7 @@
             left: auto;
             right: auto;
             bottom: auto;
-            background-size: contain; /* Zmienione z cover na contain */
+            background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             z-index: 1;
@@ -316,7 +316,7 @@
             width: 40px;
             height: 40px;
             border-radius: 3px;
-            background-size: contain; /* Zmienione z cover na contain */
+            background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             margin-right: 10px;
@@ -349,7 +349,7 @@
             font-size: 12px;
             cursor: pointer;
             z-index: 10;
-            display: none;
+            display: block;
         }
 
         .shadow-button:hover {
@@ -359,14 +359,17 @@
         /* Unit ID display */
         .unit-id {
             position: absolute;
-            top: 2px;
-            left: 2px;
-            font-size: 10px;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
             font-weight: bold;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 1px 3px;
-            border-radius: 3px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
             z-index: 5;
+            white-space: nowrap;
         }
 
         /* Responsywne style */
@@ -394,6 +397,20 @@
             button {
                 padding: 8px 12px;
                 font-size: 12px;
+            }
+            
+            .unit-id {
+                font-size: 10px;
+                top: -12px;
+                padding: 1px 4px;
+            }
+            
+            .shadow-button {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+                top: -8px;
+                right: -8px;
             }
         }
     </style>
@@ -650,6 +667,11 @@
                     // Exit shadow placement mode
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
+                    
+                    // Show all shadow buttons again
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
                 } else if (state.selectedUnit) {
                     // Add new unit to cell
                     const unitId = state.selectedUnit === 'image17' ? `O${state.nextObjectId++}` : null;
@@ -687,6 +709,11 @@
                     state.selectedUnit = null;
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
+                    
+                    // Show all shadow buttons
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
                 }
@@ -808,7 +835,7 @@
                     unitImg.src = `${unitData.unit}.png`;
                     unitImg.style.zIndex = index + 1;
                     
-                    // Zwiększony rozmiar jednostek
+                    // Set unit size
                     if (unitData.unit === 'image0') {
                         unitImg.style.width = '90%';
                         unitImg.style.height = '90%';
@@ -821,17 +848,17 @@
                         unitImg.style.position = 'absolute';
                     }
                     
-                    // Dodanie kropki dla image17
+                    // Add dot for image17
                     if (unitData.unit === 'image17') {
                         unitImg.classList.add('unit-image17');
                         unitImg.style.color = unitData.color;
                         
-                        // Add shadow placement button
+                        // Add shadow placement button (always visible)
                         const shadowBtn = document.createElement('button');
                         shadowBtn.className = 'shadow-button';
                         shadowBtn.textContent = '+';
                         shadowBtn.title = 'Place shadow';
-                        shadowBtn.style.display = 'none';
+                        shadowBtn.style.display = 'block';
                         
                         shadowBtn.addEventListener('click', (e) => {
                             e.stopPropagation();
@@ -843,30 +870,19 @@
                                 btn.style.display = 'none';
                             });
                             
-                            // Show message or change cursor
+                            // Show message
                             alert('Click on another cell to place the shadow (image0) for this object');
                         });
                         
                         cell.appendChild(shadowBtn);
-                        
-                        // Show/hide button on hover
-                        unitImg.addEventListener('mouseenter', () => {
-                            shadowBtn.style.display = 'block';
-                        });
-                        
-                        unitImg.addEventListener('mouseleave', () => {
-                            if (!state.shadowPlacementMode || state.activeShadowOrigin?.cellId !== cellId) {
-                                shadowBtn.style.display = 'none';
-                            }
-                        });
                     }
                     
-                    // Add ID display if exists
+                    // Add ID display if exists (always visible)
                     if (unitData.id) {
                         const idElement = document.createElement('div');
                         idElement.className = 'unit-id';
                         idElement.textContent = unitData.id;
-                        unitImg.appendChild(idElement);
+                        cell.appendChild(idElement);
                     }
                     
                     cell.appendChild(unitImg);
@@ -989,12 +1005,13 @@
                             
                             // Draw ID if exists
                             if (unitData.id) {
-                                ctx.font = `${10 * scaleFactor}px Arial`;
+                                ctx.font = `bold ${12 * scaleFactor}px Arial`;
                                 ctx.fillStyle = 'black';
+                                ctx.textAlign = 'center';
                                 ctx.fillText(
                                     unitData.id,
-                                    posX + offsetX + (5 * scaleFactor),
-                                    posY + offsetY + (12 * scaleFactor)
+                                    posX + (config.cellSize * scaleFactor) / 2,
+                                    posY - (5 * scaleFactor)
                                 );
                             }
                         }
@@ -1014,12 +1031,13 @@
                             
                             // Draw ID if exists
                             if (unitData.id) {
-                                ctx.font = `${10 * scaleFactor}px Arial`;
+                                ctx.font = `bold ${12 * scaleFactor}px Arial`;
                                 ctx.fillStyle = 'black';
+                                ctx.textAlign = 'center';
                                 ctx.fillText(
                                     unitData.id,
-                                    posX + (5 * scaleFactor),
-                                    posY + (12 * scaleFactor)
+                                    posX + (config.cellSize * scaleFactor) / 2,
+                                    posY - (5 * scaleFactor)
                                 );
                             }
                         }
