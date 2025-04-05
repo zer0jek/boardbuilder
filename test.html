@@ -75,20 +75,12 @@
             pointer-events: none;
         }
 
-        .unit-image17 {
-            position: relative;
+        .unit-image0 {
+            filter: drop-shadow(0 0 8px var(--unit-color, #ff0000));
         }
 
-        .unit-image17::after {
-            content: "•";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 32px;
-            color: inherit;
-            z-index: 4;
-            text-shadow: 0 0 3px white;
+        .unit-image17 {
+            filter: drop-shadow(0 0 12px var(--unit-color, #ff0000));
         }
         
         .cell {
@@ -211,7 +203,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
             flex: 1;
             font-size: 13px;
         }
@@ -239,6 +231,7 @@
         
         button.active {
             background-color: #c0392b;
+            box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.3);
         }
         
         button.info {
@@ -343,56 +336,6 @@
             font-size: 11px;
             color: #999;
             margin-top: 2px;
-        }
-
-        /* Shadow placement button */
-        .shadow-button {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 12px;
-            cursor: pointer;
-            z-index: 10;
-            display: block;
-        }
-
-        .shadow-button:hover {
-            background-color: #3a7bc8;
-        }
-
-        /* Unit ID display */
-        .unit-id {
-            position: absolute;
-            font-size: 12px;
-            font-weight: bold;
-            background-color: white;
-            padding: 2px 6px;
-            border-radius: 50%;
-            border: 1px solid #ddd;
-            z-index: 5;
-            white-space: nowrap;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 24px;
-            height: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        .unit-id.image17 {
-            top: -10px;
-            right: -10px;
-        }
-
-        .unit-id.image0 {
-            bottom: -10px;
-            left: -10px;
         }
 
         /* Modal styles */
@@ -550,30 +493,6 @@
                 font-size: 12px;
             }
             
-            .unit-id {
-                font-size: 10px;
-                width: 20px;
-                height: 20px;
-            }
-            
-            .unit-id.image17 {
-                top: -8px;
-                right: -8px;
-            }
-
-            .unit-id.image0 {
-                bottom: -8px;
-                left: -8px;
-            }
-            
-            .shadow-button {
-                width: 20px;
-                height: 20px;
-                font-size: 10px;
-                top: -8px;
-                right: -8px;
-            }
-
             .modal-content {
                 width: 90%;
             }
@@ -651,25 +570,21 @@
             <div class="section">
                 <div class="section-title">Effects</div>
                 <div class="color-picker-container">
-                    <label for="shapeColor">Shape Color:</label>
+                    <label for="shapeColor">Shadow Color:</label>
                     <input type="color" id="shapeColor" value="#ff0000">
                     <div class="color-preview" id="colorPreview" style="background-color: #ff0000;"></div>
                 </div>
             </div>
 
-            <div class="section">
-                <div class="section-title">Export Quality</div>
-                <select id="qualitySelect">
-                    <option value="1">Low</option>
-                    <option value="2" selected>Standard</option>
-                    <option value="3">High</option>
-                </select>
-            </div>
-            
             <div class="divider"></div>
             
             <div class="section">
                 <div class="section-title">Export</div>
+                <select id="qualitySelect">
+                    <option value="1">Low Quality</option>
+                    <option value="2" selected>Standard Quality</option>
+                    <option value="3">High Quality</option>
+                </select>
                 <button id="generateImage">Generate & Copy to Clipboard</button>
             </div>
         </div>
@@ -685,7 +600,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">Units Information</div>
-                <button class="close-modal">&times;</button>
+                <button class="close-modal" data-modal="unitsInfoModal">&times;</button>
             </div>
             <div class="units-info-grid" id="unitsInfoGrid">
                 <!-- Units will be added here dynamically -->
@@ -698,12 +613,12 @@
         <div class="unit-detail-content">
             <div class="modal-header">
                 <div class="modal-title">Unit Details</div>
-                <button class="close-modal">&times;</button>
+                <button class="close-modal" data-modal="unitDetailModal">&times;</button>
             </div>
             <div class="unit-detail-image" id="unitDetailImage"></div>
             <div class="unit-detail-name" id="unitDetailName"></div>
             <div class="unit-detail-description" id="unitDetailDescription"></div>
-            <button class="close-modal">Close</button>
+            <button class="close-modal" data-modal="unitDetailModal">Close</button>
         </div>
     </div>
 
@@ -739,7 +654,7 @@
             unitCount: 25,
             cellSize: window.innerWidth < 600 ? 50 : 80,
             unitNames: {
-                'image0': 'Shadow',
+                'image0': 'Shadow Unit',
                 'image1': 'Unit 1',
                 'image2': 'Unit 2',
                 'image3': 'Unit 3',
@@ -766,10 +681,10 @@
                 'image24': 'Unit 24'
             },
             unitDescriptions: {
-                'image0': 'This is a shadow unit that can be paired with special units. It creates a visual connection between related objects on the board.',
+                'image0': 'This unit creates a shadow effect with customizable color. The shadow size is slightly smaller than the standard glow effect.',
                 'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
-                'image17': 'Special interactive unit that can be connected with shadow units. Click the + button to create a connection to a shadow unit on another cell.',
+                'image17': 'Special unit with a stronger glow effect. The glow size is larger than the standard shadow effect.',
                 // Add descriptions for other units as needed
             }
         };
@@ -785,10 +700,7 @@
             backgroundImage: null,
             exportQuality: 2,
             shadowPlacementMode: false,
-            activeShadowOrigin: null,
-            nextObjectId: 1,
-            objectPairs: {}, // Tracks pairs of O# and S# units
-            availableIds: [] // Tracks available IDs for reuse
+            activeShadowOrigin: null
         };
         
         // DOM elements
@@ -804,7 +716,6 @@
         const gridSizeSelect = document.getElementById('gridSizeSelect');
         const outputCanvas = document.getElementById('outputCanvas');
         const imageOutput = document.getElementById('imageOutput');
-        const enableShadow = document.getElementById('enableShadow');
         const qualitySelect = document.getElementById('qualitySelect');
         const unitsInfoBtn = document.getElementById('unitsInfoBtn');
         const unitsInfoModal = document.getElementById('unitsInfoModal');
@@ -854,6 +765,11 @@
             unitDetailName.textContent = config.unitNames[unitKey] || unitKey;
             unitDetailDescription.textContent = config.unitDescriptions[unitKey] || 'No additional information available for this unit.';
             unitDetailModal.style.display = 'flex';
+        }
+        
+        // Close specific modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
         }
         
         // Load background image
@@ -915,8 +831,6 @@
             
             // Initialize empty board
             state.units = {};
-            state.objectPairs = {};
-            state.availableIds = [];
             
             for (let y = 0; y < gridSize.rows; y++) {
                 for (let x = 0; x < gridSize.cols; x++) {
@@ -933,16 +847,6 @@
             }
         }
         
-        // Get next available ID
-        function getNextId() {
-            // First try to reuse available IDs
-            if (state.availableIds.length > 0) {
-                return `O${state.availableIds.shift()}`;
-            }
-            // Otherwise create new ID
-            return `O${state.nextObjectId++}`;
-        }
-        
         // Set up event listeners
         function setupEventListeners() {
             // Cell click - add or remove unit
@@ -956,55 +860,12 @@
                 const cellId = cell.dataset.id;
                 
                 if (state.deleteMode) {
-                    // Check if we're deleting an image0 or image17 and handle pairs
-                    const units = state.units[cellId];
-                    units.forEach(unit => {
-                        if (unit.id && unit.unit === 'image0') {
-                            // When deleting image0, just remove the pair reference
-                            const originId = state.objectPairs[unit.id];
-                            if (originId) {
-                                delete state.objectPairs[unit.id];
-                                delete state.objectPairs[originId];
-                                
-                                // Add the ID back to available IDs for reuse
-                                const idNum = parseInt(unit.id.substring(1));
-                                if (!state.availableIds.includes(idNum)) {
-                                    state.availableIds.push(idNum);
-                                    state.availableIds.sort((a, b) => a - b);
-                                }
-                            }
-                        }
-                    });
-                    
                     // Remove all units from cell
                     state.units[cellId] = [];
                     renderUnits();
-                } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
-                    // Place shadow (image0) with corresponding ID
-                    const originId = state.activeShadowOrigin.unitData.id;
-                    const shadowId = `S${originId.substring(1)}`;
-                    
-                    // Remove any existing shadow with this ID
-                    Object.keys(state.units).forEach(key => {
-                        state.units[key] = state.units[key].filter(u => u.id !== shadowId);
-                    });
-                    
-                    addUnitToCell(cellId, 'image0', state.activeShadowOrigin.unitData.color, shadowId);
-                    
-                    // Track the pair
-                    state.objectPairs[originId] = shadowId;
-                    state.objectPairs[shadowId] = originId;
-                    
-                    // Exit shadow placement mode
-                    state.shadowPlacementMode = false;
-                    state.activeShadowOrigin = null;
-                    
-                    // Show all shadow buttons again
-                    renderUnits();
                 } else if (state.selectedUnit) {
                     // Add new unit to cell
-                    const unitId = state.selectedUnit === 'image17' ? getNextId() : null;
-                    addUnitToCell(cellId, state.selectedUnit, state.currentColor, unitId);
+                    addUnitToCell(cellId, state.selectedUnit, state.currentColor);
                 }
             });
             
@@ -1022,9 +883,6 @@
                 Object.keys(state.units).forEach(key => {
                     state.units[key] = [];
                 });
-                state.nextObjectId = 1;
-                state.objectPairs = {};
-                state.availableIds = [];
                 renderUnits();
             });
             
@@ -1038,13 +896,6 @@
                         opt.classList.remove('selected');
                     });
                     state.selectedUnit = null;
-                    state.shadowPlacementMode = false;
-                    state.activeShadowOrigin = null;
-                    
-                    // Show all shadow buttons
-                    document.querySelectorAll('.shadow-button').forEach(btn => {
-                        btn.style.display = 'block';
-                    });
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
                 }
@@ -1125,10 +976,8 @@
             // Close modal buttons
             closeModalBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    if (e.target === btn || e.target.classList.contains('close-modal')) {
-                        unitsInfoModal.style.display = 'none';
-                        unitDetailModal.style.display = 'none';
-                    }
+                    const modalId = btn.dataset.modal;
+                    closeModal(modalId);
                 });
             });
 
@@ -1161,16 +1010,13 @@
         }
         
         // Add unit to cell
-        function addUnitToCell(cellId, unit, color, id = null) {
+        function addUnitToCell(cellId, unit, color) {
             const unitData = { unit, color };
-            if (id) {
-                unitData.id = id;
-            }
             
-            // If adding image0, replace existing image0
-            if (unit === 'image0') {
-                state.units[cellId] = state.units[cellId].filter(u => u.unit !== 'image0');
-                state.units[cellId].unshift(unitData); // image0 always on bottom
+            // If adding image0 or image17, replace existing one
+            if (unit === 'image0' || unit === 'image17') {
+                state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
+                state.units[cellId].unshift(unitData); // Always on bottom
             } else {
                 // Add new unit on top
                 state.units[cellId].push(unitData);
@@ -1186,8 +1032,6 @@
         // Render units on board
         function renderUnits() {
             document.querySelectorAll('.unit').forEach(el => el.remove());
-            document.querySelectorAll('.shadow-button').forEach(el => el.remove());
-            document.querySelectorAll('.unit-id').forEach(el => el.remove());
             
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
@@ -1200,59 +1044,15 @@
                     unitImg.src = `${unitData.unit}.png`;
                     unitImg.style.zIndex = index + 1;
                     
-                    // Set unit size
-                    if (unitData.unit === 'image0') {
-                        unitImg.style.width = '90%';
-                        unitImg.style.height = '90%';
-                        unitImg.style.border = `2px solid ${unitData.color}`;
-                        unitImg.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                    // Apply shadow/glow effect
+                    if (unitData.unit === 'image0' || unitData.unit === 'image17') {
+                        unitImg.style.setProperty('--unit-color', unitData.color);
+                        unitImg.classList.add(unitData.unit);
                     } else {
                         unitImg.style.maxWidth = '80%';
                         unitImg.style.maxHeight = '80%';
                         unitImg.style.margin = 'auto';
                         unitImg.style.position = 'absolute';
-                    }
-                    
-                    // Add dot for image17
-                    if (unitData.unit === 'image17') {
-                        unitImg.classList.add('unit-image17');
-                        unitImg.style.color = unitData.color;
-                        
-                        // Check if this image17 has a paired shadow (image0)
-                        const hasShadow = state.objectPairs[unitData.id];
-                        
-                        // Add shadow placement button (only show if no shadow exists)
-                        if (!hasShadow) {
-                            const shadowBtn = document.createElement('button');
-                            shadowBtn.className = 'shadow-button';
-                            shadowBtn.textContent = '+';
-                            shadowBtn.title = 'Place shadow';
-                            shadowBtn.style.display = 'block';
-                            
-                            shadowBtn.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                state.shadowPlacementMode = true;
-                                state.activeShadowOrigin = { cellId, unitData };
-                                
-                                // Hide all other shadow buttons
-                                document.querySelectorAll('.shadow-button').forEach(btn => {
-                                    btn.style.display = 'none';
-                                });
-                                
-                                // Show message
-                                alert('Click on another cell to place the shadow (image0) for this object');
-                            });
-                            
-                            cell.appendChild(shadowBtn);
-                        }
-                    }
-                    
-                    // Add ID display if exists
-                    if (unitData.id) {
-                        const idElement = document.createElement('div');
-                        idElement.className = `unit-id ${unitData.unit}`;
-                        idElement.textContent = unitData.id;
-                        cell.appendChild(idElement);
                     }
                     
                     cell.appendChild(unitImg);
@@ -1362,88 +1162,25 @@
                             drawHeight
                         );
                         
-                        // For image0 draw square border with scaled thickness
-                        if (unitData.unit === 'image0') {
-                            ctx.strokeStyle = unitData.color;
-                            ctx.lineWidth = 2 * scaleFactor;
-                            ctx.strokeRect(
-                                posX + offsetX + (2 * scaleFactor), 
-                                posY + offsetY + (2 * scaleFactor), 
-                                drawWidth - (4 * scaleFactor), 
-                                drawHeight - (4 * scaleFactor)
-                            );
+                        // For image0 and image17 draw shadow/glow effect
+                        if (unitData.unit === 'image0' || unitData.unit === 'image17') {
+                            // Create shadow effect by drawing multiple semi-transparent circles
+                            const shadowSize = unitData.unit === 'image0' ? 8 : 12;
+                            const steps = 5;
+                            const centerX = posX + (config.cellSize * scaleFactor) / 2;
+                            const centerY = posY + (config.cellSize * scaleFactor) / 2;
                             
-                            // Draw ID if exists (with white circle background)
-                            if (unitData.id) {
-                                // Draw white circle background (bottom left)
-                                ctx.fillStyle = 'white';
-                                ctx.beginPath();
-                                ctx.arc(
-                                    posX + (10 * scaleFactor),
-                                    posY + (config.cellSize * scaleFactor) - (10 * scaleFactor),
-                                    12 * scaleFactor,
-                                    0,
-                                    Math.PI * 2
-                                );
-                                ctx.fill();
-                                ctx.strokeStyle = '#ddd';
-                                ctx.lineWidth = 1 * scaleFactor;
-                                ctx.stroke();
+                            for (let i = 0; i < steps; i++) {
+                                const radius = (shadowSize * scaleFactor) * (i / steps);
+                                const alpha = 0.3 * (1 - (i / steps));
                                 
-                                // Draw ID text
-                                ctx.font = `bold ${12 * scaleFactor}px Arial`;
-                                ctx.fillStyle = 'black';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillText(
-                                    unitData.id,
-                                    posX + (10 * scaleFactor),
-                                    posY + (config.cellSize * scaleFactor) - (10 * scaleFactor)
-                                );
-                            }
-                        }
-                        
-                        // For image17 draw dot with scaled size
-                        if (unitData.unit === 'image17') {
-                            ctx.fillStyle = unitData.color;
-                            ctx.beginPath();
-                            ctx.arc(
-                                posX + (config.cellSize * scaleFactor) / 2,
-                                posY + (config.cellSize * scaleFactor) / 2,
-                                6 * scaleFactor,
-                                0,
-                                Math.PI * 2
-                            );
-                            ctx.fill();
-                            
-                            // Draw ID if exists (with white circle background)
-                            if (unitData.id) {
-                                // Draw white circle background (top right)
-                                ctx.fillStyle = 'white';
+                                ctx.fillStyle = unitData.color;
+                                ctx.globalAlpha = alpha;
                                 ctx.beginPath();
-                                ctx.arc(
-                                    posX + (config.cellSize * scaleFactor) - (10 * scaleFactor),
-                                    posY + (10 * scaleFactor),
-                                    12 * scaleFactor,
-                                    0,
-                                    Math.PI * 2
-                                );
+                                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                                 ctx.fill();
-                                ctx.strokeStyle = '#ddd';
-                                ctx.lineWidth = 1 * scaleFactor;
-                                ctx.stroke();
-                                
-                                // Draw ID text
-                                ctx.font = `bold ${12 * scaleFactor}px Arial`;
-                                ctx.fillStyle = 'black';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillText(
-                                    unitData.id,
-                                    posX + (config.cellSize * scaleFactor) - (10 * scaleFactor),
-                                    posY + (10 * scaleFactor)
-                                );
                             }
+                            ctx.globalAlpha = 1.0;
                         }
                         
                         unitsDrawn++;
