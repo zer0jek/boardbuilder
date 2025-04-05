@@ -48,8 +48,8 @@
         
         .board-background {
             position: absolute;
-            top: 5px; /* Dopasowane do paddingu kontenera */
-            left: 5px; /* Dopasowane do paddingu kontenera */
+            top: 0px; /* Dopasowane do paddingu kontenera */
+            left: 0px; /* Dopasowane do paddingu kontenera */
             width: calc(100% - 20px); /* Odejmujemy padding */
             height: calc(100% - 20px); /* Odejmujemy padding */
             background-size: cover;
@@ -397,6 +397,15 @@
             </div>
             
             <div class="section">
+                <div class="section-title">Export Quality</div>
+                <select id="qualitySelect">
+                    <option value="1">Standard (1x)</option>
+                    <option value="2" selected>High (2x)</option>
+                    <option value="3">Ultra (3x)</option>
+                </select>
+            </div>
+            
+            <div class="section">
                 <div class="section-title">Units</div>
                 <div class="unit-palette" id="unitPalette"></div>
             </div>
@@ -465,7 +474,8 @@
             currentGridSize: '7x5',
             currentBackground: 'default.png',
             units: {},
-            backgroundImage: null
+            backgroundImage: null,
+            exportQuality: 2
         };
         
         // DOM elements
@@ -482,6 +492,7 @@
         const outputCanvas = document.getElementById('outputCanvas');
         const imageOutput = document.getElementById('imageOutput');
         const enableShadow = document.getElementById('enableShadow');
+        const qualitySelect = document.getElementById('qualitySelect');
         
         // Initialization
         function init() {
@@ -682,6 +693,11 @@
                 createBoard();
             });
 
+            // Quality selection
+            qualitySelect.addEventListener('change', (e) => {
+                state.exportQuality = parseInt(e.target.value);
+            });
+
             // Handle window resize
             window.addEventListener('resize', function() {
                 // Update cell size for mobile
@@ -753,10 +769,20 @@
             const gridSize = config.gridSizes[state.currentGridSize];
             const canvas = outputCanvas;
             const ctx = canvas.getContext('2d');
+            const scaleFactor = state.exportQuality;
             
-            // Set canvas size to match board size
-            canvas.width = gridSize.cols * config.cellSize;
-            canvas.height = gridSize.rows * config.cellSize;
+            // Set canvas size to match board size with quality scaling
+            canvas.width = gridSize.cols * config.cellSize * scaleFactor;
+            canvas.height = gridSize.rows * config.cellSize * scaleFactor;
+            
+            // Scale down display size to original dimensions
+            canvas.style.width = `${gridSize.cols * config.cellSize}px`;
+            canvas.style.height = `${gridSize.rows * config.cellSize}px`;
+            
+            // Set high quality rendering
+            ctx.imageSmoothingEnabled = false;
+            ctx.webkitImageSmoothingEnabled = false;
+            ctx.mozImageSmoothingEnabled = false;
             
             // 1. First white background
             ctx.fillStyle = 'white';
@@ -782,7 +808,7 @@
                     offsetY = 0;
                 }
                 
-                // Draw centered background
+                // Draw centered background with high quality
                 ctx.drawImage(
                     state.backgroundImage,
                     offsetX,
@@ -810,25 +836,25 @@
                     unitImg.src = `${unitData.unit}.png`;
                     
                     unitImg.onload = function() {
-                        const posX = parseInt(x) * config.cellSize;
-                        const posY = parseInt(y) * config.cellSize;
+                        const posX = parseInt(x) * config.cellSize * scaleFactor;
+                        const posY = parseInt(y) * config.cellSize * scaleFactor;
                         
-                        // Calculate size maintaining proportions
+                        // Calculate size maintaining proportions with quality scaling
                         const unitRatio = unitImg.naturalWidth / unitImg.naturalHeight;
                         let drawWidth, drawHeight;
                         
                         if (unitRatio > 1) {
-                            drawWidth = config.cellSize * 0.9;
+                            drawWidth = config.cellSize * 0.9 * scaleFactor;
                             drawHeight = drawWidth / unitRatio;
                         } else {
-                            drawHeight = config.cellSize * 0.9;
+                            drawHeight = config.cellSize * 0.9 * scaleFactor;
                             drawWidth = drawHeight * unitRatio;
                         }
                         
-                        const offsetX = (config.cellSize - drawWidth) / 2;
-                        const offsetY = (config.cellSize - drawHeight) / 2;
+                        const offsetX = (config.cellSize * scaleFactor - drawWidth) / 2;
+                        const offsetY = (config.cellSize * scaleFactor - drawHeight) / 2;
                         
-                        // Draw unit image
+                        // Draw unit image with high quality
                         ctx.drawImage(
                             unitImg, 
                             posX + offsetX, 
@@ -837,42 +863,57 @@
                             drawHeight
                         );
                         
-                        // For image0 draw square border
+                        // For image0 draw square border with scaled thickness
                         if (unitData.unit === 'image0') {
                             ctx.strokeStyle = unitData.color;
-                            ctx.lineWidth = 2;
+                            ctx.lineWidth = 2 * scaleFactor;
                             ctx.strokeRect(
-                                posX + offsetX + 2, 
-                                posY + offsetY + 2, 
-                                drawWidth - 4, 
-                                drawHeight - 4
+                                posX + offsetX + (2 * scaleFactor), 
+                                posY + offsetY + (2 * scaleFactor), 
+                                drawWidth - (4 * scaleFactor), 
+                                drawHeight - (4 * scaleFactor)
                             );
                         }
                         
-                        // For image17 draw dot
+                        // For image17 draw dot with scaled size
                         if (unitData.unit === 'image17') {
                             ctx.fillStyle = unitData.color;
-function generateImage() {
-    const gridSize = config.gridSizes[state.currentGridSize];
-    const scaleFactor = 2; // 2x większa rozdzielczość
-    const canvas = outputCanvas;
-    const ctx = canvas.getContext('2d');
-    
-    // Zwiększ rozdzielczość canvas
-    canvas.width = gridSize.cols * config.cellSize * scaleFactor;
-    canvas.height = gridSize.rows * config.cellSize * scaleFactor;
-    
-    // Skalowanie stylu CSS aby zachować oryginalny rozmiar
-    canvas.style.width = `${gridSize.cols * config.cellSize}px`;
-    canvas.style.height = `${gridSize.rows * config.cellSize}px`;
-    
-    // Ustaw wysoką jakość renderowania
-    ctx.imageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled = false;
-    
-    // Reszta funkcji pozostaje bez zmian...
-}
+                            ctx.beginPath();
+                            ctx.arc(
+                                posX + (config.cellSize * scaleFactor) / 2,
+                                posY + (config.cellSize * scaleFactor) / 2,
+                                6 * scaleFactor,
+                                0,
+                                Math.PI * 2
+                            );
+                            ctx.fill();
+                        }
+                        
+                        unitsDrawn++;
+                        if (unitsDrawn === unitsToDraw) {
+                            // 4. Finally grid (on top of units)
+                            ctx.strokeStyle = 'rgba(204, 204, 204, 0.5)';
+                            ctx.lineWidth = 1 * scaleFactor;
+                            
+                            for (let x = 0; x <= gridSize.cols; x++) {
+                                ctx.beginPath();
+                                ctx.moveTo(x * config.cellSize * scaleFactor, 0);
+                                ctx.lineTo(x * config.cellSize * scaleFactor, gridSize.rows * config.cellSize * scaleFactor);
+                                ctx.stroke();
+                            }
+                            
+                            for (let y = 0; y <= gridSize.rows; y++) {
+                                ctx.beginPath();
+                                ctx.moveTo(0, y * config.cellSize * scaleFactor);
+                                ctx.lineTo(gridSize.cols * config.cellSize * scaleFactor, y * config.cellSize * scaleFactor);
+                                ctx.stroke();
+                            }
+                            
+                            copyToClipboard();
+                        }
+                    };
+                });
+            });
             
             // Show generated image section
             imageOutput.style.display = 'block';
@@ -888,7 +929,7 @@ function generateImage() {
                     console.error('Could not copy image: ', error);
                     alert('Failed to copy image to clipboard. Please try again.');
                 });
-            }, 'image/png');
+            }, 'image/png', 1.0); // Highest quality for PNG
         }
         
         // Initialize application
