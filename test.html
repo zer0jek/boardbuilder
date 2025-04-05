@@ -76,11 +76,17 @@
         }
 
         .unit-image0 {
-            filter: drop-shadow(0 0 8px var(--unit-color, #ff0000));
+            width: 90%;
+            height: 90%;
+            z-index: 2;
+            filter: drop-shadow(0 0 15px var(--unit-color, #ff0000));
         }
 
         .unit-image17 {
-            filter: drop-shadow(0 0 12px var(--unit-color, #ff0000));
+            width: 90%;
+            height: 90%;
+            z-index: 4;
+            filter: drop-shadow(0 0 20px var(--unit-color, #ff0000));
         }
         
         .cell {
@@ -336,6 +342,27 @@
             font-size: 11px;
             color: #999;
             margin-top: 2px;
+        }
+
+        /* Shadow placement button */
+        .shadow-button {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+            display: block;
+        }
+
+        .shadow-button:hover {
+            background-color: #3a7bc8;
         }
 
         /* Modal styles */
@@ -681,10 +708,10 @@
                 'image24': 'Unit 24'
             },
             unitDescriptions: {
-                'image0': 'This unit creates a shadow effect with customizable color. The shadow size is slightly smaller than the standard glow effect.',
+                'image0': 'This is a shadow unit that appears below other units. It creates a shadow effect with customizable color.',
                 'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
-                'image17': 'Special unit with a stronger glow effect. The glow size is larger than the standard shadow effect.',
+                'image17': 'Special unit that can create connected shadow units. Click the + button to place a connected shadow unit.',
                 // Add descriptions for other units as needed
             }
         };
@@ -700,7 +727,8 @@
             backgroundImage: null,
             exportQuality: 2,
             shadowPlacementMode: false,
-            activeShadowOrigin: null
+            activeShadowOrigin: null,
+            unitPairs: {} // Tracks pairs of image17 and their connected image0
         };
         
         // DOM elements
@@ -831,6 +859,7 @@
             
             // Initialize empty board
             state.units = {};
+            state.unitPairs = {};
             
             for (let y = 0; y < gridSize.rows; y++) {
                 for (let x = 0; x < gridSize.cols; x++) {
@@ -860,8 +889,51 @@
                 const cellId = cell.dataset.id;
                 
                 if (state.deleteMode) {
+                    // Check if we're deleting an image17 that has a connected image0
+                    const units = state.units[cellId];
+                    units.forEach(unit => {
+                        if (unit.unit === 'image17' && state.unitPairs[cellId]) {
+                            // Remove the connected image0
+                            const shadowCellId = state.unitPairs[cellId];
+                            state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
+                            delete state.unitPairs[cellId];
+                            renderUnits();
+                        }
+                        if (unit.unit === 'image0') {
+                            // Find and remove the connection if this image0 was created by an image17
+                            for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
+                                if (shadowCellId === cellId) {
+                                    delete state.unitPairs[originCellId];
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    
                     // Remove all units from cell
                     state.units[cellId] = [];
+                    renderUnits();
+                } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
+                    // Place image0 connected to image17
+                    const originCellId = state.activeShadowOrigin.cellId;
+                    
+                    // Remove any existing connected image0
+                    if (state.unitPairs[originCellId]) {
+                        const oldShadowCellId = state.unitPairs[originCellId];
+                        state.units[oldShadowCellId] = state.units[oldShadowCellId].filter(u => u.unit !== 'image0');
+                    }
+                    
+                    // Add new image0 to current cell
+                    addUnitToCell(cellId, 'image0', state.currentColor);
+                    
+                    // Track the pair
+                    state.unitPairs[originCellId] = cellId;
+                    
+                    // Exit shadow placement mode
+                    state.shadowPlacementMode = false;
+                    state.activeShadowOrigin = null;
+                    
+                    // Show all shadow buttons again
                     renderUnits();
                 } else if (state.selectedUnit) {
                     // Add new unit to cell
@@ -883,6 +955,7 @@
                 Object.keys(state.units).forEach(key => {
                     state.units[key] = [];
                 });
+                state.unitPairs = {};
                 renderUnits();
             });
             
@@ -896,6 +969,13 @@
                         opt.classList.remove('selected');
                     });
                     state.selectedUnit = null;
+                    state.shadowPlacementMode = false;
+                    state.activeShadowOrigin = null;
+                    
+                    // Show all shadow buttons
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
                 }
@@ -1016,22 +1096,23 @@
             // If adding image0 or image17, replace existing one
             if (unit === 'image0' || unit === 'image17') {
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
-                state.units[cellId].unshift(unitData); // Always on bottom
-            } else {
-                // Add new unit on top
-                state.units[cellId].push(unitData);
-                
-                // Limit number of units per cell (optional)
-                if (state.units[cellId].length > 3) {
-                    state.units[cellId].shift(); // Remove oldest unit
-                }
             }
+            
+            // Add new unit
+            state.units[cellId].push(unitData);
+            
+            // Limit number of units per cell (optional)
+            if (state.units[cellId].length > 3) {
+                state.units[cellId].shift(); // Remove oldest unit
+            }
+            
             renderUnits();
         }
         
         // Render units on board
         function renderUnits() {
             document.querySelectorAll('.unit').forEach(el => el.remove());
+            document.querySelectorAll('.shadow-button').forEach(el => el.remove());
             
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
@@ -1043,16 +1124,41 @@
                     unitImg.className = `unit ${unitData.unit}`;
                     unitImg.src = `${unitData.unit}.png`;
                     unitImg.style.zIndex = index + 1;
+                    unitImg.style.setProperty('--unit-color', unitData.color);
                     
-                    // Apply shadow/glow effect
+                    // Apply specific styles for image0 and image17
                     if (unitData.unit === 'image0' || unitData.unit === 'image17') {
-                        unitImg.style.setProperty('--unit-color', unitData.color);
                         unitImg.classList.add(unitData.unit);
                     } else {
                         unitImg.style.maxWidth = '80%';
                         unitImg.style.maxHeight = '80%';
                         unitImg.style.margin = 'auto';
                         unitImg.style.position = 'absolute';
+                    }
+                    
+                    // Add shadow placement button for image17 if it doesn't have a connected image0
+                    if (unitData.unit === 'image17' && !state.unitPairs[cellId]) {
+                        const shadowBtn = document.createElement('button');
+                        shadowBtn.className = 'shadow-button';
+                        shadowBtn.textContent = '+';
+                        shadowBtn.title = 'Place connected shadow';
+                        shadowBtn.style.display = state.deleteMode ? 'none' : 'block';
+                        
+                        shadowBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            state.shadowPlacementMode = true;
+                            state.activeShadowOrigin = { cellId, unitData };
+                            
+                            // Hide all other shadow buttons
+                            document.querySelectorAll('.shadow-button').forEach(btn => {
+                                btn.style.display = 'none';
+                            });
+                            
+                            // Show message
+                            alert('Click on another cell to place the connected shadow (image0) for this unit');
+                        });
+                        
+                        cell.appendChild(shadowBtn);
                     }
                     
                     cell.appendChild(unitImg);
@@ -1126,73 +1232,105 @@
                 unitsToDraw += units.length;
             });
             
+            // First draw all image0 units (shadows)
             Object.keys(state.units).forEach(cellId => {
                 const [_, x, y] = cellId.split('-');
                 const units = state.units[cellId];
                 
                 units.forEach((unitData) => {
-                    const unitImg = new Image();
-                    unitImg.src = `${unitData.unit}.png`;
-                    
-                    unitImg.onload = function() {
-                        const posX = parseInt(x) * config.cellSize * scaleFactor;
-                        const posY = parseInt(y) * config.cellSize * scaleFactor;
+                    if (unitData.unit === 'image0') {
+                        const unitImg = new Image();
+                        unitImg.src = `${unitData.unit}.png`;
                         
-                        // Calculate size maintaining proportions with quality scaling
-                        const unitRatio = unitImg.naturalWidth / unitImg.naturalHeight;
-                        let drawWidth, drawHeight;
-                        
-                        if (unitRatio > 1) {
-                            drawWidth = config.cellSize * 0.9 * scaleFactor;
-                            drawHeight = drawWidth / unitRatio;
-                        } else {
-                            drawHeight = config.cellSize * 0.9 * scaleFactor;
-                            drawWidth = drawHeight * unitRatio;
-                        }
-                        
-                        const offsetX = (config.cellSize * scaleFactor - drawWidth) / 2;
-                        const offsetY = (config.cellSize * scaleFactor - drawHeight) / 2;
-                        
-                        // Draw unit image with high quality
-                        ctx.drawImage(
-                            unitImg, 
-                            posX + offsetX, 
-                            posY + offsetY, 
-                            drawWidth, 
-                            drawHeight
-                        );
-                        
-                        // For image0 and image17 draw shadow/glow effect
-                        if (unitData.unit === 'image0' || unitData.unit === 'image17') {
-                            // Create shadow effect by drawing multiple semi-transparent circles
-                            const shadowSize = unitData.unit === 'image0' ? 8 : 12;
-                            const steps = 5;
-                            const centerX = posX + (config.cellSize * scaleFactor) / 2;
-                            const centerY = posY + (config.cellSize * scaleFactor) / 2;
-                            
-                            for (let i = 0; i < steps; i++) {
-                                const radius = (shadowSize * scaleFactor) * (i / steps);
-                                const alpha = 0.3 * (1 - (i / steps));
-                                
-                                ctx.fillStyle = unitData.color;
-                                ctx.globalAlpha = alpha;
-                                ctx.beginPath();
-                                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                                ctx.fill();
+                        unitImg.onload = function() {
+                            drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                            unitsDrawn++;
+                            if (unitsDrawn === unitsToDraw) {
+                                copyToClipboard();
                             }
-                            ctx.globalAlpha = 1.0;
-                        }
+                        };
+                    }
+                });
+            });
+            
+            // Then draw all other units
+            Object.keys(state.units).forEach(cellId => {
+                const [_, x, y] = cellId.split('-');
+                const units = state.units[cellId];
+                
+                units.forEach((unitData) => {
+                    if (unitData.unit !== 'image0') {
+                        const unitImg = new Image();
+                        unitImg.src = `${unitData.unit}.png`;
                         
-                        unitsDrawn++;
-                        if (unitsDrawn === unitsToDraw) {
-                            copyToClipboard();
-                        }
-                    };
+                        unitImg.onload = function() {
+                            drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                            unitsDrawn++;
+                            if (unitsDrawn === unitsToDraw) {
+                                copyToClipboard();
+                            }
+                        };
+                    }
                 });
             });
             
             // Show generated image section
             imageOutput.style.display = 'block';
+        }
+        
+        // Draw unit with shadow effect
+        function drawUnitWithShadow(ctx, x, y, unitData, scaleFactor) {
+            const posX = parseInt(x) * config.cellSize * scaleFactor;
+            const posY = parseInt(y) * config.cellSize * scaleFactor;
+            
+            // Calculate size maintaining proportions with quality scaling
+            const unitImg = new Image();
+            unitImg.src = `${unitData.unit}.png`;
+            
+            unitImg.onload = function() {
+                const unitRatio = unitImg.naturalWidth / unitImg.naturalHeight;
+                let drawWidth, drawHeight;
+                
+                if (unitRatio > 1) {
+                    drawWidth = config.cellSize * 0.9 * scaleFactor;
+                    drawHeight = drawWidth / unitRatio;
+                } else {
+                    drawHeight = config.cellSize * 0.9 * scaleFactor;
+                    drawWidth = drawHeight * unitRatio;
+                }
+                
+                const offsetX = (config.cellSize * scaleFactor - drawWidth) / 2;
+                const offsetY = (config.cellSize * scaleFactor - drawHeight) / 2;
+                
+                // Draw shadow/glow effect first
+                if (unitData.unit === 'image0' || unitData.unit === 'image17') {
+                    const shadowSize = unitData.unit === 'image0' ? 15 : 20;
+                    const steps = 5;
+                    const centerX = posX + (config.cellSize * scaleFactor) / 2;
+                    const centerY = posY + (config.cellSize * scaleFactor) / 2;
+                    
+                    for (let i = 0; i < steps; i++) {
+                        const radius = (shadowSize * scaleFactor) * (i / steps);
+                        const alpha = 0.3 * (1 - (i / steps));
+                        
+                        ctx.fillStyle = unitData.color;
+                        ctx.globalAlpha = alpha;
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.globalAlpha = 1.0;
+                }
+                
+                // Then draw the unit image
+                ctx.drawImage(
+                    unitImg, 
+                    posX + offsetX, 
+                    posY + offsetY, 
+                    drawWidth, 
+                    drawHeight
+                );
+            };
         }
         
         // Copy image to clipboard
