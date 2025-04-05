@@ -34,34 +34,34 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 10px;
-             /* Dodane aby przyciąć tło */
             margin: 0 auto;
+            overflow: hidden; /* Dodane aby zawartość nie wystawała */
         }
         
         .board {
             display: grid;
             position: relative;
             border: 1px solid #ddd;
-            z-index: 2; /* Wyżej niż tło */
+            z-index: 2;
             background-color: transparent;
         }
         
         .board-background {
             position: absolute;
-            top: auto; /* Dopasowane do paddingu kontenera */
-            left: auto; /* Dopasowane do paddingu kontenera */
-            width: calc(100% - 20px); /* Odejmujemy padding */
-            height: calc(100% - 20px); /* Odejmujemy padding */
-            background-size: cover;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            background-size: contain; /* Zmienione z cover na contain */
+            background-repeat: no-repeat;
             background-position: center;
-            z-index: 1; /* Pod planszą */
-        
+            z-index: 1;
         }
         
        .unit {
             position: absolute;
-            max-width: 80%; /* Zwiększone z 60% */
-            max-height: 80%; /* Zwiększone z 60% */
+            max-width: 80%;
+            max-height: 80%;
             object-fit: contain;
             z-index: 3;
             image-rendering: crisp-edges;
@@ -80,10 +80,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 32px; /* Zwiększony rozmiar kropki */
+            font-size: 32px;
             color: inherit;
-            z-index: 4; /* Wyższy niż jednostka */
-            text-shadow: 0 0 3px white; /* Dodanie cienia dla lepszej widoczności */
+            z-index: 4;
+            text-shadow: 0 0 3px white;
         }
         
         .cell {
@@ -312,10 +312,12 @@
             width: 40px;
             height: 40px;
             border-radius: 3px;
-            background-size: cover;
+            background-size: contain; /* Zmienione z cover na contain */
+            background-repeat: no-repeat;
             background-position: center;
             margin-right: 10px;
             border: 1px solid #ddd;
+            background-color: white;
         }
         
         .background-name {
@@ -371,6 +373,7 @@
                 <div class="section-title">Board Size</div>
                 <select id="gridSizeSelect">
                     <option value="7x5">7x5 (Default)</option>
+                    <option value="7x10">7x10 (2 Players)</option>
                     <option value="7x7">7x7 (Tower)</option>
                 </select>
             </div>
@@ -392,7 +395,6 @@
                             <div class="background-type">7x5</div>
                         </div>
                     </div>
-                    
                 </div>
             </div>
             
@@ -417,8 +419,6 @@
                     <input type="color" id="shapeColor" value="#ff0000">
                     <div class="color-preview" id="colorPreview" style="background-color: #ff0000;"></div>
                 </div>
-                
-                
             </div>
             
             <div class="divider"></div>
@@ -437,7 +437,6 @@
     <div id="imageOutput">
         <h3>Generated Image</h3>
         <canvas id="outputCanvas"></canvas>
-        
     </div>
 
     <script>
@@ -450,7 +449,14 @@
                     backgrounds: [
                         { id: 'default.png', name: 'Normal', type: '7x5' },
                         { id: 'default0.png', name: 'Hard', type: '7x5' }
-                        
+                    ] 
+                },
+                '7x10': { 
+                    cols: 7, 
+                    rows: 11, 
+                    backgrounds: [
+                        { id: '2default.png', name: '2 Players Normal', type: '7x10' },
+                        { id: '2default1.png', name: '2 Players Hard', type: '7x10' }
                     ] 
                 },
                 '7x7': { 
@@ -742,13 +748,13 @@
                     
                     // Zwiększony rozmiar jednostek
                     if (unitData.unit === 'image0') {
-                        unitImg.style.width = '90%'; /* Zwiększone z 80% */
-                        unitImg.style.height = '90%'; /* Zwiększone z 80% */
+                        unitImg.style.width = '90%';
+                        unitImg.style.height = '90%';
                         unitImg.style.border = `2px solid ${unitData.color}`;
                         unitImg.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
                     } else {
-                        unitImg.style.maxWidth = '80%'; /* Zwiększone z 60% */
-                        unitImg.style.maxHeight = '80%'; /* Zwiększone z 60% */
+                        unitImg.style.maxWidth = '80%';
+                        unitImg.style.maxHeight = '80%';
                         unitImg.style.margin = 'auto';
                         unitImg.style.position = 'absolute';
                     }
@@ -796,12 +802,15 @@
                 
                 let bgWidth, bgHeight, offsetX, offsetY;
                 
+                // Use contain strategy instead of cover to show full image
                 if (bgRatio > boardRatio) {
+                    // Image is wider than board - fit to width
                     bgWidth = canvas.width;
                     bgHeight = canvas.width / bgRatio;
                     offsetX = 0;
                     offsetY = (canvas.height - bgHeight) / 2;
                 } else {
+                    // Image is taller than board - fit to height
                     bgHeight = canvas.height;
                     bgWidth = canvas.height * bgRatio;
                     offsetX = (canvas.width - bgWidth) / 2;
