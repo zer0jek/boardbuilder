@@ -12,6 +12,8 @@
             --shadow-color: rgba(0,0,0,0.1);
             --border-radius: 8px;
             --transition-speed: 0.3s;
+            --top-bar-height: 60px;
+            --top-bar-expanded-height: 200px;
         }
         
         * {
@@ -21,17 +23,112 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background-color: #f5f5f5;
             color: #333;
             min-height: 100vh;
             line-height: 1.6;
+            padding-top: var(--top-bar-height);
         }
         
-        h1, h2, h3 {
-            color: #444;
-            margin-top: 0;
-            animation: fadeIn 0.5s ease-out;
+        /* Fixed Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--top-bar-height);
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: height var(--transition-speed) ease;
+            overflow: hidden;
+        }
+        
+        .top-bar.expanded {
+            height: var(--top-bar-expanded-height);
+        }
+        
+        .app-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .top-bar-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .top-bar-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color var(--transition-speed) ease;
+        }
+        
+        .top-bar-button:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .top-bar-button i {
+            margin-right: 5px;
+        }
+        
+        .top-bar-content {
+            position: absolute;
+            top: var(--top-bar-height);
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            background-color: #34495e;
+            display: none;
+        }
+        
+        .top-bar.expanded .top-bar-content {
+            display: block;
+        }
+        
+        .top-bar-section {
+            margin-bottom: 15px;
+        }
+        
+        .top-bar-section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #ecf0f1;
+        }
+        
+        .top-bar-section-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .quick-action {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .quick-action:hover {
+            background-color: #3a7bc8;
+            transform: translateY(-2px);
         }
         
         .container {
@@ -39,7 +136,7 @@
             flex-wrap: wrap;
             gap: 20px;
             max-width: 1200px;
-            margin: auto;
+            margin: 20px auto;
             padding-bottom: 20px;
         }
         
@@ -72,43 +169,16 @@
         
         .board-background {
             position: absolute;
-            top: auto;
-            left: auto;
-            width: contain;
-            height: contain;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             z-index: 1;
             background-color: rgba(255,255,255,0.7);
             transition: opacity var(--transition-speed) ease;
-        }
-        
-        .unit {
-            position: absolute;
-            object-fit: contain;
-            z-index: 3;
-            image-rendering: crisp-edges;
-            background-color: transparent;
-            margin: auto;
-            pointer-events: none;
-            max-width: 80%;
-            max-height: 80%;
-            transition: transform var(--transition-speed) ease, filter var(--transition-speed) ease;
-        }
-
-        .unit-image0 {
-            z-index: 2;
-            filter: 
-                drop-shadow(0 0 15px var(--unit-color, #ff0000))
-                drop-shadow(0 0 25px var(--unit-color, #ff0000));
-        }
-
-        .unit-image17 {
-            z-index: 4;
-            filter: 
-                drop-shadow(0 0 10px var(--unit-color, #ff0000))
-                drop-shadow(0 0 20px var(--unit-color, #ff0000));
         }
         
         .cell {
@@ -123,6 +193,99 @@
         .cell:hover {
             background-color: rgba(255, 255, 255, 0.6);
             border-radius: 2px;
+        }
+        
+        .unit {
+            position: absolute;
+            object-fit: contain;
+            z-index: 3;
+            image-rendering: crisp-edges;
+            background-color: transparent;
+            margin: auto;
+            pointer-events: none;
+            max-width: 80%;
+            max-height: 80%;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .unit.omen {
+            z-index: 4;
+        }
+        
+        .unit.relic {
+            z-index: 2;
+        }
+        
+        /* Shadow effect classes */
+        .shadow-red {
+            --shadow-color: #ff0000;
+        }
+        
+        .shadow-blue {
+            --shadow-color: #0000ff;
+        }
+        
+        .shadow-green {
+            --shadow-color: #00ff00;
+        }
+        
+        .shadow-yellow {
+            --shadow-color: #ffff00;
+        }
+        
+        .shadow-purple {
+            --shadow-color: #ff00ff;
+        }
+        
+        .shadow-cyan {
+            --shadow-color: #00ffff;
+        }
+        
+        .shadow-orange {
+            --shadow-color: #ff9900;
+        }
+        
+        .shadow-violet {
+            --shadow-color: #9900ff;
+        }
+        
+        /* Shadow effects */
+        .omen-shadow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0.5;
+            background: radial-gradient(
+                circle,
+                var(--shadow-color) 0%,
+                transparent 70%
+            );
+            filter: blur(10px);
+        }
+        
+        .relic-shadow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.4;
+            background: radial-gradient(
+                circle,
+                var(--shadow-color) 0%,
+                transparent 70%
+            );
+            filter: blur(15px);
         }
         
         .controls-panel {
@@ -225,7 +388,6 @@
             outline: none;
         }
         
-        /* Enhanced Color Picker Styles */
         .color-picker-container {
             display: flex;
             flex-direction: column;
@@ -899,9 +1061,62 @@
             }
         }
     </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>Board Editor</h1>
+    <!-- Fixed Top Bar -->
+    <div class="top-bar" id="topBar">
+        <h1 class="app-title">Board Editor</h1>
+        <div class="top-bar-controls">
+            <button class="top-bar-button" id="toggleTopBar">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+            <button class="top-bar-button" id="helpButton">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
+        </div>
+        
+        <div class="top-bar-content">
+            <div class="top-bar-section">
+                <div class="top-bar-section-title">Quick Actions</div>
+                <div class="top-bar-section-content">
+                    <button class="quick-action" id="quickClear">
+                        <i class="fas fa-trash"></i> Clear Board
+                    </button>
+                    <button class="quick-action" id="quickSave">
+                        <i class="fas fa-save"></i> Save Layout
+                    </button>
+                    <button class="quick-action" id="quickLoad">
+                        <i class="fas fa-folder-open"></i> Load Layout
+                    </button>
+                </div>
+            </div>
+            
+            <div class="top-bar-section">
+                <div class="top-bar-section-title">Board Presets</div>
+                <div class="top-bar-section-content">
+                    <button class="quick-action" data-preset="default">
+                        <i class="fas fa-chess-board"></i> Default
+                    </button>
+                    <button class="quick-action" data-preset="twoPlayers">
+                        <i class="fas fa-users"></i> 2 Players
+                    </button>
+                    <button class="quick-action" data-preset="tower">
+                        <i class="fas fa-chess-rook"></i> Tower
+                    </button>
+                </div>
+            </div>
+            
+            <div class="top-bar-section">
+                <div class="top-bar-section-title">Info</div>
+                <div style="color: #ecf0f1; font-size: 13px;">
+                    Current layout: <span id="currentLayoutInfo">Default 7x5</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="board-container">
             <div class="board-background" id="boardBackground"></div>
@@ -1152,7 +1367,14 @@
             unitDetailDescription: document.getElementById('unitDetailDescription'),
             colorValue: document.getElementById('colorValue'),
             colorPresets: document.getElementById('colorPresets'),
-            toast: document.getElementById('toast')
+            toast: document.getElementById('toast'),
+            topBar: document.getElementById('topBar'),
+            toggleTopBar: document.getElementById('toggleTopBar'),
+            quickClear: document.getElementById('quickClear'),
+            quickSave: document.getElementById('quickSave'),
+            quickLoad: document.getElementById('quickLoad'),
+            helpButton: document.getElementById('helpButton'),
+            currentLayoutInfo: document.getElementById('currentLayoutInfo')
         };
         
         // Initialization
@@ -1162,12 +1384,80 @@
                 createBoard();
                 setupEventListeners();
                 createUnitsInfo();
+                setupTopBar();
                 updateColorDisplay(state.currentColor);
                 preloadUnitImages();
             }).catch(error => {
                 console.error('Error during initialization:', error);
                 showToast('Initialization failed. Please refresh the page.', 'error');
             });
+        }
+        
+        // Setup top bar functionality
+        function setupTopBar() {
+            // Toggle top bar expansion
+            elements.toggleTopBar.addEventListener('click', function() {
+                elements.topBar.classList.toggle('expanded');
+            });
+            
+            // Connect quick actions to existing functionality
+            elements.quickClear.addEventListener('click', function() {
+                elements.clearBoard.click();
+                elements.topBar.classList.remove('expanded');
+            });
+            
+            elements.quickSave.addEventListener('click', function() {
+                showToast('Save functionality coming soon!');
+                elements.topBar.classList.remove('expanded');
+            });
+            
+            elements.quickLoad.addEventListener('click', function() {
+                showToast('Load functionality coming soon!');
+                elements.topBar.classList.remove('expanded');
+            });
+            
+            // Board presets
+            document.querySelectorAll('[data-preset]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const preset = this.dataset.preset;
+                    switch(preset) {
+                        case 'default':
+                            elements.gridSizeSelect.value = '7x5';
+                            break;
+                        case 'twoPlayers':
+                            elements.gridSizeSelect.value = '7x10';
+                            break;
+                        case 'tower':
+                            elements.gridSizeSelect.value = '7x7';
+                            break;
+                    }
+                    elements.gridSizeSelect.dispatchEvent(new Event('change'));
+                    elements.currentLayoutInfo.textContent = this.textContent.trim();
+                    elements.topBar.classList.remove('expanded');
+                });
+            });
+            
+            // Help button
+            elements.helpButton.addEventListener('click', function() {
+                elements.unitsInfoBtn.click();
+                elements.topBar.classList.remove('expanded');
+            });
+            
+            // Close top bar when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!elements.topBar.contains(e.target)) {
+                    elements.topBar.classList.remove('expanded');
+                }
+            });
+            
+            // Update layout info when grid size changes
+            elements.gridSizeSelect.addEventListener('change', function() {
+                const optionText = this.options[this.selectedIndex].text;
+                elements.currentLayoutInfo.textContent = optionText;
+            });
+            
+            // Initialize layout info
+            elements.currentLayoutInfo.textContent = elements.gridSizeSelect.options[0].text;
         }
         
         // Preload unit images for better performance
@@ -1450,7 +1740,8 @@
         // Place connected relic for an Omen
         function placeConnectedRelic(cellId) {
             const originCellId = state.activeShadowOrigin.cellId;
-            const originColor = state.image17Colors[originCellId];
+            const originColor = state.image17Colors[originCellId].color;
+            const originColorClass = state.image17Colors[originCellId].colorClass;
             
             if (state.unitPairs[originCellId]) {
                 const oldShadowCellId = state.unitPairs[originCellId];
@@ -1477,10 +1768,36 @@
             addUnitToCell(cellId, unit, color);
             
             if (unit === 'image17') {
-                state.image17Colors[cellId] = color;
+                state.image17Colors[cellId] = { 
+                    color: color,
+                    colorClass: colorToClass(color)
+                };
             }
             
             showToast(`${config.unitNames[unit] || unit} placed`);
+        }
+        
+        // Convert color to class name
+        function colorToClass(color) {
+            const colorMap = {
+                '#ff0000': 'shadow-red',
+                '#0000ff': 'shadow-blue',
+                '#00ff00': 'shadow-green',
+                '#ffff00': 'shadow-yellow',
+                '#ff00ff': 'shadow-purple',
+                '#00ffff': 'shadow-cyan',
+                '#ff9900': 'shadow-orange',
+                '#9900ff': 'shadow-violet'
+            };
+            
+            // Find the closest matching color
+            const hexColor = color.toLowerCase();
+            if (colorMap[hexColor]) {
+                return colorMap[hexColor];
+            }
+            
+            // Default to red if no match found
+            return 'shadow-red';
         }
         
         // Handle color change
@@ -1712,13 +2029,26 @@
             }
             
             // For Omen and Relic, maintain their original colors
-            if (unit === 'image17' && state.image17Colors[cellId]) {
-                color = state.image17Colors[cellId];
+            if (unit === 'image17') {
+                // Store the color class for this Omen
+                const colorClass = colorToClass(color);
+                state.image17Colors[cellId] = { color, colorClass };
+                
+                // If this Omen has a connected Relic, update its color
+                if (state.unitPairs[cellId]) {
+                    const relicCellId = state.unitPairs[cellId];
+                    state.units[relicCellId] = state.units[relicCellId].map(u => {
+                        if (u.unit === 'image0') {
+                            return { ...u, color, colorClass };
+                        }
+                        return u;
+                    });
+                }
             } else if (unit === 'image0') {
                 // Find if this Relic is connected to an Omen
                 for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                     if (relicCellId === cellId) {
-                        color = state.image17Colors[omenCellId];
+                        color = state.image17Colors[omenCellId].color;
                         break;
                     }
                 }
@@ -1728,12 +2058,21 @@
             
             if (unit === 'image0' || unit === 'image17') {
                 const existingColor = existingUnit ? existingUnit.color : color;
+                const existingColorClass = existingUnit ? existingUnit.colorClass : colorToClass(color);
+                
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
-                state.units[cellId].push({ unit, color: existingColor });
+                state.units[cellId].push({ 
+                    unit, 
+                    color: existingColor,
+                    colorClass: existingColorClass
+                });
                 
                 // Store Omen color for connected Relics
                 if (unit === 'image17') {
-                    state.image17Colors[cellId] = existingColor;
+                    state.image17Colors[cellId] = { 
+                        color: existingColor,
+                        colorClass: existingColorClass
+                    };
                 }
             } else {
                 state.units[cellId].push({ unit, color });
@@ -1749,7 +2088,7 @@
         // Render units on board
         function renderUnits() {
             // Clear existing units and shadow buttons
-            document.querySelectorAll('.unit').forEach(el => el.remove());
+            document.querySelectorAll('.unit, .omen-shadow, .relic-shadow').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
             
             // First render all Relics (image0)
@@ -1787,16 +2126,22 @@
         // Create a unit element
         function createUnitElement(cell, unitData) {
             const unitImg = document.createElement('img');
-            unitImg.className = `unit ${unitData.unit}`;
+            unitImg.className = `unit ${unitData.unit === 'image17' ? 'omen' : 'relic'}`;
             unitImg.src = `${unitData.unit}.png`;
-            unitImg.style.setProperty('--unit-color', unitData.color);
             
-            if (unitData.unit === 'image0') {
-                unitImg.style.filter = `drop-shadow(0 0 15px ${unitData.color}) drop-shadow(0 0 25px ${unitData.color})`;
-            } else if (unitData.unit === 'image17') {
-                unitImg.style.filter = `drop-shadow(0 0 10px ${unitData.color}) drop-shadow(0 0 20px ${unitData.color})`;
-            }
+            // Add shadow class based on color
+            const shadowClass = unitData.colorClass || colorToClass(unitData.color);
+            unitImg.classList.add(shadowClass);
             
+            // Create shadow element
+            const shadow = document.createElement('div');
+            shadow.className = unitData.unit === 'image17' ? 'omen-shadow' : 'relic-shadow';
+            shadow.classList.add(shadowClass);
+            
+            // Add CSS variable for color
+            shadow.style.setProperty('--shadow-color', unitData.color);
+            
+            cell.appendChild(shadow);
             cell.appendChild(unitImg);
         }
         
@@ -1813,7 +2158,8 @@
                 state.activeShadowOrigin = { 
                     cellId, 
                     unitData,
-                    color: state.image17Colors[cellId] || unitData.color
+                    color: state.image17Colors[cellId].color,
+                    colorClass: state.image17Colors[cellId].colorClass
                 };
                 
                 // Hide other shadow buttons during placement
@@ -1937,8 +2283,9 @@
                 const steps = unitData.unit === 'image0' ? 12 : 8;
                 const centerX = posX + (config.cellSize * scaleFactor) / 2;
                 const centerY = posY + (config.cellSize * scaleFactor) / 2;
-                const maxAlpha = unitData.unit === 'image0' ? 0.5 : 0.4;
+                const maxAlpha = unitData.unit === 'image0' ? 0.4 : 0.5;
                 
+                // Draw multiple circles for glow effect
                 for (let i = 0; i < steps; i++) {
                     const radius = (shadowSize * scaleFactor) * (i / steps);
                     const alpha = maxAlpha * (1 - (i / steps));
