@@ -916,7 +916,7 @@
         // Create units info modal content
         function createUnitsInfo() {
             unitsInfoGrid.innerHTML = '';
-            for (let i = 0; i < config.unitCount; i++) {
+            for (let i = 1; i < config.unitCount; i++) {
                 const unitKey = `image${i}`;
                 const unitItem = document.createElement('div');
                 unitItem.className = 'unit-info-item';
