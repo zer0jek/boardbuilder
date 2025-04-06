@@ -201,7 +201,7 @@
             animation: pulse 0.5s ease;
         }
         
-        select, input[type="color"] {
+        select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
@@ -212,9 +212,86 @@
             transition: all 0.3s ease;
         }
         
-        select:focus, input[type="color"]:focus {
+        select:focus {
             border-color: #4a90e2;
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+        }
+        
+        /* Enhanced Color Picker Styles */
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .color-picker-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            min-width: 100px;
+        }
+        
+        input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 50px;
+            height: 50px;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+            border-radius: 8px;
+            padding: 0;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="color"]::-webkit-color-swatch {
+            border-radius: 6px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        input[type="color"]::-moz-color-swatch {
+            border-radius: 6px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        input[type="color"]:hover {
+            transform: scale(1.05);
+            border-color: #adb5bd;
+        }
+        
+        input[type="color"]:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+        
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+        }
+        
+        .color-preview:hover {
+            transform: scale(1.1);
         }
         
         .checkbox-container {
@@ -317,31 +394,6 @@
         
         #outputCanvas:hover {
             transform: scale(1.01);
-        }
-        
-        .color-picker-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .color-picker-container label {
-            font-size: 13px;
-            color: #555;
-            white-space: nowrap;
-        }
-        
-        .color-preview {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            transition: all 0.3s ease;
-        }
-        
-        .color-preview:hover {
-            transform: scale(1.1);
         }
         
         .divider {
@@ -688,6 +740,16 @@
                 width: 100px;
                 height: 100px;
             }
+            
+            .color-picker-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .color-picker-label {
+                min-width: auto;
+            }
         }
     </style>
 </head>
@@ -744,9 +806,12 @@
             <div class="section">
                 <div class="section-title">Effects</div>
                 <div class="color-picker-container">
-                    <label for="shapeColor">Shadow Color:</label>
-                    <input type="color" id="shapeColor" value="#ff0000">
-                    <div class="color-preview" id="colorPreview" style="background-color: #ff0000;"></div>
+                    <label for="shapeColor" class="color-picker-label">Shadow Color:</label>
+                    <input type="color" id="shapeColor" value="#ff0000" title="Select color for new units">
+                    <div class="color-preview" id="colorPreview" style="background-color: #ff0000;">NEW</div>
+                </div>
+                <div class="color-info" style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                    Color applies only to newly placed units
                 </div>
             </div>
 
@@ -986,11 +1051,6 @@
                     state.deleteMode = false;
                     state.shadowPlacementMode = false;
                     toggleDeleteModeBtn.classList.remove('active');
-                    
-                    if (state.selectedUnit === 'image0' || state.selectedUnit === 'image17') {
-                        state.currentColor = shapeColor.value;
-                        colorPreview.style.backgroundColor = state.currentColor;
-                    }
                 });
                 unitPalette.appendChild(unitDiv);
             }
@@ -1104,28 +1164,13 @@
             shapeColor.addEventListener('input', (e) => {
                 state.currentColor = e.target.value;
                 colorPreview.style.backgroundColor = state.currentColor;
+                colorPreview.textContent = "NEW";
                 
-                if (state.selectedUnit === 'image17') {
-                    Object.keys(state.units).forEach(cellId => {
-                        state.units[cellId].forEach(unit => {
-                            if (unit.unit === 'image17') {
-                                unit.color = state.currentColor;
-                                state.image17Colors[cellId] = state.currentColor;
-                                
-                                if (state.unitPairs[cellId]) {
-                                    const shadowCellId = state.unitPairs[cellId];
-                                    state.units[shadowCellId].forEach(shadowUnit => {
-                                        if (shadowUnit.unit === 'image0') {
-                                            shadowUnit.color = state.currentColor;
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    });
-                }
-                
-                renderUnits();
+                // Visual feedback
+                colorPreview.style.transform = "scale(1.1)";
+                setTimeout(() => {
+                    colorPreview.style.transform = "scale(1)";
+                }, 200);
             });
             
             generateImageBtn.addEventListener('click', generateImage);
@@ -1274,12 +1319,30 @@
                 state.units[cellId] = [];
             }
             
+            // For Omen and Relic, maintain their original colors
+            if (unit === 'image17' && state.image17Colors[cellId]) {
+                color = state.image17Colors[cellId];
+            } else if (unit === 'image0') {
+                // Find if this Relic is connected to an Omen
+                for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
+                    if (relicCellId === cellId) {
+                        color = state.image17Colors[omenCellId];
+                        break;
+                    }
+                }
+            }
+            
             const existingUnit = state.units[cellId].find(u => u.unit === unit);
             
             if (unit === 'image0' || unit === 'image17') {
                 const existingColor = existingUnit ? existingUnit.color : color;
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
                 state.units[cellId].push({ unit, color: existingColor });
+                
+                // Store Omen color for connected Relics
+                if (unit === 'image17') {
+                    state.image17Colors[cellId] = existingColor;
+                }
             } else {
                 state.units[cellId].push({ unit, color });
             }
