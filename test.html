@@ -220,78 +220,137 @@
         /* Enhanced Color Picker Styles */
         .color-picker-container {
             display: flex;
-            align-items: center;
-            gap: 15px;
+            flex-direction: column;
+            gap: 10px;
             margin-bottom: 15px;
-            padding: 10px;
+            padding: 15px;
             background-color: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .color-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
         }
         
         .color-picker-label {
             font-size: 14px;
             font-weight: 600;
             color: #495057;
-            min-width: 100px;
+        }
+        
+        .color-value {
+            font-size: 13px;
+            font-family: monospace;
+            color: #6c757d;
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .color-picker-main {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .color-input-wrapper {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .color-input-wrapper:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
         
         input[type="color"] {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 50px;
-            height: 50px;
+            width: 100%;
+            height: 100%;
             border: none;
             cursor: pointer;
-            background: transparent;
-            border-radius: 8px;
-            padding: 0;
-            border: 2px solid #dee2e6;
-            transition: all 0.3s ease;
-        }
-        
-        input[type="color"]::-webkit-color-swatch {
-            border-radius: 6px;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        input[type="color"]::-moz-color-swatch {
-            border-radius: 6px;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        input[type="color"]:hover {
-            transform: scale(1.05);
-            border-color: #adb5bd;
-        }
-        
-        input[type="color"]:focus {
-            outline: none;
-            border-color: #4a90e2;
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         
         .color-preview {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
             font-weight: bold;
             color: white;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
         }
         
-        .color-preview:hover {
+        .color-preview::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                      rgba(255,255,255,0.2) 0%, 
+                      rgba(255,255,255,0) 50%, 
+                      rgba(0,0,0,0.1) 100%);
+            pointer-events: none;
+        }
+        
+        .color-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .color-presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .color-preset {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-preset:hover {
             transform: scale(1.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+        
+        .color-preset.active {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .color-info {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+            line-height: 1.4;
         }
         
         .checkbox-container {
@@ -806,12 +865,31 @@
             <div class="section">
                 <div class="section-title">Effects</div>
                 <div class="color-picker-container">
-                    <label for="shapeColor" class="color-picker-label">Shadow Color:</label>
-                    <input type="color" id="shapeColor" value="#ff0000" title="Select color for new units">
-                    <div class="color-preview" id="colorPreview" style="background-color: #ff0000;">NEW</div>
-                </div>
-                <div class="color-info" style="font-size: 12px; color: #6c757d; margin-top: 5px;">
-                    Color applies only to newly placed units
+                    <div class="color-picker-header">
+                        <div class="color-picker-label">Shadow Color</div>
+                        <div class="color-value" id="colorValue">#ff0000</div>
+                    </div>
+                    <div class="color-picker-main">
+                        <div class="color-input-wrapper">
+                            <input type="color" id="shapeColor" value="#ff0000" title="Select color for new units">
+                            <div class="color-preview" id="colorPreview" style="background-color: #ff0000;">NEW</div>
+                        </div>
+                        <div class="color-actions">
+                            <div class="color-presets" id="colorPresets">
+                                <div class="color-preset" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                                <div class="color-preset" style="background-color: #00ff00;" data-color="#00ff00"></div>
+                                <div class="color-preset" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                                <div class="color-preset" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                                <div class="color-preset" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+                                <div class="color-preset" style="background-color: #00ffff;" data-color="#00ffff"></div>
+                                <div class="color-preset" style="background-color: #ff9900;" data-color="#ff9900"></div>
+                                <div class="color-preset" style="background-color: #9900ff;" data-color="#9900ff"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="color-info">
+                        Color applies only to newly placed units. Click on the color box or presets to change.
+                    </div>
                 </div>
             </div>
 
@@ -939,8 +1017,8 @@
             exportQuality: 2,
             shadowPlacementMode: false,
             activeShadowOrigin: null,
-            unitPairs: {},
-            image17Colors: {},
+            unitPairs: {}, // Stores Omen -> Relic connections
+            image17Colors: {}, // Stores colors for Omens
             isResizing: false,
             resizeTimer: null
         };
@@ -967,6 +1045,7 @@
         const unitDetailImage = document.getElementById('unitDetailImage');
         const unitDetailName = document.getElementById('unitDetailName');
         const unitDetailDescription = document.getElementById('unitDetailDescription');
+        const colorValue = document.getElementById('colorValue');
         
         // Initialization
         function init() {
@@ -975,6 +1054,7 @@
                 createBoard();
                 setupEventListeners();
                 createUnitsInfo();
+                updateColorDisplay(state.currentColor);
             });
         }
         
@@ -1112,13 +1192,15 @@
                     const units = state.units[cellId];
                     let hadConnection = false;
                     
-                    units.forEach(unit => {
+                    // Remove all units except Omens (image17) if they have connections
+                    state.units[cellId] = units.filter(unit => {
                         if (unit.unit === 'image17' && state.unitPairs[cellId]) {
                             const shadowCellId = state.unitPairs[cellId];
                             state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
                             delete state.unitPairs[cellId];
                             delete state.image17Colors[cellId];
                             hadConnection = true;
+                            return true; // Keep the Omen
                         }
                         if (unit.unit === 'image0') {
                             for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
@@ -1130,11 +1212,14 @@
                                 }
                             }
                         }
+                        return false; // Remove other units
                     });
                     
-                    state.units[cellId] = [];
-                    
                     if (hadConnection) {
+                        renderUnits();
+                    } else {
+                        // If no special connections were found, just clear the cell
+                        state.units[cellId] = [];
                         renderUnits();
                     }
                 } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
@@ -1163,13 +1248,35 @@
             
             shapeColor.addEventListener('input', (e) => {
                 state.currentColor = e.target.value;
-                colorPreview.style.backgroundColor = state.currentColor;
-                colorPreview.textContent = "NEW";
+                updateColorDisplay(state.currentColor);
                 
                 // Visual feedback
                 colorPreview.style.transform = "scale(1.1)";
                 setTimeout(() => {
                     colorPreview.style.transform = "scale(1)";
+                }, 200);
+            });
+            
+            // Color preset click handler
+            document.getElementById('colorPresets').addEventListener('click', (e) => {
+                const preset = e.target.closest('.color-preset');
+                if (!preset) return;
+                
+                const color = preset.dataset.color;
+                state.currentColor = color;
+                shapeColor.value = color;
+                updateColorDisplay(color);
+                
+                // Update active state
+                document.querySelectorAll('.color-preset').forEach(p => {
+                    p.classList.remove('active');
+                });
+                preset.classList.add('active');
+                
+                // Visual feedback
+                preset.style.transform = "scale(1.2)";
+                setTimeout(() => {
+                    preset.style.transform = "scale(1.1)";
                 }, 200);
             });
             
@@ -1195,9 +1302,12 @@
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
                     
-                    document.querySelectorAll('.shadow-button').forEach(btn => {
-                        btn.style.display = 'none';
-                    });
+                    // Hide shadow buttons only if not in shadow placement mode
+                    if (!state.shadowPlacementMode) {
+                        document.querySelectorAll('.shadow-button').forEach(btn => {
+                            btn.style.display = 'none';
+                        });
+                    }
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
                     document.querySelectorAll('.shadow-button').forEach(btn => {
@@ -1313,6 +1423,21 @@
             });
         }
         
+        // Update color display elements
+        function updateColorDisplay(color) {
+            colorPreview.style.backgroundColor = color;
+            colorValue.textContent = color.toUpperCase();
+            colorPreview.textContent = color.toUpperCase();
+            
+            // Determine text color based on brightness
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            colorPreview.style.color = brightness > 128 ? '#000' : '#fff';
+        }
+        
         // Add unit to cell
         function addUnitToCell(cellId, unit, color) {
             if (!state.units[cellId]) {
@@ -1393,7 +1518,8 @@
                         if (unitData.unit === 'image17') {
                             unitImg.style.filter = `drop-shadow(0 0 10px ${unitData.color}) drop-shadow(0 0 20px ${unitData.color})`;
                             
-                            if (!state.unitPairs[cellId] && !state.deleteMode) {
+                            // Show shadow button if not in delete mode or if in shadow placement mode
+                            if (!state.deleteMode || state.shadowPlacementMode) {
                                 const shadowBtn = document.createElement('button');
                                 shadowBtn.className = 'shadow-button';
                                 shadowBtn.textContent = '+';
@@ -1402,7 +1528,11 @@
                                 shadowBtn.addEventListener('click', (e) => {
                                     e.stopPropagation();
                                     state.shadowPlacementMode = true;
-                                    state.activeShadowOrigin = { cellId, unitData };
+                                    state.activeShadowOrigin = { 
+                                        cellId, 
+                                        unitData,
+                                        color: state.image17Colors[cellId] || unitData.color
+                                    };
                                     
                                     document.querySelectorAll('.shadow-button').forEach(btn => {
                                         btn.style.display = 'none';
