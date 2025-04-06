@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Board Editor for Coop TD - Create and customize game boards">
+    <meta name="theme-color" content="#4a90e2">
+    <title>Board Editor - Coop TD</title>
+    <style>
+        /* CSS Variables for consistent theming */
+        :root {
+            /* Colors */
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --secondary: #f0f0f0;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --background: #f5f5f5;
+            --surface: #ffffff;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #dddddd;
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+            
+            /* Special Effects */
+            --unit-glow-intensity: 2;
+            --unit-glow-spread: 25px;
+            --unit-shadow-opacity: 0.8;
+        }
+
+        /* Reset & Base Styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Enhanced Container Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Improved Board Styles */
+        .board-container {
+            position: relative;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .board-container:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .board {
+            display: grid;
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Enhanced Unit Styles with Consistent Shadows */
+        .unit {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Unified shadow effects for special units */
+        .unit-image0, .unit-image17 {
+            filter: 
+                drop-shadow(0 0 calc(var(--unit-glow-spread) * 0.6) 
+                    rgba(var(--unit-color-rgb, 255, 0, 0), var(--unit-shadow-opacity)))
+                drop-shadow(0 0 calc(var(--unit-glow-spread) * 1.2) 
+                    rgba(var(--unit-color-rgb, 255, 0, 0), calc(var(--unit-shadow-opacity) * 0.7)));
+            z-index: 4;
+        }
+
+        .unit-image0 {
+            --unit-glow-spread: 30px;
+            --unit-shadow-opacity: 0.9;
+        }
+
+        .unit-image17 {
+            --unit-glow-spread: 25px;
+            --unit-shadow-opacity: 0.85;
+        }
+
+        /* Improved Cell Styles */
+        .cell {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            aspect-ratio: 1;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 0 0 2px var(--primary);
+        }
+
+        /* Enhanced Controls Panel */
+        .controls-panel {
+            position: sticky;
+            top: 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: fit-content;
+        }
+
+        /* Improved Section Styles */
+        .section {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 4px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Enhanced Button Styles */
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced Color Picker */
+        .color-picker {
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .color-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .color-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .color-preset {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .color-preset:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .color-preset.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+        }
+
+        /* Unit Palette Improvements */
+        .unit-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+            gap: 8px;
+            padding: 8px;
+            background: var(--surface);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .unit-option {
+            aspect-ratio: 1;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .unit-option:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--primary);
+        }
+
+        .unit-option.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+        }
+
+        /* Modal Improvements */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        /* Animations */
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 12px;
+            }
+
+            .controls-panel {
+                position: static;
+                margin-top: 20px;
+            }
+
+            .unit-option {
+                width: 40px;
+                height: 40px;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #1a1a1a;
+                --surface: #2d2d2d;
+                --text: #ffffff;
+                --text-light: #bbbbbb;
+                --border: #404040;
+                --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+                --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2);
+                --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+            }
+
+            .cell {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .cell:hover {
+                background: rgba(255, 255, 255, 0.15);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Board Section -->
+        <div class="board-container">
+            <div class="board-background" id="boardBackground"></div>
+            <div class="board" id="gameBoard"></div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <!-- Board Size Section -->
+            <div class="section">
+                <div class="section-title">Board Size</div>
+                <select id="gridSizeSelect" class="select-styled">
+                    <option value="7x5">7x5 (Default)</option>
+                    <option value="7x10">7x11 (2 Players)</option>
+                    <option value="7x7">7x7 (Tower)</option>
+                </select>
+            </div>
+
+            <!-- Board Creator Section -->
+            <div class="section">
+                <div class="section-title">Board Creator</div>
+                <div class="background-options" id="backgroundOptions">
+                    <!-- Background options will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="section">
+                <div class="button-group">
+                    <button id="clearBoard" class="btn btn-secondary">Clear Board</button>
+                    <button id="toggleDeleteMode" class="btn btn-danger">Delete Mode</button>
+                </div>
+            </div>
+
+            <!-- Units Section -->
+            <div class="section">
+                <div class="section-title">Units</div>
+                <button id="unitsInfoBtn" class="btn btn-primary">Units Info</button>
+                <div class="unit-palette" id="unitPalette">
+                    <!-- Unit options will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Effects Section -->
+            <div class="section">
+                <div class="section-title">Effects</div>
+                <div class="color-picker">
+                    <div class="color-picker-header">
+                        <span>Shadow Color</span>
+                        <span id="colorValue" class="color-value">#ff0000</span>
+                    </div>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="shapeColor" value="#ff0000">
+                        <div class="color-preview" id="colorPreview"></div>
+                    </div>
+                    <div class="color-presets" id="colorPresets">
+                        <!-- Color presets will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div class="section">
+                <div class="section-title">Export</div>
+                <select id="qualitySelect" class="select-styled">
+                    <option value="1">Low Quality</option>
+                    <option value="2" selected>Standard Quality</option>
+                    <option value="3">High Quality</option>
+                </select>
+                <button id="generateImage" class="btn btn-primary">Generate & Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Output Display -->
+    <div id="imageOutput" style="display: none;">
+        <h3>Generated Image</h3>
+        <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <!-- Modals -->
+    <div id="unitsInfoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Units Information</h2>
+                <button class="close-modal">×</button>
+            </div>
+            <div class="units-info-grid" id="unitsInfoGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the board state and UI
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configuration object with all constants
+            const CONFIG = {
+                GRID_SIZES: {
+                    '7x5': { cols: 7, rows: 5 },
+                    '7x10': { cols: 7, rows: 11 },
+                    '7x7': { cols: 7, rows: 7 }
+                },
+                CELL_SIZE: window.innerWidth < 768 ? 50 : 80,
+                DEFAULT_COLOR: '#ff0000',
+                COLOR_PRESETS: [
+                    '#ff0000', '#00ff00', '#0000ff', '#ffff00',
+                    '#ff00ff', '#00ffff', '#ff9900', '#9900ff'
+                ]
+            };
+
+            // State management
+            let state = {
+                selectedUnit: null,
+                currentColor: CONFIG.DEFAULT_COLOR,
+                deleteMode: false,
+                boardSize: '7x5'
+            };
+
+            // Initialize board
+            function initializeBoard() {
+                const board = document.getElementById('gameBoard');
+                const { cols, rows } = CONFIG.GRID_SIZES[state.boardSize];
+                
+                board.style.gridTemplateColumns = `repeat(${cols}, ${CONFIG.CELL_SIZE}px)`;
+                board.style.gridTemplateRows = `repeat(${rows}, ${CONFIG.CELL_SIZE}px)`;
+                
+                // Clear existing cells
+                board.innerHTML = '';
+                
+                // Create new cells
+                for (let i = 0; i < rows * cols; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.index = i;
+                    
+                    // Add click handler
+                    cell.addEventListener('click', handleCellClick);
+                    
+                    board.appendChild(cell);
+                }
+            }
+
+            // Handle cell click
+            function handleCellClick(e) {
+                const cell = e.target;
+                
+                if (state.deleteMode) {
+                    // Remove unit if present
+                    const unit = cell.querySelector('.unit');
+                    if (unit) unit.remove();
+                } else if (state.selectedUnit) {
+                    // Place new unit
+                    placeUnit(cell);
+                }
+            }
+
+            // Place unit in cell
+            function placeUnit(cell) {
+                // Remove existing unit if any
+                const existingUnit = cell.querySelector('.unit');
+                if (existingUnit) existingUnit.remove();
+                
+                // Create new unit
+                const unit = document.createElement('div');
+                unit.className = `unit unit-${state.selectedUnit}`;
+                unit.style.setProperty('--unit-color-rgb', hexToRgb(state.currentColor));
+                
+                // Set background image
+                unit.style.backgroundImage = `url(${state.selectedUnit}.png)`;
+                
+                cell.appendChild(unit);
+            }
+
+            // Color handling
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? 
+                    `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
+                    '255, 0, 0';
+            }
+
+            // Initialize color picker
+            function initializeColorPicker() {
+                const colorPicker = document.getElementById('shapeColor');
+                const colorPresets = document.getElementById('colorPresets');
+                
+                // Add color presets
+                CONFIG.COLOR_PRESETS.forEach(color => {
+                    const preset = document.createElement('div');
+                    preset.className = 'color-preset';
+                    preset.style.backgroundColor = color;
+                    preset.dataset.color = color;
+                    
+                    preset.addEventListener('click', () => {
+                        state.currentColor = color;
+                        colorPicker.value = color;
+                        updateColorPreview();
+                    });
+                    
+                    colorPresets.appendChild(preset);
+                });
+                
+                // Handle color picker changes
+                colorPicker.addEventListener('input', (e) => {
+                    state.currentColor = e.target.value;
+                    updateColorPreview();
+                });
+            }
+
+            // Update color preview
+            function updateColorPreview() {
+                const preview = document.getElementById('colorPreview');
+                const value = document.getElementById('colorValue');
+                
+                preview.style.backgroundColor = state.currentColor;
+                value.textContent = state.currentColor;
+            }
+
+            // Initialize event listeners
+            function initializeEventListeners() {
+                // Grid size selection
+                document.getElementById('gridSizeSelect').addEventListener('change', (e) => {
+                    state.boardSize = e.target.value;
+                    initializeBoard();
+                });
+                
+                // Delete mode toggle
+                document.getElementById('toggleDeleteMode').addEventListener('click', () => {
+                    state.deleteMode = !state.deleteMode;
+                    document.getElementById('toggleDeleteMode').classList.toggle('active');
+                });
+                
+                // Clear board
+                document.getElementById('clearBoard').addEventListener('click', () => {
+                    const cells = document.querySelectorAll('.cell');
+                    cells.forEach(cell => {
+                        const unit = cell.querySelector('.unit');
+                        if (unit) unit.remove();
+                    });
+                });
+                
+                // Generate image
+                document.getElementById('generateImage').addEventListener('click', generateImage);
+            }
+
+            // Generate and copy image
+            function generateImage() {
+                const board = document.getElementById('gameBoard');
+                const quality = document.getElementById('qualitySelect').value;
+                const canvas = document.getElementById('outputCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size
+                const scale = quality;
+                canvas.width = board.offsetWidth * scale;
+                canvas.height = board.offsetHeight * scale;
+                
+                // Draw board
+                html2canvas(board, {
+                    scale: scale,
+                    backgroundColor: null
+                }).then(canvas => {
+                    document.getElementById('imageOutput').style.display = 'block';
+                    canvas.toBlob(blob => {
+                        navigator.clipboard.write([
+                            new ClipboardItem({ 'image/png': blob })
+                        ]).then(() => {
+                            showToast('Image copied to clipboard!');
+                        }).catch(() => {
+                            showToast('Failed to copy image. Please try again.', 'error');
+                        });
+                    });
+                });
+            }
+
+            // Show toast notification
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+
+            // Initialize the application
+            initializeBoard();
+            initializeColorPicker();
+            initializeEventListeners();
+        });
+    </script>
+</body>
+</html>
