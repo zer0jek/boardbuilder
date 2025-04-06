@@ -16,6 +16,7 @@
             padding: 20px;
             background-color: #f5f5f5;
             color: #333;
+            overflow-x: hidden;
         }
         
         h1, h2, h3 {
@@ -32,7 +33,8 @@
         }
         
         .board-container {
-            position: relative;
+            position: sticky;
+            top: 20px;
             width: fit-content;
             height: fit-content;
             background-color: white;
@@ -40,7 +42,8 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 10px;
             margin: 0 auto;
-            overflow: visible; /* Zmienione z hidden na visible */
+            overflow: visible;
+            z-index: 10;
         }
         
         .board {
@@ -49,15 +52,14 @@
             border: 1px solid #ddd;
             z-index: 2;
             background-color: transparent;
-            transform: translateZ(0); /* Dodane dla poprawy wydajności */
         }
         
         .board-background {
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -74,7 +76,6 @@
             pointer-events: none;
             max-width: 80%;
             max-height: 80%;
-            transform: translateZ(0); /* Dodane dla poprawy wydajności */
         }
 
         .unit-image0 {
@@ -105,7 +106,441 @@
             margin: 0 auto;
         }
         
-        /* ... (reszta stylów pozostaje bez zmian) ... */
+        .section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #666;
+        }
+        
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: #4a90e2;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+        
+        .unit-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        
+        .unit-option {
+            width: 40px;
+            height: 40px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .unit-option:hover {
+            border-color: #4a90e2;
+            transform: scale(1.05);
+            background-color: white;
+        }
+        
+        .unit-option.selected {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+            background-color: white;
+        }
+        
+        select, input[type="color"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: white;
+            font-size: 13px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .checkbox-container input {
+            margin-right: 8px;
+        }
+        
+        .checkbox-container label {
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            flex: 1;
+            font-size: 13px;
+        }
+        
+        button:hover {
+            background-color: #3a7bc8;
+        }
+        
+        button.secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        button.secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        button.danger {
+            background-color: #e74c3c;
+        }
+        
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+        
+        button.active {
+            background-color: #c0392b;
+            box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.3);
+        }
+        
+        button.info {
+            background-color: #2ecc71;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        button.info:hover {
+            background-color: #27ae60;
+        }
+        
+        #imageOutput {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        #outputCanvas {
+            max-width: 100%;
+            margin-top: 10px;
+            image-rendering: crisp-edges;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .color-picker-container label {
+            font-size: 13px;
+            color: #555;
+            white-space: nowrap;
+        }
+        
+        .color-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 15px 0;
+        }
+        
+        .background-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .background-option {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .background-option:hover {
+            background-color: white;
+            border-color: #bbb;
+        }
+        
+        .background-option.selected {
+            border: 1px solid #4a90e2;
+            background-color: #f0f7ff;
+        }
+        
+        .background-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 3px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+        
+        .background-name {
+            font-size: 13px;
+            color: #333;
+        }
+        
+        .background-type {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* Shadow placement button */
+        .shadow-button {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+            display: block;
+        }
+
+        .shadow-button:hover {
+            background-color: #3a7bc8;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .units-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .unit-info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .unit-info-item:hover {
+            background-color: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .unit-info-image {
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 5px;
+        }
+
+        .unit-info-name {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        /* Unit Detail Modal */
+        .unit-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 101;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .unit-detail-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            width: 400px;
+            text-align: center;
+        }
+
+        .unit-detail-image {
+            width: 150px;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin: 0 auto 15px;
+        }
+
+        .unit-detail-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .unit-detail-description {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        /* Responsywne style */
+        @media (max-width: 600px) {
+            .container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .board-container {
+                width: 100%;
+                overflow-x: auto;
+                padding: 5px;
+            }
+        
+            .board {
+                margin: 0 auto;
+            }
+            
+            .unit-option {
+                width: 30px;
+                height: 30px;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            
+            .modal-content {
+                width: 90%;
+            }
+
+            .units-info-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+
+            .unit-info-image {
+                width: 40px;
+                height: 40px;
+            }
+
+            .unit-detail-content {
+                width: 90%;
+            }
+
+            .unit-detail-image {
+                width: 100px;
+                height: 100px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -116,10 +551,102 @@
             <div class="board" id="gameBoard"></div>
         </div>
         
-        <!-- ... (pozostała część HTML pozostaje bez zmian) ... -->
+        <div class="controls-panel">
+            <div class="section">
+                <div class="section-title">Board Size</div>
+                <select id="gridSizeSelect">
+                    <option value="7x5">7x5 (Default)</option>
+                    <option value="7x10">7x11 (2 Players)</option>
+                    <option value="7x7">7x7 (Tower)</option>
+                </select>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Board Creator</div>
+                </div>
+                <div class="background-options" id="backgroundOptions">
+                    <div class="background-option selected" data-bg="default.png">
+                        <div class="background-preview" style="background-image: url('default.png');"></div>
+                        <div>
+                            <div class="background-name">Normal</div>
+                            <div class="background-type">7x5</div>
+                        </div>
+                    </div>
+                    <div class="background-option" data-bg="default0.png">
+                        <div class="background-preview" style="background-image: url('default0.png');"></div>
+                        <div>
+                            <div class="background-name">Hard</div>
+                            <div class="background-type">7x5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button id="clearBoard" class="secondary">Clear</button>
+                <button id="toggleDeleteMode" class="danger">Delete</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Units</div>
+                <button id="unitsInfoBtn" class="info">Units Info</button>
+                <div class="unit-palette" id="unitPalette"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Effects</div>
+                <div class="color-picker-container">
+                    <label for="shapeColor">Shadow Color:</label>
+                    <input type="color" id="shapeColor" value="#ff0000">
+                    <div class="color-preview" id="colorPreview" style="background-color: #ff0000;"></div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            
+            <div class="section">
+                <div class="section-title">Export</div>
+                <select id="qualitySelect">
+                    <option value="1">Low Quality</option>
+                    <option value="2" selected>Standard Quality</option>
+                    <option value="3">High Quality</option>
+                </select>
+                <button id="generateImage">Generate & Copy to Clipboard</button>
+            </div>
+        </div>
     </div>
 
-    <!-- ... (modale i inne elementy pozostają bez zmian) ... -->
+    <div id="imageOutput">
+        <h3>Generated Image</h3>
+        <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <!-- Units Info Modal -->
+    <div class="modal" id="unitsInfoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Units Information</div>
+                <button class="close-modal" data-modal="unitsInfoModal">&times;</button>
+            </div>
+            <div class="units-info-grid" id="unitsInfoGrid">
+                <!-- Units will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Unit Detail Modal -->
+    <div class="unit-detail-modal" id="unitDetailModal">
+        <div class="unit-detail-content">
+            <div class="modal-header">
+                <div class="modal-title">Unit Details</div>
+                <button class="close-modal" data-modal="unitDetailModal">&times;</button>
+            </div>
+            <div class="unit-detail-image" id="unitDetailImage"></div>
+            <div class="unit-detail-name" id="unitDetailName"></div>
+            <div class="unit-detail-description" id="unitDetailDescription"></div>
+            <button class="close-modal" data-modal="unitDetailModal">Close</button>
+        </div>
+    </div>
 
     <script>
         // Configuration
@@ -178,6 +705,13 @@
                 'image22': 'Unit 22',
                 'image23': 'Unit 23',
                 'image24': 'Unit 24'
+            },
+            unitDescriptions: {
+                'image0': 'This is a shadow unit that appears below other units. It creates a large shadow effect with customizable color.',
+                'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
+                'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
+                'image17': 'Special unit that can create connected shadow units. Click the + button to place a connected shadow unit. Always appears above shadow units.',
+                // Add descriptions for other units as needed
             }
         };
         
@@ -193,7 +727,7 @@
             exportQuality: 2,
             shadowPlacementMode: false,
             activeShadowOrigin: null,
-            unitPairs: {}
+            unitPairs: {} // Tracks pairs of image17 and their connected image0
         };
         
         // DOM elements
@@ -292,17 +826,22 @@
                 unitDiv.dataset.unit = `image${i}`;
                 unitDiv.style.backgroundImage = `url('image${i}.png')`;
                 unitDiv.addEventListener('click', () => {
+                    // Remove selected class from all options
                     document.querySelectorAll('.unit-option').forEach(opt => {
                         opt.classList.remove('selected');
                     });
+                    
+                    // Add selected class to current option
                     unitDiv.classList.add('selected');
+                    
                     state.selectedUnit = `image${i}`;
                     state.deleteMode = false;
                     state.shadowPlacementMode = false;
                     toggleDeleteModeBtn.classList.remove('active');
                     
+                    // Reset color when selecting image0 or image17
                     if (state.selectedUnit === 'image0' || state.selectedUnit === 'image17') {
-                        state.currentColor = '#ff0000';
+                        state.currentColor = '#ff0000'; // Reset to default color
                         shapeColor.value = '#ff0000';
                         colorPreview.style.backgroundColor = '#ff0000';
                     }
@@ -320,9 +859,11 @@
             gameBoard.style.width = `${gridSize.cols * config.cellSize}px`;
             gameBoard.style.height = `${gridSize.rows * config.cellSize}px`;
             
+            // Adjust background container size
             boardBackground.style.width = `${gridSize.cols * config.cellSize}px`;
             boardBackground.style.height = `${gridSize.rows * config.cellSize}px`;
             
+            // Initialize empty board
             state.units = {};
             state.unitPairs = {};
             
@@ -334,6 +875,8 @@
                     cell.dataset.y = y;
                     cell.dataset.id = `cell-${x}-${y}`;
                     gameBoard.appendChild(cell);
+                    
+                    // Initialize empty unit array for the cell
                     state.units[`cell-${x}-${y}`] = [];
                 }
             }
@@ -352,17 +895,20 @@
                 const cellId = cell.dataset.id;
                 
                 if (state.deleteMode) {
+                    // Check if we're deleting an image17 that has a connected image0
                     const units = state.units[cellId];
                     let hadConnection = false;
                     
                     units.forEach(unit => {
                         if (unit.unit === 'image17' && state.unitPairs[cellId]) {
+                            // Remove the connected image0
                             const shadowCellId = state.unitPairs[cellId];
                             state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
                             delete state.unitPairs[cellId];
                             hadConnection = true;
                         }
                         if (unit.unit === 'image0') {
+                            // Find and remove the connection if this image0 was created by an image17
                             for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
                                 if (shadowCellId === cellId) {
                                     delete state.unitPairs[originCellId];
@@ -373,23 +919,38 @@
                         }
                     });
                     
+                    // Remove all units from cell
                     state.units[cellId] = [];
-                    if (hadConnection) renderUnits();
-                } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
-                    const originCellId = state.activeShadowOrigin.cellId;
-                    const originColor = state.activeShadowOrigin.unitData.color;
                     
+                    // If we removed a connection, re-render to show the shadow button again
+                    if (hadConnection) {
+                        renderUnits();
+                    }
+                } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
+                    // Place image0 connected to image17
+                    const originCellId = state.activeShadowOrigin.cellId;
+                    const originColor = state.activeShadowOrigin.unitData.color; // Use the origin unit's color
+                    
+                    // Remove any existing connected image0
                     if (state.unitPairs[originCellId]) {
                         const oldShadowCellId = state.unitPairs[originCellId];
                         state.units[oldShadowCellId] = state.units[oldShadowCellId].filter(u => u.unit !== 'image0');
                     }
                     
+                    // Add new image0 to current cell with the origin unit's color
                     addUnitToCell(cellId, 'image0', originColor);
+                    
+                    // Track the pair
                     state.unitPairs[originCellId] = cellId;
+                    
+                    // Exit shadow placement mode
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
+                    
+                    // Show all shadow buttons again
                     renderUnits();
                 } else if (state.selectedUnit) {
+                    // Add new unit to cell
                     addUnitToCell(cellId, state.selectedUnit, state.currentColor);
                 }
             });
@@ -398,7 +959,7 @@
             shapeColor.addEventListener('input', (e) => {
                 state.currentColor = e.target.value;
                 colorPreview.style.backgroundColor = state.currentColor;
-                renderUnits();
+                renderUnits(); // Update shadows with new color
             });
             
             // Generate image
@@ -418,17 +979,22 @@
                 state.deleteMode = !state.deleteMode;
                 if (state.deleteMode) {
                     toggleDeleteModeBtn.classList.add('active');
+                    // Remove unit selection
                     document.querySelectorAll('.unit-option').forEach(opt => {
                         opt.classList.remove('selected');
                     });
                     state.selectedUnit = null;
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
+                    
+                    // Show all shadow buttons
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'none';
                     });
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
+                    
+                    // Show all shadow buttons again
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'block';
                     });
@@ -440,11 +1006,14 @@
                 const bgOption = e.target.closest('.background-option');
                 if (!bgOption) return;
                 
+                // Remove selected class from all options
                 document.querySelectorAll('.background-option').forEach(opt => {
                     opt.classList.remove('selected');
                 });
                 
+                // Add selected class to chosen option
                 bgOption.classList.add('selected');
+                
                 state.currentBackground = bgOption.dataset.bg;
                 loadBackgroundImage();
             });
@@ -454,6 +1023,7 @@
                 state.currentGridSize = e.target.value;
                 const gridConfig = config.gridSizes[state.currentGridSize];
                 
+                // Update available backgrounds
                 backgroundOptions.innerHTML = '';
                 gridConfig.backgrounds.forEach((bg) => {
                     const bgOption = document.createElement('div');
@@ -465,18 +1035,22 @@
                     bgPreview.style.backgroundImage = `url('${bg.id}')`;
                     
                     const bgInfo = document.createElement('div');
+                    
                     const bgName = document.createElement('div');
                     bgName.className = 'background-name';
                     bgName.textContent = bg.name;
+                    
                     const bgType = document.createElement('div');
                     bgType.className = 'background-type';
                     bgType.textContent = bg.type;
                     
                     bgInfo.appendChild(bgName);
                     bgInfo.appendChild(bgType);
+                    
                     bgOption.appendChild(bgPreview);
                     bgOption.appendChild(bgInfo);
                     
+                    // Select first background by default
                     if (gridConfig.backgrounds.indexOf(bg) === 0) {
                         bgOption.classList.add('selected');
                         state.currentBackground = bg.id;
@@ -528,33 +1102,31 @@
 
             // Handle window resize
             window.addEventListener('resize', function() {
+                // Update cell size for mobile
                 config.cellSize = window.innerWidth < 600 ? 50 : 80;
                 createBoard();
                 renderUnits();
             });
-
-            // Handle scroll to prevent units disappearing
-            window.addEventListener('scroll', function() {
-                if (state.units && Object.keys(state.units).length > 0) {
-                    renderUnits();
-                }
-            }, { passive: true });
         }
         
         // Add unit to cell
         function addUnitToCell(cellId, unit, color) {
+            // Check if there's an existing unit of the same type in the cell
             const existingUnit = state.units[cellId].find(u => u.unit === unit);
             
+            // If adding image0 or image17, replace existing one but keep its color if it exists
             if (unit === 'image0' || unit === 'image17') {
                 const existingColor = existingUnit ? existingUnit.color : color;
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
                 state.units[cellId].push({ unit, color: existingColor });
             } else {
+                // For other units, just add them with the current color
                 state.units[cellId].push({ unit, color });
             }
             
+            // Limit number of units per cell (optional)
             if (state.units[cellId].length > 3) {
-                state.units[cellId].shift();
+                state.units[cellId].shift(); // Remove oldest unit
             }
             
             renderUnits();
@@ -565,52 +1137,67 @@
             document.querySelectorAll('.unit').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
             
-            const boardRect = gameBoard.getBoundingClientRect();
-            
+            // First render all image0 units (shadows)
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
                 if (!cell) return;
                 
-                const cellRect = cell.getBoundingClientRect();
                 const units = state.units[cellId];
-                
                 units.forEach((unitData) => {
-                    const unitImg = document.createElement('img');
-                    unitImg.className = `unit ${unitData.unit}`;
-                    unitImg.src = `${unitData.unit}.png`;
-                    unitImg.style.setProperty('--unit-color', unitData.color);
-                    
-                    // Calculate position relative to gameBoard
-                    const left = cellRect.left - boardRect.left;
-                    const top = cellRect.top - boardRect.top;
-                    
-                    unitImg.style.left = `${left}px`;
-                    unitImg.style.top = `${top}px`;
-                    
-                    if (unitData.unit === 'image0' || unitData.unit === 'image17') {
+                    if (unitData.unit === 'image0') {
+                        const unitImg = document.createElement('img');
+                        unitImg.className = `unit ${unitData.unit}`;
+                        unitImg.src = `${unitData.unit}.png`;
+                        unitImg.style.setProperty('--unit-color', unitData.color);
                         unitImg.classList.add(unitData.unit);
-                        
-                        if (unitData.unit === 'image17' && !state.unitPairs[cellId] && !state.deleteMode) {
-                            const shadowBtn = document.createElement('button');
-                            shadowBtn.className = 'shadow-button';
-                            shadowBtn.textContent = '+';
-                            shadowBtn.title = 'Place connected shadow';
-                            
-                            shadowBtn.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                state.shadowPlacementMode = true;
-                                state.activeShadowOrigin = { cellId, unitData };
-                                document.querySelectorAll('.shadow-button').forEach(btn => {
-                                    btn.style.display = 'none';
-                                });
-                                alert('Click on another cell to place the connected shadow (image0) for this unit');
-                            });
-                            
-                            cell.appendChild(shadowBtn);
-                        }
+                        cell.appendChild(unitImg);
                     }
-                    
-                    gameBoard.appendChild(unitImg);
+                });
+            });
+            
+            // Then render all other units (including image17)
+            Object.keys(state.units).forEach(cellId => {
+                const cell = document.querySelector(`[data-id="${cellId}"]`);
+                if (!cell) return;
+                
+                const units = state.units[cellId];
+                units.forEach((unitData) => {
+                    if (unitData.unit !== 'image0') {
+                        const unitImg = document.createElement('img');
+                        unitImg.className = `unit ${unitData.unit}`;
+                        unitImg.src = `${unitData.unit}.png`;
+                        unitImg.style.setProperty('--unit-color', unitData.color);
+                        
+                        if (unitData.unit === 'image17') {
+                            unitImg.classList.add(unitData.unit);
+                            
+                            // Add shadow placement button if this image17 doesn't have a connected image0
+                            if (!state.unitPairs[cellId] && !state.deleteMode) {
+                                const shadowBtn = document.createElement('button');
+                                shadowBtn.className = 'shadow-button';
+                                shadowBtn.textContent = '+';
+                                shadowBtn.title = 'Place connected shadow';
+                                
+                                shadowBtn.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    state.shadowPlacementMode = true;
+                                    state.activeShadowOrigin = { cellId, unitData };
+                                    
+                                    // Hide all other shadow buttons
+                                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                                        btn.style.display = 'none';
+                                    });
+                                    
+                                    // Show message
+                                    alert('Click on another cell to place the connected shadow (image0) for this unit');
+                                });
+                                
+                                cell.appendChild(shadowBtn);
+                            }
+                        }
+                        
+                        cell.appendChild(unitImg);
+                    }
                 });
             });
         }
@@ -622,64 +1209,108 @@
             const ctx = canvas.getContext('2d');
             const scaleFactor = state.exportQuality;
             
+            // Set canvas size to match board size with quality scaling
             canvas.width = gridSize.cols * config.cellSize * scaleFactor;
             canvas.height = gridSize.rows * config.cellSize * scaleFactor;
+            
+            // Scale down display size to original dimensions
             canvas.style.width = `${gridSize.cols * config.cellSize}px`;
             canvas.style.height = `${gridSize.rows * config.cellSize}px`;
             
+            // Set high quality rendering
             ctx.imageSmoothingEnabled = false;
             ctx.webkitImageSmoothingEnabled = false;
             ctx.mozImageSmoothingEnabled = false;
             
+            // 1. First white background
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            // 2. Then board background (if exists)
             if (state.backgroundImage) {
+                // Calculate proportions to maintain aspect ratio
                 const bgRatio = state.backgroundImage.width / state.backgroundImage.height;
                 const boardRatio = canvas.width / canvas.height;
                 
                 let bgWidth, bgHeight, offsetX, offsetY;
                 
+                // Use contain strategy instead of cover to show full image
                 if (bgRatio > boardRatio) {
+                    // Image is wider than board - fit to width
                     bgWidth = canvas.width;
                     bgHeight = canvas.width / bgRatio;
                     offsetX = 0;
                     offsetY = (canvas.height - bgHeight) / 2;
                 } else {
+                    // Image is taller than board - fit to height
                     bgHeight = canvas.height;
                     bgWidth = canvas.height * bgRatio;
                     offsetX = (canvas.width - bgWidth) / 2;
                     offsetY = 0;
                 }
                 
-                ctx.drawImage(state.backgroundImage, offsetX, offsetY, bgWidth, bgHeight);
+                // Draw centered background with high quality
+                ctx.drawImage(
+                    state.backgroundImage,
+                    offsetX,
+                    offsetY,
+                    bgWidth,
+                    bgHeight
+                );
             }
             
+            // 3. Then all units
             let unitsToDraw = 0;
             let unitsDrawn = 0;
             
+            // Count all units to draw
             Object.values(state.units).forEach(units => {
                 unitsToDraw += units.length;
             });
             
+            // First draw all image0 units (shadows)
             Object.keys(state.units).forEach(cellId => {
                 const [_, x, y] = cellId.split('-');
                 const units = state.units[cellId];
                 
                 units.forEach((unitData) => {
-                    const unitImg = new Image();
-                    unitImg.src = `${unitData.unit}.png`;
-                    
-                    unitImg.onload = function() {
-                        drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
-                        unitsDrawn++;
-                        if (unitsDrawn === unitsToDraw) {
-                            copyToClipboard();
-                        }
-                    };
+                    if (unitData.unit === 'image0') {
+                        const unitImg = new Image();
+                        unitImg.src = `${unitData.unit}.png`;
+                        
+                        unitImg.onload = function() {
+                            drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                            unitsDrawn++;
+                            if (unitsDrawn === unitsToDraw) {
+                                copyToClipboard();
+                            }
+                        };
+                    }
                 });
             });
             
+            // Then draw all other units
+            Object.keys(state.units).forEach(cellId => {
+                const [_, x, y] = cellId.split('-');
+                const units = state.units[cellId];
+                
+                units.forEach((unitData) => {
+                    if (unitData.unit !== 'image0') {
+                        const unitImg = new Image();
+                        unitImg.src = `${unitData.unit}.png`;
+                        
+                        unitImg.onload = function() {
+                            drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                            unitsDrawn++;
+                            if (unitsDrawn === unitsToDraw) {
+                                copyToClipboard();
+                            }
+                        };
+                    }
+                });
+            });
+            
+            // Show generated image section
             imageOutput.style.display = 'block';
         }
         
@@ -688,6 +1319,7 @@
             const posX = parseInt(x) * config.cellSize * scaleFactor;
             const posY = parseInt(y) * config.cellSize * scaleFactor;
             
+            // Calculate size maintaining proportions with quality scaling
             const unitImg = new Image();
             unitImg.src = `${unitData.unit}.png`;
             
@@ -706,6 +1338,7 @@
                 const offsetX = (config.cellSize * scaleFactor - drawWidth) / 2;
                 const offsetY = (config.cellSize * scaleFactor - drawHeight) / 2;
                 
+                // Draw shadow/glow effect first
                 if (unitData.unit === 'image0' || unitData.unit === 'image17') {
                     const shadowSize = unitData.unit === 'image0' ? 25 : 30;
                     const steps = 5;
@@ -725,7 +1358,14 @@
                     ctx.globalAlpha = 1.0;
                 }
                 
-                ctx.drawImage(unitImg, posX + offsetX, posY + offsetY, drawWidth, drawHeight);
+                // Then draw the unit image
+                ctx.drawImage(
+                    unitImg, 
+                    posX + offsetX, 
+                    posY + offsetY, 
+                    drawWidth, 
+                    drawHeight
+                );
             };
         }
         
@@ -739,7 +1379,7 @@
                     console.error('Could not copy image: ', error);
                     alert('Failed to copy image to clipboard. Please try again.');
                 });
-            }, 'image/png', 1.0);
+            }, 'image/png', 1.0); // Highest quality for PNG
         }
         
         // Initialize application
