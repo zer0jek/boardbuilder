@@ -560,104 +560,195 @@
                     
                     preset.addEventListener('click', () => {
                         state.currentColor = color;
-                        colorPicker.value = color;
-                        updateColorPreview();
-                    });
-                    
-                    colorPresets.appendChild(preset);
-                });
-                
-                // Handle color picker changes
-                colorPicker.addEventListener('input', (e) => {
-                    state.currentColor = e.target.value;
-                    updateColorPreview();
-                });
-            }
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // State management
+    let state = {
+        selectedUnit: null,
+        currentColor: '#ff0000',
+        deleteMode: false
+    };
 
-            // Update color preview
-            function updateColorPreview() {
-                const preview = document.getElementById('colorPreview');
-                const value = document.getElementById('colorValue');
-                
+    // Initialize board
+    function initializeBoard() {
+        const board = document.getElementById('gameBoard');
+        const size = config.gridSizes['7x5']; // Default size
+        
+        board.style.gridTemplateColumns = `repeat(${size.cols}, ${config.cellSize}px)`;
+        board.style.gridTemplateRows = `repeat(${size.rows}, ${config.cellSize}px)`;
+        
+        board.innerHTML = '';
+        for (let i = 0; i < size.rows * size.cols; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.dataset.index = i;
+            cell.addEventListener('click', handleCellClick);
+            board.appendChild(cell);
+        }
+    }
+
+    // Initialize unit palette
+    function initializeUnitPalette() {
+        const palette = document.getElementById('unitPalette');
+        palette.innerHTML = '';
+        
+        for (let i = 0; i < config.unitCount; i++) {
+            const unitOption = document.createElement('div');
+            unitOption.className = 'unit-option';
+            unitOption.dataset.unit = `image${i}`;
+            unitOption.style.backgroundImage = `url('./image${i}.png')`;
+            
+            unitOption.addEventListener('click', function() {
+                document.querySelectorAll('.unit-option').forEach(opt => 
+                    opt.classList.remove('selected'));
+                this.classList.add('selected');
+                state.selectedUnit = this.dataset.unit;
+                state.deleteMode = false;
+                document.getElementById('toggleDeleteMode').classList.remove('active');
+            });
+            
+            palette.appendChild(unitOption);
+        }
+    }
+
+    // Handle cell click
+    function handleCellClick(e) {
+        const cell = e.target;
+        
+        if (state.deleteMode) {
+            const unit = cell.querySelector('.unit');
+            if (unit) unit.remove();
+        } else if (state.selectedUnit) {
+            placeUnit(cell);
+        }
+    }
+
+    // Place unit in cell
+    function placeUnit(cell) {
+        const existingUnit = cell.querySelector('.unit');
+        if (existingUnit) existingUnit.remove();
+        
+        const unit = document.createElement('div');
+        unit.className = `unit ${state.selectedUnit}`;
+        unit.style.backgroundImage = `url('./${state.selectedUnit}.png')`;
+        unit.style.setProperty('--unit-color', state.currentColor);
+        
+        // Add special effects for Relic and Omen
+        if (state.selectedUnit === 'image0' || state.selectedUnit === 'image17') {
+            unit.classList.add(`unit-${state.selectedUnit}`);
+        }
+        
+        cell.appendChild(unit);
+    }
+
+    // Initialize color picker
+    function initializeColorPicker() {
+        const colorPicker = document.getElementById('shapeColor');
+        const preview = document.getElementById('colorPreview');
+        const value = document.getElementById('colorValue');
+        
+        colorPicker.addEventListener('input', function(e) {
+            state.currentColor = e.target.value;
+            preview.style.backgroundColor = state.currentColor;
+            value.textContent = state.currentColor;
+        });
+
+        document.querySelectorAll('.color-preset').forEach(preset => {
+            preset.addEventListener('click', function() {
+                state.currentColor = this.dataset.color;
+                colorPicker.value = state.currentColor;
                 preview.style.backgroundColor = state.currentColor;
                 value.textContent = state.currentColor;
-            }
-
-            // Initialize event listeners
-            function initializeEventListeners() {
-                // Grid size selection
-                document.getElementById('gridSizeSelect').addEventListener('change', (e) => {
-                    state.boardSize = e.target.value;
-                    initializeBoard();
-                });
-                
-                // Delete mode toggle
-                document.getElementById('toggleDeleteMode').addEventListener('click', () => {
-                    state.deleteMode = !state.deleteMode;
-                    document.getElementById('toggleDeleteMode').classList.toggle('active');
-                });
-                
-                // Clear board
-                document.getElementById('clearBoard').addEventListener('click', () => {
-                    const cells = document.querySelectorAll('.cell');
-                    cells.forEach(cell => {
-                        const unit = cell.querySelector('.unit');
-                        if (unit) unit.remove();
-                    });
-                });
-                
-                // Generate image
-                document.getElementById('generateImage').addEventListener('click', generateImage);
-            }
-
-            // Generate and copy image
-            function generateImage() {
-                const board = document.getElementById('gameBoard');
-                const quality = document.getElementById('qualitySelect').value;
-                const canvas = document.getElementById('outputCanvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Set canvas size
-                const scale = quality;
-                canvas.width = board.offsetWidth * scale;
-                canvas.height = board.offsetHeight * scale;
-                
-                // Draw board
-                html2canvas(board, {
-                    scale: scale,
-                    backgroundColor: null
-                }).then(canvas => {
-                    document.getElementById('imageOutput').style.display = 'block';
-                    canvas.toBlob(blob => {
-                        navigator.clipboard.write([
-                            new ClipboardItem({ 'image/png': blob })
-                        ]).then(() => {
-                            showToast('Image copied to clipboard!');
-                        }).catch(() => {
-                            showToast('Failed to copy image. Please try again.', 'error');
-                        });
-                    });
-                });
-            }
-
-            // Show toast notification
-            function showToast(message, type = 'success') {
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                toast.textContent = message;
-                
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            }
-
-            // Initialize the application
-            initializeBoard();
-            initializeColorPicker();
-            initializeEventListeners();
+            });
         });
-    </script>
+    }
+
+    // Initialize modals
+    function initializeModals() {
+        // Units info button
+        document.getElementById('unitsInfoBtn').addEventListener('click', function() {
+            const modal = document.getElementById('unitsInfoModal');
+            modal.style.display = 'flex';
+            
+            const grid = document.getElementById('unitsInfoGrid');
+            if (!grid.children.length) {
+                for (let i = 0; i < config.unitCount; i++) {
+                    const unitInfo = document.createElement('div');
+                    unitInfo.className = 'unit-info-item';
+                    
+                    const unitImage = document.createElement('div');
+                    unitImage.className = 'unit-info-image';
+                    unitImage.style.backgroundImage = `url('./image${i}.png')`;
+                    
+                    const unitName = document.createElement('div');
+                    unitName.className = 'unit-info-name';
+                    unitName.textContent = config.unitNames[`image${i}`] || `Unit ${i}`;
+                    
+                    unitInfo.appendChild(unitImage);
+                    unitInfo.appendChild(unitName);
+                    grid.appendChild(unitInfo);
+                }
+            }
+        });
+
+        // Close buttons
+        document.querySelectorAll('.close-modal').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById(this.dataset.modal).style.display = 'none';
+            });
+        });
+
+        // Click outside to close
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+    }
+
+    // Initialize event listeners
+    function initializeEventListeners() {
+        // Grid size selection
+        document.getElementById('gridSizeSelect').addEventListener('change', function(e) {
+            const size = config.gridSizes[e.target.value];
+            const board = document.getElementById('gameBoard');
+            
+            board.style.gridTemplateColumns = `repeat(${size.cols}, ${config.cellSize}px)`;
+            board.style.gridTemplateRows = `repeat(${size.rows}, ${config.cellSize}px)`;
+            
+            // Recreate cells
+            initializeBoard();
+        });
+        
+        // Delete mode toggle
+        document.getElementById('toggleDeleteMode').addEventListener('click', function() {
+            state.deleteMode = !state.deleteMode;
+            this.classList.toggle('active');
+            if (state.deleteMode) {
+                document.querySelectorAll('.unit-option').forEach(opt => 
+                    opt.classList.remove('selected'));
+                state.selectedUnit = null;
+            }
+        });
+        
+        // Clear board
+        document.getElementById('clearBoard').addEventListener('click', function() {
+            document.querySelectorAll('.cell .unit').forEach(unit => unit.remove());
+        });
+    }
+
+    // Initialize the application
+    function initializeApp() {
+        initializeBoard();
+        initializeUnitPalette();
+        initializeModals();
+        initializeColorPicker();
+        initializeEventListeners();
+    }
+
+    // Start the application
+    initializeApp();
+});
+                                             </script>
 </body>
 </html>
