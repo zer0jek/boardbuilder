@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Board Editor</title>
+    <style>
+        footer {
+            position: center;
+            color: grey;
+            text-align: center;
+            margin-top: 20px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            overflow-x: auto;
+            min-height: 100vh;
+        }
+        
+        h1, h2, h3 {
+            color: #444;
+            margin-top: 0;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 20px;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        .board-container {
+            position: relative;
+            width: fit-content;
+            height: fit-content;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 0 auto;
+            overflow: visible;
+            z-index: 10;
+            transition: transform 0.3s ease;
+            background-color: rgba(255,255,255,0.5);
+        }
+        
+        .board-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .board {
+            display: grid;
+            position: relative;
+            border: 1px solid #ddd;
+            z-index: 2;
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .board-background {
+            position: absolute;
+            top: auto;
+            left: auto;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 1;
+            background-color: rgba(255,255,255,0.7);
+            transition: opacity 0.3s ease;
+        }
+        
+        .unit {
+            position: absolute;
+            object-fit: contain;
+            z-index: 3;
+            image-rendering: crisp-edges;
+            background-color: transparent;
+            margin: auto;
+            pointer-events: none;
+            max-width: 80%;
+            max-height: 80%;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .unit-image0 {
+            z-index: 2;
+            filter: 
+                drop-shadow(0 0 15px var(--unit-color, #ff0000))
+                drop-shadow(0 0 25px var(--unit-color, #ff0000));
+        }
+
+        .unit-image17 {
+            z-index: 4;
+            filter: 
+                drop-shadow(0 0 10px var(--unit-color, #ff0000))
+                drop-shadow(0 0 20px var(--unit-color, #ff0000));
+        }
+        
+        .cell {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: visible;
+            transition: background-color 0.2s ease;
+        }
+        
+        .cell:hover {
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 2px;
+        }
+        
+        .controls-panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            position: relative;
+            animation: fadeIn 0.5s ease-out 0.2s backwards;
+            transition: transform 0.3s ease;
+        }
+        
+        .controls-panel:hover {
+            transform: translateY(-3px);
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #666;
+        }
+        
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: #4a90e2;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+        
+        .unit-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        
+        .unit-option {
+            width: 40px;
+            height: 40px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #f9f9f9;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .unit-option:hover {
+            border-color: #4a90e2;
+            transform: scale(1.05);
+            background-color: white;
+        }
+        
+        .unit-option.selected {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+            background-color: white;
+            animation: pulse 0.5s ease;
+        }
+        
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: white;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+        }
+        
+        /* Enhanced Color Picker Styles */
+        .color-picker-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .color-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .color-picker-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .color-value {
+            font-size: 13px;
+            font-family: monospace;
+            color: #6c757d;
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .color-picker-main {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .color-input-wrapper {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .color-input-wrapper:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        input[type="color"] {
+            width: 100%;
+            height: 100%;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .color-preview {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .color-preview::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                      rgba(255,255,255,0.2) 0%, 
+                      rgba(255,255,255,0) 50%, 
+                      rgba(0,0,0,0.1) 100%);
+            pointer-events: none;
+        }
+        
+        .color-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .color-presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .color-preset {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-preset:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+        
+        .color-preset.active {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .color-info {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .checkbox-container input {
+            margin-right: 8px;
+        }
+        
+        .checkbox-container label {
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            flex: 1;
+            font-size: 13px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        button:hover {
+            background-color: #3a7bc8;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        button.secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        button.danger {
+            background-color: #e74c3c;
+        }
+        
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+        
+        button.active {
+            background-color: #c0392b;
+            box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.3);
+        }
+        
+        button.info {
+            background-color: #2ecc71;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        button.info:hover {
+            background-color: #27ae60;
+        }
+        
+        #imageOutput {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        #outputCanvas {
+            max-width: 100%;
+            margin-top: 10px;
+            image-rendering: crisp-edges;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+        
+        #outputCanvas:hover {
+            transform: scale(1.01);
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 15px 0;
+        }
+        
+        .background-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .background-option {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #f9f9f9;
+        }
+        
+        .background-option:hover {
+            background-color: white;
+            border-color: #bbb;
+            transform: translateX(5px);
+        }
+        
+        .background-option.selected {
+            border: 1px solid #4a90e2;
+            background-color: #f0f7ff;
+            transform: translateX(5px);
+        }
+        
+        .background-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 3px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .background-name {
+            font-size: 13px;
+            color: #333;
+        }
+        
+        .background-type {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* Shadow placement button */
+        .shadow-button {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+            display: block;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .shadow-button:hover {
+            background-color: #3a7bc8;
+            transform: scale(1.1);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            line-height: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg);
+        }
+
+        .units-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .unit-info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .unit-info-item:hover {
+            background-color: #f5f5f5;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .unit-info-image {
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .unit-info-item:hover .unit-info-image {
+            transform: scale(1.1);
+        }
+
+        .unit-info-name {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        /* Unit Detail Modal */
+        .unit-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 101;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .unit-detail-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .unit-detail-image {
+            width: 150px;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin: 0 auto 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .unit-detail-image:hover {
+            transform: scale(1.05);
+        }
+
+        .unit-detail-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .unit-detail-description {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+            text-align: left;
+            line-height: 1.5;
+            animation: fadeIn 0.5s ease-out 0.1s backwards;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Responsywne style */
+        @media (max-width: 600px) {
+            .container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .board-container {
+                width: 100%;
+                overflow-x: auto;
+                padding: 5px;
+            }
+        
+            .board {
+                margin: 0 auto;
+            }
+            
+            .unit-option {
+                width: 30px;
+                height: 30px;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            
+            .modal-content {
+                width: 90%;
+            }
+
+            .units-info-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+
+            .unit-info-image {
+                width: 40px;
+                height: 40px;
+            }
+
+            .unit-detail-content {
+                width: 90%;
+            }
+
+            .unit-detail-image {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .color-picker-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .color-picker-label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Board Editor</h1>
+    <div class="container">
+        <div class="board-container">
+            <div class="board-background" id="boardBackground"></div>
+            <div class="board" id="gameBoard"></div>
+        </div>
+        
+        <div class="controls-panel">
+            <div class="section">
+                <div class="section-title">Board Size</div>
+                <select id="gridSizeSelect">
+                    <option value="7x5">7x5 (Default)</option>
+                    <option value="7x10">7x11 (2 Players)</option>
+                    <option value="7x7">7x7 (Tower)</option>
+                </select>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Board Creator</div>
+                </div>
+                <div class="background-options" id="backgroundOptions">
+                    <div class="background-option selected" data-bg="default.png">
+                        <div class="background-preview" style="background-image: url('default.png');"></div>
+                        <div>
+                            <div class="background-name">Normal</div>
+                            <div class="background-type">7x5</div>
+                        </div>
+                    </div>
+                    <div class="background-option" data-bg="default0.png">
+                        <div class="background-preview" style="background-image: url('default0.png');"></div>
+                        <div>
+                            <div class="background-name">Hard</div>
+                            <div class="background-type">7x5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button id="clearBoard" class="secondary">Clear</button>
+                <button id="toggleDeleteMode" class="danger">Delete</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Units</div>
+                <button id="unitsInfoBtn" class="info">Units Info</button>
+                <div class="unit-palette" id="unitPalette"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Effects</div>
+                <div class="color-picker-container">
+                    <div class="color-picker-header">
+                        <div class="color-picker-label">Shadow Color</div>
+                        <div class="color-value" id="colorValue">#ff0000</div>
+                    </div>
+                    <div class="color-picker-main">
+                        <div class="color-input-wrapper">
+                            <input type="color" id="shapeColor" value="#ff0000" title="Select color for new units">
+                            <div class="color-preview" id="colorPreview" style="background-color: #ff0000;">NEW</div>
+                        </div>
+                        <div class="color-actions">
+                            <div class="color-presets" id="colorPresets">
+                                <div class="color-preset" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                                <div class="color-preset" style="background-color: #00ff00;" data-color="#00ff00"></div>
+                                <div class="color-preset" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                                <div class="color-preset" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                                <div class="color-preset" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+                                <div class="color-preset" style="background-color: #00ffff;" data-color="#00ffff"></div>
+                                <div class="color-preset" style="background-color: #ff9900;" data-color="#ff9900"></div>
+                                <div class="color-preset" style="background-color: #9900ff;" data-color="#9900ff"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="color-info">
+                        Color applies only to newly placed units. Click on the color box or presets to change.
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            
+            <div class="section">
+                <div class="section-title">Export</div>
+                <select id="qualitySelect">
+                    <option value="1">Low Quality</option>
+                    <option value="2" selected>Standard Quality</option>
+                    <option value="3">High Quality</option>
+                </select>
+                <button id="generateImage">Generate & Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="imageOutput">
+        <h3>Generated Image</h3>
+        <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <!-- Units Info Modal -->
+    <div class="modal" id="unitsInfoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Units Information</div>
+                <button class="close-modal" data-modal="unitsInfoModal">&times;</button>
+            </div>
+            <div class="units-info-grid" id="unitsInfoGrid">
+                <!-- Units will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Unit Detail Modal -->
+    <div class="unit-detail-modal" id="unitDetailModal">
+        <div class="unit-detail-content">
+            <div class="modal-header">
+                <div class="modal-title">Unit Details</div>
+                <button class="close-modal" data-modal="unitDetailModal">&times;</button>
+            </div>
+            <div class="unit-detail-image" id="unitDetailImage"></div>
+            <div class="unit-detail-name" id="unitDetailName"></div>
+            <div class="unit-detail-description" id="unitDetailDescription"></div>
+            <button class="close-modal" data-modal="unitDetailModal">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const config = {
+            gridSizes: {
+                '7x5': { 
+                    cols: 7, 
+                    rows: 5, 
+                    backgrounds: [
+                        { id: 'default.png', name: 'Normal', type: '7x5' },
+                        { id: 'default0.png', name: 'Hard', type: '7x5' }
+                    ] 
+                },
+                '7x10': { 
+                    cols: 7, 
+                    rows: 11, 
+                    backgrounds: [
+                        { id: '2default.png', name: '2 Players Normal', type: '7x11' },
+                        { id: '2default1.png', name: '2 Players Hard', type: '7x11' }
+                    ] 
+                },
+                '7x7': { 
+                    cols: 7, 
+                    rows: 7, 
+                    backgrounds: [
+                        { id: 'tower.png', name: 'Tower', type: '7x7' },
+                        { id: 'tower1.png', name: 'Tower', type: '7x7' }
+                    ] 
+                }
+            },
+            unitCount: 25,
+            cellSize: window.innerWidth < 600 ? 50 : 80,
+            unitNames: {
+                'image0': 'Relic',
+                'image1': 'Unit 1',
+                'image2': 'Unit 2',
+                'image3': 'Unit 3',
+                'image4': 'Unit 4',
+                'image5': 'Unit 5',
+                'image6': 'Unit 6',
+                'image7': 'Unit 7',
+                'image8': 'Unit 8',
+                'image9': 'Unit 9',
+                'image10': 'Unit 10',
+                'image11': 'Unit 11',
+                'image12': 'Unit 12',
+                'image13': 'Unit 13',
+                'image14': 'Unit 14',
+                'image15': 'Unit 15',
+                'image16': 'Unit 16',
+                'image17': 'Omen',
+                'image18': 'Unit 18',
+                'image19': 'Unit 19',
+                'image20': 'Unit 20',
+                'image21': 'Unit 21',
+                'image22': 'Unit 22',
+                'image23': 'Unit 23',
+                'image24': 'Unit 24'
+            },
+            unitDescriptions: {
+                'image0': 'Relic that connects to an Omen. The shadow color represents their connection. Always appears below the connected Omen.',
+                'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
+                'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
+                'image17': 'Omen that can create connected Relics. The shadow color represents their connection. Click the + button to place a connected Relic. Always appears above connected Relics.',
+            }
+        };
+        
+        // Application state
+        let state = {
+            selectedUnit: null,
+            currentColor: '#ff0000',
+            deleteMode: false,
+            currentGridSize: '7x5',
+            currentBackground: 'default.png',
+            units: {},
+            backgroundImage: null,
+            exportQuality: 2,
+            shadowPlacementMode: false,
+            activeShadowOrigin: null,
+            unitPairs: {}, // Stores Omen -> Relic connections
+            image17Colors: {}, // Stores colors for Omens
+            isResizing: false,
+            resizeTimer: null
+        };
+        
+        // DOM elements
+        const gameBoard = document.getElementById('gameBoard');
+        const boardBackground = document.getElementById('boardBackground');
+        const unitPalette = document.getElementById('unitPalette');
+        const shapeColor = document.getElementById('shapeColor');
+        const colorPreview = document.getElementById('colorPreview');
+        const generateImageBtn = document.getElementById('generateImage');
+        const clearBoardBtn = document.getElementById('clearBoard');
+        const toggleDeleteModeBtn = document.getElementById('toggleDeleteMode');
+        const backgroundOptions = document.getElementById('backgroundOptions');
+        const gridSizeSelect = document.getElementById('gridSizeSelect');
+        const outputCanvas = document.getElementById('outputCanvas');
+        const imageOutput = document.getElementById('imageOutput');
+        const qualitySelect = document.getElementById('qualitySelect');
+        const unitsInfoBtn = document.getElementById('unitsInfoBtn');
+        const unitsInfoModal = document.getElementById('unitsInfoModal');
+        const unitsInfoGrid = document.getElementById('unitsInfoGrid');
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        const unitDetailModal = document.getElementById('unitDetailModal');
+        const unitDetailImage = document.getElementById('unitDetailImage');
+        const unitDetailName = document.getElementById('unitDetailName');
+        const unitDetailDescription = document.getElementById('unitDetailDescription');
+        const colorValue = document.getElementById('colorValue');
+        
+        // Initialization
+        function init() {
+            createUnitPalette();
+            loadBackgroundImage().then(() => {
+                createBoard();
+                setupEventListeners();
+                createUnitsInfo();
+                updateColorDisplay(state.currentColor);
+            });
+        }
+        
+        // Create units info modal content
+        function createUnitsInfo() {
+            unitsInfoGrid.innerHTML = '';
+            for (let i = 0; i < config.unitCount; i++) {
+                const unitKey = `image${i}`;
+                const unitItem = document.createElement('div');
+                unitItem.className = 'unit-info-item';
+                unitItem.dataset.unit = unitKey;
+                
+                const unitImage = document.createElement('div');
+                unitImage.className = 'unit-info-image';
+                unitImage.style.backgroundImage = `url('${unitKey}.png')`;
+                
+                const unitName = document.createElement('div');
+                unitName.className = 'unit-info-name';
+                unitName.textContent = config.unitNames[unitKey] || unitKey;
+                
+                unitItem.appendChild(unitImage);
+                unitItem.appendChild(unitName);
+                unitsInfoGrid.appendChild(unitItem);
+            }
+        }
+        
+        // Show unit details
+        function showUnitDetails(unitKey) {
+            unitDetailImage.style.backgroundImage = `url('${unitKey}.png')`;
+            unitDetailName.textContent = config.unitNames[unitKey] || unitKey;
+            unitDetailDescription.textContent = config.unitDescriptions[unitKey] || 'No additional information available for this unit.';
+            unitDetailModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close specific modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Load background image
+        function loadBackgroundImage() {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = state.currentBackground;
+                img.onload = function() {
+                    state.backgroundImage = img;
+                    boardBackground.style.backgroundImage = `url('${state.currentBackground}')`;
+                    resolve();
+                };
+                img.onerror = function() {
+                    boardBackground.style.backgroundImage = 'none';
+                    boardBackground.style.backgroundColor = 'rgba(255,255,255,0.7)';
+                    resolve();
+                };
+            });
+        }
+        
+        // Create unit palette
+        function createUnitPalette() {
+            unitPalette.innerHTML = '';
+            for (let i = 0; i < config.unitCount; i++) {
+                const unitDiv = document.createElement('div');
+                unitDiv.className = 'unit-option';
+                unitDiv.dataset.unit = `image${i}`;
+                unitDiv.style.backgroundImage = `url('image${i}.png')`;
+                unitDiv.addEventListener('click', () => {
+                    document.querySelectorAll('.unit-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    unitDiv.classList.add('selected');
+                    state.selectedUnit = `image${i}`;
+                    state.deleteMode = false;
+                    state.shadowPlacementMode = false;
+                    toggleDeleteModeBtn.classList.remove('active');
+                });
+                unitPalette.appendChild(unitDiv);
+            }
+        }
+        
+        // Create game board
+        function createBoard() {
+            const gridSize = config.gridSizes[state.currentGridSize];
+            gameBoard.innerHTML = '';
+            gameBoard.style.gridTemplateColumns = `repeat(${gridSize.cols}, ${config.cellSize}px)`;
+            gameBoard.style.gridTemplateRows = `repeat(${gridSize.rows}, ${config.cellSize}px)`;
+            gameBoard.style.width = `${gridSize.cols * config.cellSize}px`;
+            gameBoard.style.height = `${gridSize.rows * config.cellSize}px`;
+            
+            boardBackground.style.width = `${gridSize.cols * config.cellSize}px`;
+            boardBackground.style.height = `${gridSize.rows * config.cellSize}px`;
+            
+            // Only reset units if we're not just resizing
+            if (!state.isResizing) {
+                state.units = {};
+                state.unitPairs = {};
+                state.image17Colors = {};
+            }
+            
+            for (let y = 0; y < gridSize.rows; y++) {
+                for (let x = 0; x < gridSize.cols; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    cell.dataset.id = `cell-${x}-${y}`;
+                    gameBoard.appendChild(cell);
+                    
+                    if (!state.isResizing) {
+                        state.units[`cell-${x}-${y}`] = [];
+                    }
+                }
+            }
+            
+            // After creating the board, render the units
+            if (state.isResizing) {
+                renderUnits();
+                state.isResizing = false;
+            }
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            gameBoard.addEventListener('click', (e) => {
+                let cell = e.target;
+                while (cell && !cell.classList.contains('cell')) {
+                    cell = cell.parentElement;
+                }
+                if (!cell || !cell.classList.contains('cell')) return;
+                
+                const cellId = cell.dataset.id;
+                
+                if (state.deleteMode) {
+                    const units = state.units[cellId];
+                    let hadConnection = false;
+                    
+                    units.forEach(unit => {
+                        if (unit.unit === 'image17' && state.unitPairs[cellId]) {
+                            const shadowCellId = state.unitPairs[cellId];
+                            state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
+                            delete state.unitPairs[cellId];
+                            delete state.image17Colors[cellId];
+                            hadConnection = true;
+                        }
+                        if (unit.unit === 'image0') {
+                            for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
+                                if (shadowCellId === cellId) {
+                                    delete state.unitPairs[originCellId];
+                                    delete state.image17Colors[originCellId];
+                                    hadConnection = true;
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    
+                    state.units[cellId] = [];
+                    
+                    if (hadConnection) {
+                        renderUnits();
+                    }
+                } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
+                    const originCellId = state.activeShadowOrigin.cellId;
+                    const originColor = state.image17Colors[originCellId];
+                    
+                    if (state.unitPairs[originCellId]) {
+                        const oldShadowCellId = state.unitPairs[originCellId];
+                        state.units[oldShadowCellId] = state.units[oldShadowCellId].filter(u => u.unit !== 'image0');
+                    }
+                    
+                    addUnitToCell(cellId, 'image0', originColor);
+                    state.unitPairs[originCellId] = cellId;
+                    state.shadowPlacementMode = false;
+                    state.activeShadowOrigin = null;
+                    renderUnits();
+                } else if (state.selectedUnit) {
+                    const color = state.selectedUnit === 'image17' ? state.currentColor : '#ff0000';
+                    addUnitToCell(cellId, state.selectedUnit, color);
+                    
+                    if (state.selectedUnit === 'image17') {
+                        state.image17Colors[cellId] = color;
+                    }
+                }
+            });
+            
+            shapeColor.addEventListener('input', (e) => {
+                state.currentColor = e.target.value;
+                updateColorDisplay(state.currentColor);
+                
+                // Visual feedback
+                colorPreview.style.transform = "scale(1.1)";
+                setTimeout(() => {
+                    colorPreview.style.transform = "scale(1)";
+                }, 200);
+            });
+            
+            // Color preset click handler
+            document.getElementById('colorPresets').addEventListener('click', (e) => {
+                const preset = e.target.closest('.color-preset');
+                if (!preset) return;
+                
+                const color = preset.dataset.color;
+                state.currentColor = color;
+                shapeColor.value = color;
+                updateColorDisplay(color);
+                
+                // Update active state
+                document.querySelectorAll('.color-preset').forEach(p => {
+                    p.classList.remove('active');
+                });
+                preset.classList.add('active');
+                
+                // Visual feedback
+                preset.style.transform = "scale(1.2)";
+                setTimeout(() => {
+                    preset.style.transform = "scale(1.1)";
+                }, 200);
+            });
+            
+            generateImageBtn.addEventListener('click', generateImage);
+            
+            clearBoardBtn.addEventListener('click', () => {
+                Object.keys(state.units).forEach(key => {
+                    state.units[key] = [];
+                });
+                state.unitPairs = {};
+                state.image17Colors = {};
+                renderUnits();
+            });
+            
+            toggleDeleteModeBtn.addEventListener('click', () => {
+                state.deleteMode = !state.deleteMode;
+                if (state.deleteMode) {
+                    toggleDeleteModeBtn.classList.add('active');
+                    document.querySelectorAll('.unit-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    state.selectedUnit = null;
+                    state.shadowPlacementMode = false;
+                    state.activeShadowOrigin = null;
+                    
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                } else {
+                    toggleDeleteModeBtn.classList.remove('active');
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
+                }
+            });
+            
+            backgroundOptions.addEventListener('click', (e) => {
+                const bgOption = e.target.closest('.background-option');
+                if (!bgOption) return;
+                
+                document.querySelectorAll('.background-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                bgOption.classList.add('selected');
+                state.currentBackground = bgOption.dataset.bg;
+                loadBackgroundImage();
+            });
+            
+            gridSizeSelect.addEventListener('change', async (e) => {
+                state.currentGridSize = e.target.value;
+                const gridConfig = config.gridSizes[state.currentGridSize];
+                
+                backgroundOptions.innerHTML = '';
+                gridConfig.backgrounds.forEach((bg) => {
+                    const bgOption = document.createElement('div');
+                    bgOption.className = 'background-option';
+                    bgOption.dataset.bg = bg.id;
+                    
+                    const bgPreview = document.createElement('div');
+                    bgPreview.className = 'background-preview';
+                    bgPreview.style.backgroundImage = `url('${bg.id}')`;
+                    
+                    const bgInfo = document.createElement('div');
+                    
+                    const bgName = document.createElement('div');
+                    bgName.className = 'background-name';
+                    bgName.textContent = bg.name;
+                    
+                    const bgType = document.createElement('div');
+                    bgType.className = 'background-type';
+                    bgType.textContent = bg.type;
+                    
+                    bgInfo.appendChild(bgName);
+                    bgInfo.appendChild(bgType);
+                    
+                    bgOption.appendChild(bgPreview);
+                    bgOption.appendChild(bgInfo);
+                    
+                    if (gridConfig.backgrounds.indexOf(bg) === 0) {
+                        bgOption.classList.add('selected');
+                        state.currentBackground = bg.id;
+                    }
+                    
+                    backgroundOptions.appendChild(bgOption);
+                });
+                
+                await loadBackgroundImage();
+                createBoard();
+            });
+
+            qualitySelect.addEventListener('change', (e) => {
+                state.exportQuality = parseInt(e.target.value);
+            });
+
+            unitsInfoBtn.addEventListener('click', () => {
+                unitsInfoModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modalId = btn.dataset.modal;
+                    closeModal(modalId);
+                });
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === unitsInfoModal) {
+                    unitsInfoModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+                if (e.target === unitDetailModal) {
+                    unitDetailModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            unitsInfoGrid.addEventListener('click', (e) => {
+                const unitItem = e.target.closest('.unit-info-item');
+                if (unitItem) {
+                    const unitKey = unitItem.dataset.unit;
+                    showUnitDetails(unitKey);
+                }
+            });
+
+            // Handle window resize with debounce
+            window.addEventListener('resize', function() {
+                state.isResizing = true;
+                
+                // Clear any pending resize events
+                if (state.resizeTimer) {
+                    clearTimeout(state.resizeTimer);
+                }
+                
+                // Set a new timer
+                state.resizeTimer = setTimeout(function() {
+                    config.cellSize = window.innerWidth < 600 ? 50 : 80;
+                    createBoard();
+                }, 200);
+            });
+        }
+        
+        // Update color display elements
+        function updateColorDisplay(color) {
+            colorPreview.style.backgroundColor = color;
+            colorValue.textContent = color.toUpperCase();
+            colorPreview.textContent = color.toUpperCase();
+            
+            // Determine text color based on brightness
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            colorPreview.style.color = brightness > 128 ? '#000' : '#fff';
+        }
+        
+        // Add unit to cell
+        function addUnitToCell(cellId, unit, color) {
+            if (!state.units[cellId]) {
+                state.units[cellId] = [];
+            }
+            
+            // For Omen and Relic, maintain their original colors
+            if (unit === 'image17' && state.image17Colors[cellId]) {
+                color = state.image17Colors[cellId];
+            } else if (unit === 'image0') {
+                // Find if this Relic is connected to an Omen
+                for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
+                    if (relicCellId === cellId) {
+                        color = state.image17Colors[omenCellId];
+                        break;
+                    }
+                }
+            }
+            
+            const existingUnit = state.units[cellId].find(u => u.unit === unit);
+            
+            if (unit === 'image0' || unit === 'image17') {
+                const existingColor = existingUnit ? existingUnit.color : color;
+                state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
+                state.units[cellId].push({ unit, color: existingColor });
+                
+                // Store Omen color for connected Relics
+                if (unit === 'image17') {
+                    state.image17Colors[cellId] = existingColor;
+                }
+            } else {
+                state.units[cellId].push({ unit, color });
+            }
+            
+            if (state.units[cellId].length > 3) {
+                state.units[cellId].shift();
+            }
+            
+            renderUnits();
+        }
+        
+        // Render units on board
+        function renderUnits() {
+            document.querySelectorAll('.unit').forEach(el => el.remove());
+            document.querySelectorAll('.shadow-button').forEach(el => el.remove());
+            
+            // First render all Relics (image0)
+            Object.keys(state.units).forEach(cellId => {
+                const cell = document.querySelector(`[data-id="${cellId}"]`);
+                if (!cell) return;
+                
+                const units = state.units[cellId];
+                units.forEach((unitData) => {
+                    if (unitData.unit === 'image0') {
+                        const unitImg = document.createElement('img');
+                        unitImg.className = `unit ${unitData.unit}`;
+                        unitImg.src = `${unitData.unit}.png`;
+                        unitImg.style.setProperty('--unit-color', unitData.color);
+                        unitImg.style.filter = `drop-shadow(0 0 15px ${unitData.color}) drop-shadow(0 0 25px ${unitData.color})`;
+                        cell.appendChild(unitImg);
+                    }
+                });
+            });
+            
+            // Then render all other units (including Omens)
+            Object.keys(state.units).forEach(cellId => {
+                const cell = document.querySelector(`[data-id="${cellId}"]`);
+                if (!cell) return;
+                
+                const units = state.units[cellId];
+                units.forEach((unitData) => {
+                    if (unitData.unit !== 'image0') {
+                        const unitImg = document.createElement('img');
+                        unitImg.className = `unit ${unitData.unit}`;
+                        unitImg.src = `${unitData.unit}.png`;
+                        unitImg.style.setProperty('--unit-color', unitData.color);
+                        
+                        if (unitData.unit === 'image17') {
+                            unitImg.style.filter = `drop-shadow(0 0 10px ${unitData.color}) drop-shadow(0 0 20px ${unitData.color})`;
+                            
+                            if (!state.deleteMode) {
+                                const shadowBtn = document.createElement('button');
+                                shadowBtn.className = 'shadow-button';
+                                shadowBtn.textContent = '+';
+                                shadowBtn.title = 'Place connected Relic';
+                                
+                                shadowBtn.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    state.shadowPlacementMode = true;
+                                    state.activeShadowOrigin = { 
+                                        cellId, 
+                                        unitData,
+                                        color: state.image17Colors[cellId] || unitData.color
+                                    };
+                                    
+                                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                                        btn.style.display = 'none';
+                                    });
+                                    
+                                    alert('Click on another cell to place the connected Relic for this Omen');
+                                });
+                                
+                                cell.appendChild(shadowBtn);
+                            }
+                        }
+                        
+                        cell.appendChild(unitImg);
+                    }
+                });
+            });
+        }
+        
+        // Generate board image
+        function generateImage() {
+            const gridSize = config.gridSizes[state.currentGridSize];
+            const canvas = outputCanvas;
+            const ctx = canvas.getContext('2d');
+            const scaleFactor = state.exportQuality;
+            
+            canvas.width = gridSize.cols * config.cellSize * scaleFactor;
+            canvas.height = gridSize.rows * config.cellSize * scaleFactor;
+            canvas.style.width = `${gridSize.cols * config.cellSize}px`;
+            canvas.style.height = `${gridSize.rows * config.cellSize}px`;
+            
+            ctx.imageSmoothingEnabled = false;
+            ctx.webkitImageSmoothingEnabled = false;
+            ctx.mozImageSmoothingEnabled = false;
+            
+            // Draw white background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw board background if exists
+            if (state.backgroundImage) {
+                const bgRatio = state.backgroundImage.width / state.backgroundImage.height;
+                const boardRatio = canvas.width / canvas.height;
+                
+                let bgWidth, bgHeight, offsetX, offsetY;
+                
+                if (bgRatio > boardRatio) {
+                    bgWidth = canvas.width;
+                    bgHeight = canvas.width / bgRatio;
+                    offsetX = 0;
+                    offsetY = (canvas.height - bgHeight) / 2;
+                } else {
+                    bgHeight = canvas.height;
+                    bgWidth = canvas.height * bgRatio;
+                    offsetX = (canvas.width - bgWidth) / 2;
+                    offsetY = 0;
+                }
+                
+                ctx.drawImage(
+                    state.backgroundImage,
+                    offsetX,
+                    offsetY,
+                    bgWidth,
+                    bgHeight
+                );
+            }
+            
+            // Create promises for all unit images to load
+            const unitPromises = [];
+            
+            // First draw all Relics (image0)
+            Object.keys(state.units).forEach(cellId => {
+                const [_, x, y] = cellId.split('-');
+                const units = state.units[cellId];
+                
+                units.forEach((unitData) => {
+                    if (unitData.unit === 'image0') {
+                        const promise = new Promise((resolve) => {
+                            const unitImg = new Image();
+                            unitImg.onload = function() {
+                                drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                                resolve();
+                            };
+                            unitImg.src = `${unitData.unit}.png`;
+                        });
+                        unitPromises.push(promise);
+                    }
+                });
+            });
+            
+            // Then draw all other units (including Omens)
+            Object.keys(state.units).forEach(cellId => {
+                const [_, x, y] = cellId.split('-');
+                const units = state.units[cellId];
+                
+                units.forEach((unitData) => {
+                    if (unitData.unit !== 'image0') {
+                        const promise = new Promise((resolve) => {
+                            const unitImg = new Image();
+                            unitImg.onload = function() {
+                                drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                                resolve();
+                            };
+                            unitImg.src = `${unitData.unit}.png`;
+                        });
+                        unitPromises.push(promise);
+                    }
+                });
+            });
+            
+            // Wait for all images to load and then copy to clipboard
+            Promise.all(unitPromises).then(() => {
+                imageOutput.style.display = 'block';
+                // Scroll to the output with smooth behavior
+                setTimeout(() => {
+                    imageOutput.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+                copyToClipboard();
+            });
+        }
+        
+        // Draw unit with shadow effect
+        function drawUnitWithShadow(ctx, x, y, unitData, scaleFactor) {
+            const posX = parseInt(x) * config.cellSize * scaleFactor;
+            const posY = parseInt(y) * config.cellSize * scaleFactor;
+            
+            const unitImg = new Image();
+            unitImg.src = `${unitData.unit}.png`;
+            
+            // Draw shadow/glow effect first
+            if (unitData.unit === 'image0' || unitData.unit === 'image17') {
+                const shadowSize = unitData.unit === 'image0' ? 35 : 25; // Relic has larger shadow
+                const steps = unitData.unit === 'image0' ? 12 : 8; // More steps for Relic for smoother effect
+                const centerX = posX + (config.cellSize * scaleFactor) / 2;
+                const centerY = posY + (config.cellSize * scaleFactor) / 2;
+                const maxAlpha = unitData.unit === 'image0' ? 0.5 : 0.4; // More visible for Relic
+                
+                for (let i = 0; i < steps; i++) {
+                    const radius = (shadowSize * scaleFactor) * (i / steps);
+                    const alpha = maxAlpha * (1 - (i / steps));
+                    
+                    ctx.fillStyle = unitData.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1.0;
+            }
+            
+            // Calculate unit size
+            const unitRatio = unitImg.width / unitImg.height;
+            let drawWidth, drawHeight;
+            
+            if (unitRatio > 1) {
+                drawWidth = config.cellSize * 0.8 * scaleFactor;
+                drawHeight = drawWidth / unitRatio;
+            } else {
+                drawHeight = config.cellSize * 0.8 * scaleFactor;
+                drawWidth = drawHeight * unitRatio;
+            }
+            
+            const offsetX = (config.cellSize * scaleFactor - drawWidth) / 2;
+            const offsetY = (config.cellSize * scaleFactor - drawHeight) / 2;
+            
+            // Draw the unit image
+            ctx.drawImage(
+                unitImg, 
+                posX + offsetX, 
+                posY + offsetY, 
+                drawWidth, 
+                drawHeight
+            );
+        }
+        
+        // Copy image to clipboard
+        function copyToClipboard() {
+            outputCanvas.toBlob(function(blob) {
+                const item = new ClipboardItem({ 'image/png': blob });
+                navigator.clipboard.write([item]).then(function() {
+                    alert('Image copied to clipboard!');
+                }, function(error) {
+                    console.error('Could not copy image: ', error);
+                    alert('Failed to copy image to clipboard. Please try again.');
+                });
+            }, 'image/png', 1.0);
+        }
+        
+        // Initialize application
+        init();
+    </script>
+    <footer>Made By 0jek</footer>
+</body>
+</html>
