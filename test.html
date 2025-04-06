@@ -9,6 +9,7 @@
             position: center;
             color: grey;
             text-align: center;
+            margin-top: 20px;
         }
         body {
             font-family: Arial, sans-serif;
@@ -17,6 +18,7 @@
             background-color: #f5f5f5;
             color: #333;
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
         
         h1, h2, h3 {
@@ -30,6 +32,7 @@
             gap: 20px;
             max-width: 1200px;
             margin: 0 auto;
+            padding-bottom: 20px;
         }
         
         .board-container {
@@ -51,7 +54,7 @@
             position: relative;
             border: 1px solid #ddd;
             z-index: 2;
-            background-color: transparent;
+            background-color: rgba(255, 255, 255, 0.7);
         }
         
         .board-background {
@@ -64,6 +67,7 @@
             background-repeat: no-repeat;
             background-position: center;
             z-index: 1;
+            opacity: 0.7;
         }
         
         .unit {
@@ -104,6 +108,7 @@
             width: 100%;
             max-width: 300px;
             margin: 0 auto;
+            position: relative;
         }
         
         .section {
@@ -376,6 +381,9 @@
             z-index: 100;
             justify-content: center;
             align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .modal-content {
@@ -386,6 +394,7 @@
             max-height: 90%;
             overflow-y: auto;
             width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
         .modal-header {
@@ -406,12 +415,17 @@
             font-size: 24px;
             cursor: pointer;
             color: #666;
+            padding: 0;
+            line-height: 1;
         }
 
         .units-info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 10px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 5px;
         }
 
         .unit-info-item {
@@ -457,6 +471,9 @@
             z-index: 101;
             justify-content: center;
             align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .unit-detail-content {
@@ -468,6 +485,7 @@
             overflow-y: auto;
             width: 400px;
             text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
         .unit-detail-image {
@@ -490,6 +508,27 @@
             color: #555;
             margin-bottom: 15px;
             text-align: left;
+            line-height: 1.5;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
 
         /* Responsywne style */
@@ -728,7 +767,8 @@
             shadowPlacementMode: false,
             activeShadowOrigin: null,
             unitPairs: {}, // Tracks pairs of image17 and their connected image0
-            image17Colors: {} // Tracks colors for each image17 unit
+            image17Colors: {}, // Tracks colors for each image17 unit
+            lastImage17Color: null // Tracks last used color for image17
         };
         
         // DOM elements
@@ -793,11 +833,13 @@
             unitDetailName.textContent = config.unitNames[unitKey] || unitKey;
             unitDetailDescription.textContent = config.unitDescriptions[unitKey] || 'No additional information available for this unit.';
             unitDetailModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
         
         // Close specific modal
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
         
         // Load background image
@@ -851,13 +893,19 @@
             }
         }
         
-        // Generate random color
+        // Generate random color that's different from the last one
         function getRandomColor() {
             const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
+            let color;
+            
+            do {
+                color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+            } while (color === state.lastImage17Color && state.lastImage17Color !== null);
+            
+            state.lastImage17Color = color;
             return color;
         }
         
@@ -1116,6 +1164,7 @@
             // Units info button
             unitsInfoBtn.addEventListener('click', () => {
                 unitsInfoModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
             });
 
             // Close modal buttons
@@ -1130,9 +1179,11 @@
             window.addEventListener('click', (e) => {
                 if (e.target === unitsInfoModal) {
                     unitsInfoModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
                 }
                 if (e.target === unitDetailModal) {
                     unitDetailModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
                 }
             });
 
@@ -1304,14 +1355,8 @@
                 );
             }
             
-            // 3. Then all units
-            let unitsToDraw = 0;
-            let unitsDrawn = 0;
-            
-            // Count all units to draw
-            Object.values(state.units).forEach(units => {
-                unitsToDraw += units.length;
-            });
+            // Create a promise for each unit image to load
+            const unitPromises = [];
             
             // First draw all image0 units (shadows)
             Object.keys(state.units).forEach(cellId => {
@@ -1320,16 +1365,15 @@
                 
                 units.forEach((unitData) => {
                     if (unitData.unit === 'image0') {
-                        const unitImg = new Image();
-                        unitImg.src = `${unitData.unit}.png`;
-                        
-                        unitImg.onload = function() {
-                            drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
-                            unitsDrawn++;
-                            if (unitsDrawn === unitsToDraw) {
-                                copyToClipboard();
-                            }
-                        };
+                        const promise = new Promise((resolve) => {
+                            const unitImg = new Image();
+                            unitImg.onload = function() {
+                                drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                                resolve();
+                            };
+                            unitImg.src = `${unitData.unit}.png`;
+                        });
+                        unitPromises.push(promise);
                     }
                 });
             });
@@ -1341,22 +1385,28 @@
                 
                 units.forEach((unitData) => {
                     if (unitData.unit !== 'image0') {
-                        const unitImg = new Image();
-                        unitImg.src = `${unitData.unit}.png`;
-                        
-                        unitImg.onload = function() {
-                            drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
-                            unitsDrawn++;
-                            if (unitsDrawn === unitsToDraw) {
-                                copyToClipboard();
-                            }
-                        };
+                        const promise = new Promise((resolve) => {
+                            const unitImg = new Image();
+                            unitImg.onload = function() {
+                                drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                                resolve();
+                            };
+                            unitImg.src = `${unitData.unit}.png`;
+                        });
+                        unitPromises.push(promise);
                     }
                 });
             });
             
-            // Show generated image section
-            imageOutput.style.display = 'block';
+            // Wait for all unit images to load before copying to clipboard
+            Promise.all(unitPromises).then(() => {
+                // Show generated image section
+                imageOutput.style.display = 'block';
+                imageOutput.scrollIntoView({ behavior: 'smooth' });
+                
+                // Copy to clipboard
+                copyToClipboard();
+            });
         }
         
         // Draw unit with shadow effect
@@ -1368,50 +1418,48 @@
             const unitImg = new Image();
             unitImg.src = `${unitData.unit}.png`;
             
-            unitImg.onload = function() {
-                const unitRatio = unitImg.naturalWidth / unitImg.naturalHeight;
-                let drawWidth, drawHeight;
+            const unitRatio = unitImg.width / unitImg.height;
+            let drawWidth, drawHeight;
+            
+            if (unitRatio > 1) {
+                drawWidth = config.cellSize * 0.8 * scaleFactor;
+                drawHeight = drawWidth / unitRatio;
+            } else {
+                drawHeight = config.cellSize * 0.8 * scaleFactor;
+                drawWidth = drawHeight * unitRatio;
+            }
+            
+            const offsetX = (config.cellSize * scaleFactor - drawWidth) / 2;
+            const offsetY = (config.cellSize * scaleFactor - drawHeight) / 2;
+            
+            // Draw shadow/glow effect first
+            if (unitData.unit === 'image0' || unitData.unit === 'image17') {
+                const shadowSize = unitData.unit === 'image0' ? 25 : 30;
+                const steps = 5;
+                const centerX = posX + (config.cellSize * scaleFactor) / 2;
+                const centerY = posY + (config.cellSize * scaleFactor) / 2;
                 
-                if (unitRatio > 1) {
-                    drawWidth = config.cellSize * 0.8 * scaleFactor;
-                    drawHeight = drawWidth / unitRatio;
-                } else {
-                    drawHeight = config.cellSize * 0.8 * scaleFactor;
-                    drawWidth = drawHeight * unitRatio;
-                }
-                
-                const offsetX = (config.cellSize * scaleFactor - drawWidth) / 2;
-                const offsetY = (config.cellSize * scaleFactor - drawHeight) / 2;
-                
-                // Draw shadow/glow effect first
-                if (unitData.unit === 'image0' || unitData.unit === 'image17') {
-                    const shadowSize = unitData.unit === 'image0' ? 25 : 30;
-                    const steps = 5;
-                    const centerX = posX + (config.cellSize * scaleFactor) / 2;
-                    const centerY = posY + (config.cellSize * scaleFactor) / 2;
+                for (let i = 0; i < steps; i++) {
+                    const radius = (shadowSize * scaleFactor) * (i / steps);
+                    const alpha = 0.3 * (1 - (i / steps));
                     
-                    for (let i = 0; i < steps; i++) {
-                        const radius = (shadowSize * scaleFactor) * (i / steps);
-                        const alpha = 0.3 * (1 - (i / steps));
-                        
-                        ctx.fillStyle = unitData.color;
-                        ctx.globalAlpha = alpha;
-                        ctx.beginPath();
-                        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    ctx.globalAlpha = 1.0;
+                    ctx.fillStyle = unitData.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    ctx.fill();
                 }
-                
-                // Then draw the unit image
-                ctx.drawImage(
-                    unitImg, 
-                    posX + offsetX, 
-                    posY + offsetY, 
-                    drawWidth, 
-                    drawHeight
-                );
-            };
+                ctx.globalAlpha = 1.0;
+            }
+            
+            // Then draw the unit image
+            ctx.drawImage(
+                unitImg, 
+                posX + offsetX, 
+                posY + offsetY, 
+                drawWidth, 
+                drawHeight
+            );
         }
         
         // Copy image to clipboard
