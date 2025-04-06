@@ -727,7 +727,8 @@
             exportQuality: 2,
             shadowPlacementMode: false,
             activeShadowOrigin: null,
-            unitPairs: {} // Tracks pairs of image17 and their connected image0
+            unitPairs: {}, // Tracks pairs of image17 and their connected image0
+            image17Colors: {} // Tracks colors for each image17 unit
         };
         
         // DOM elements
@@ -841,13 +842,23 @@
                     
                     // Reset color when selecting image0 or image17
                     if (state.selectedUnit === 'image0' || state.selectedUnit === 'image17') {
-                        state.currentColor = '#ff0000'; // Reset to default color
-                        shapeColor.value = '#ff0000';
-                        colorPreview.style.backgroundColor = '#ff0000';
+                        state.currentColor = getRandomColor(); // Generate random color for each image17
+                        shapeColor.value = state.currentColor;
+                        colorPreview.style.backgroundColor = state.currentColor;
                     }
                 });
                 unitPalette.appendChild(unitDiv);
             }
+        }
+        
+        // Generate random color
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
         }
         
         // Create game board
@@ -866,6 +877,7 @@
             // Initialize empty board
             state.units = {};
             state.unitPairs = {};
+            state.image17Colors = {};
             
             for (let y = 0; y < gridSize.rows; y++) {
                 for (let x = 0; x < gridSize.cols; x++) {
@@ -905,6 +917,7 @@
                             const shadowCellId = state.unitPairs[cellId];
                             state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
                             delete state.unitPairs[cellId];
+                            delete state.image17Colors[cellId]; // Remove color tracking
                             hadConnection = true;
                         }
                         if (unit.unit === 'image0') {
@@ -912,6 +925,7 @@
                             for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
                                 if (shadowCellId === cellId) {
                                     delete state.unitPairs[originCellId];
+                                    delete state.image17Colors[originCellId]; // Remove color tracking
                                     hadConnection = true;
                                     break;
                                 }
@@ -929,7 +943,7 @@
                 } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
                     // Place image0 connected to image17
                     const originCellId = state.activeShadowOrigin.cellId;
-                    const originColor = state.activeShadowOrigin.unitData.color; // Use the origin unit's color
+                    const originColor = state.image17Colors[originCellId]; // Get the stored color for this image17
                     
                     // Remove any existing connected image0
                     if (state.unitPairs[originCellId]) {
@@ -951,7 +965,13 @@
                     renderUnits();
                 } else if (state.selectedUnit) {
                     // Add new unit to cell
-                    addUnitToCell(cellId, state.selectedUnit, state.currentColor);
+                    const color = state.selectedUnit === 'image17' ? state.currentColor : '#ff0000';
+                    addUnitToCell(cellId, state.selectedUnit, color);
+                    
+                    // If it's image17, store its color
+                    if (state.selectedUnit === 'image17') {
+                        state.image17Colors[cellId] = color;
+                    }
                 }
             });
             
@@ -959,6 +979,30 @@
             shapeColor.addEventListener('input', (e) => {
                 state.currentColor = e.target.value;
                 colorPreview.style.backgroundColor = state.currentColor;
+                
+                // Update color for selected image17 if we're placing one
+                if (state.selectedUnit === 'image17') {
+                    // Find the image17 in the units and update its color
+                    Object.keys(state.units).forEach(cellId => {
+                        state.units[cellId].forEach(unit => {
+                            if (unit.unit === 'image17') {
+                                unit.color = state.currentColor;
+                                state.image17Colors[cellId] = state.currentColor;
+                                
+                                // Also update connected image0 if exists
+                                if (state.unitPairs[cellId]) {
+                                    const shadowCellId = state.unitPairs[cellId];
+                                    state.units[shadowCellId].forEach(shadowUnit => {
+                                        if (shadowUnit.unit === 'image0') {
+                                            shadowUnit.color = state.currentColor;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    });
+                }
+                
                 renderUnits(); // Update shadows with new color
             });
             
@@ -971,6 +1015,7 @@
                     state.units[key] = [];
                 });
                 state.unitPairs = {};
+                state.image17Colors = {};
                 renderUnits();
             });
             
