@@ -1296,10 +1296,10 @@
                 if (state.deleteMode) {
                     toggleDeleteModeBtn.classList.add('active');
                     document.querySelectorAll('.unit-option').forEach(opt => {
-                        opt.classList.remove('selected');
+                        /*opt.classList.remove('selected');*/
                     });
-                    state.selectedUnit = null;
-                    state.shadowPlacementMode = false;
+                   /* state.selectedUnit = null;
+                    state.shadowPlacementMode = false;*/
                     state.activeShadowOrigin = null;
                     
                     // Hide shadow buttons only if not in shadow placement mode
