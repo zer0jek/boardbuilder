@@ -94,7 +94,7 @@
 
         .unit-image0 {
             z-index: 2;
-            filter: drop-shadow(50px 50px 90px var(--unit-color, #ff0000));
+            filter: drop-shadow(0 0 25px var(--unit-color, #ff0000));
         }
 
         .unit-image17 {
@@ -826,7 +826,7 @@
             unitCount: 25,
             cellSize: window.innerWidth < 600 ? 50 : 80,
             unitNames: {
-                
+                'image0': 'Relic',
                 'image1': 'Unit 1',
                 'image2': 'Unit 2',
                 'image3': 'Unit 3',
@@ -843,7 +843,7 @@
                 'image14': 'Unit 14',
                 'image15': 'Unit 15',
                 'image16': 'Unit 16',
-                'image17': 'Special Unit',
+                'image17': 'Omen',
                 'image18': 'Unit 18',
                 'image19': 'Unit 19',
                 'image20': 'Unit 20',
@@ -853,10 +853,10 @@
                 'image24': 'Unit 24'
             },
             unitDescriptions: {
-                
+                'image0': 'Relic that connects to an Omen. The shadow color represents their connection. Always appears below the connected Omen.',
                 'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
-                'image17': 'Special unit that can create connected shadow units. Click the + button to place a connected shadow unit. Always appears above shadow units.',
+                'image17': 'Omen that can create connected Relics. The shadow color represents their connection. Click the + button to place a connected Relic. Always appears above connected Relics.',
             }
         };
         
@@ -874,8 +874,6 @@
             activeShadowOrigin: null,
             unitPairs: {},
             image17Colors: {},
-            lastImage17Color: null,
-            usedColors: new Set(),
             isResizing: false,
             resizeTimer: null
         };
@@ -916,7 +914,7 @@
         // Create units info modal content
         function createUnitsInfo() {
             unitsInfoGrid.innerHTML = '';
-            for (let i = 1; i < config.unitCount; i++) {
+            for (let i = 0; i < config.unitCount; i++) {
                 const unitKey = `image${i}`;
                 const unitItem = document.createElement('div');
                 unitItem.className = 'unit-info-item';
@@ -972,7 +970,7 @@
         // Create unit palette
         function createUnitPalette() {
             unitPalette.innerHTML = '';
-            for (let i = 1; i < config.unitCount; i++) {
+            for (let i = 0; i < config.unitCount; i++) {
                 const unitDiv = document.createElement('div');
                 unitDiv.className = 'unit-option';
                 unitDiv.dataset.unit = `image${i}`;
@@ -988,38 +986,12 @@
                     toggleDeleteModeBtn.classList.remove('active');
                     
                     if (state.selectedUnit === 'image0' || state.selectedUnit === 'image17') {
-                        state.currentColor = getRandomColor();
-                        shapeColor.value = state.currentColor;
+                        state.currentColor = shapeColor.value;
                         colorPreview.style.backgroundColor = state.currentColor;
                     }
                 });
                 unitPalette.appendChild(unitDiv);
             }
-        }
-        
-        // Generate random color that's different from the last one
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color;
-            let attempts = 0;
-            const maxAttempts = 20;
-            
-            do {
-                color = '#';
-                for (let i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                attempts++;
-                
-                // If we've tried too many times, reset the used colors
-                if (attempts >= maxAttempts) {
-                    state.usedColors.clear();
-                    break;
-                }
-            } while (state.usedColors.has(color));
-            
-            state.usedColors.add(color);
-            return color;
         }
         
         // Create game board
@@ -1162,7 +1134,6 @@
                 });
                 state.unitPairs = {};
                 state.image17Colors = {};
-                state.usedColors.clear();
                 renderUnits();
             });
             
@@ -1323,7 +1294,7 @@
             document.querySelectorAll('.unit').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
             
-            // First render all image0 units (shadows)
+            // First render all image0 units (Relics)
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
                 if (!cell) return;
@@ -1341,7 +1312,7 @@
                 });
             });
             
-            // Then render all other units (including image17)
+            // Then render all other units (including Omens)
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
                 if (!cell) return;
@@ -1361,7 +1332,7 @@
                                 const shadowBtn = document.createElement('button');
                                 shadowBtn.className = 'shadow-button';
                                 shadowBtn.textContent = '+';
-                                shadowBtn.title = 'Place connected shadow';
+                                shadowBtn.title = 'Place connected Relic';
                                 
                                 shadowBtn.addEventListener('click', (e) => {
                                     e.stopPropagation();
@@ -1372,7 +1343,7 @@
                                         btn.style.display = 'none';
                                     });
                                     
-                                    alert('Click on another cell to place the connected shadow (image0) for this unit');
+                                    alert('Click on another cell to place the connected Relic for this Omen');
                                 });
                                 
                                 cell.appendChild(shadowBtn);
@@ -1436,7 +1407,7 @@
             // Create promises for all unit images to load
             const unitPromises = [];
             
-            // First draw all image0 units (shadows)
+            // First draw all image0 units (Relics)
             Object.keys(state.units).forEach(cellId => {
                 const [_, x, y] = cellId.split('-');
                 const units = state.units[cellId];
@@ -1456,7 +1427,7 @@
                 });
             });
             
-            // Then draw all other units
+            // Then draw all other units (including Omens)
             Object.keys(state.units).forEach(cellId => {
                 const [_, x, y] = cellId.split('-');
                 const units = state.units[cellId];
@@ -1497,14 +1468,15 @@
             
             // Draw shadow/glow effect first
             if (unitData.unit === 'image0' || unitData.unit === 'image17') {
-                const shadowSize = unitData.unit === 'image0' ? 25 : 30;
-                const steps = 8;
+                const shadowSize = unitData.unit === 'image0' ? 35 : 25; // Relic has larger shadow
+                const steps = unitData.unit === 'image0' ? 12 : 8; // More steps for Relic for smoother effect
                 const centerX = posX + (config.cellSize * scaleFactor) / 2;
                 const centerY = posY + (config.cellSize * scaleFactor) / 2;
+                const maxAlpha = unitData.unit === 'image0' ? 0.5 : 0.4; // More visible for Relic
                 
                 for (let i = 0; i < steps; i++) {
                     const radius = (shadowSize * scaleFactor) * (i / steps);
-                    const alpha = 0.4 * (1 - (i / steps));
+                    const alpha = maxAlpha * (1 - (i / steps));
                     
                     ctx.fillStyle = unitData.color;
                     ctx.globalAlpha = alpha;
