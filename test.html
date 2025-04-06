@@ -826,7 +826,7 @@
             unitCount: 25,
             cellSize: window.innerWidth < 600 ? 50 : 80,
             unitNames: {
-                'image0': 'Shadow Unit',
+                
                 'image1': 'Unit 1',
                 'image2': 'Unit 2',
                 'image3': 'Unit 3',
@@ -853,7 +853,7 @@
                 'image24': 'Unit 24'
             },
             unitDescriptions: {
-                'image0': 'This is a shadow unit that appears below other units. It creates a large shadow effect with customizable color.',
+                
                 'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
                 'image17': 'Special unit that can create connected shadow units. Click the + button to place a connected shadow unit. Always appears above shadow units.',
@@ -972,7 +972,7 @@
         // Create unit palette
         function createUnitPalette() {
             unitPalette.innerHTML = '';
-            for (let i = 0; i < config.unitCount; i++) {
+            for (let i = 1; i < config.unitCount; i++) {
                 const unitDiv = document.createElement('div');
                 unitDiv.className = 'unit-option';
                 unitDiv.dataset.unit = `image${i}`;
