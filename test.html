@@ -41,14 +41,13 @@
             position: relative;
             width: fit-content;
             height: fit-content;
-            
             border-radius: 8px;
-            
             padding: 10px;
             margin: 0 auto;
             overflow: visible;
             z-index: 10;
             transition: transform 0.3s ease;
+            background-color: rgba(255,255,255,0.5);
         }
         
         .board-container:hover {
@@ -74,9 +73,8 @@
             background-repeat: no-repeat;
             background-position: center;
             z-index: 1;
-            background-color: white;
+            background-color: rgba(255,255,255,0.7);
             transition: opacity 0.3s ease;
-            
         }
         
         .unit {
@@ -94,12 +92,16 @@
 
         .unit-image0 {
             z-index: 2;
-            filter: drop-shadow(0 0 25px var(--unit-color, #ff0000));
+            filter: 
+                drop-shadow(0 0 15px var(--unit-color, #ff0000))
+                drop-shadow(0 0 25px var(--unit-color, #ff0000));
         }
 
         .unit-image17 {
             z-index: 4;
-            filter: drop-shadow(0 0 30px var(--unit-color, #ff0000));
+            filter: 
+                drop-shadow(0 0 10px var(--unit-color, #ff0000))
+                drop-shadow(0 0 20px var(--unit-color, #ff0000));
         }
         
         .cell {
@@ -961,7 +963,7 @@
                 };
                 img.onerror = function() {
                     boardBackground.style.backgroundImage = 'none';
-                    boardBackground.style.backgroundColor = 'white';
+                    boardBackground.style.backgroundColor = 'rgba(255,255,255,0.7)';
                     resolve();
                 };
             });
@@ -1294,7 +1296,7 @@
             document.querySelectorAll('.unit').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
             
-            // First render all image0 units (Relics)
+            // First render all Relics (image0)
             Object.keys(state.units).forEach(cellId => {
                 const cell = document.querySelector(`[data-id="${cellId}"]`);
                 if (!cell) return;
@@ -1306,7 +1308,7 @@
                         unitImg.className = `unit ${unitData.unit}`;
                         unitImg.src = `${unitData.unit}.png`;
                         unitImg.style.setProperty('--unit-color', unitData.color);
-                        unitImg.classList.add(unitData.unit);
+                        unitImg.style.filter = `drop-shadow(0 0 15px ${unitData.color}) drop-shadow(0 0 25px ${unitData.color})`;
                         cell.appendChild(unitImg);
                     }
                 });
@@ -1326,7 +1328,7 @@
                         unitImg.style.setProperty('--unit-color', unitData.color);
                         
                         if (unitData.unit === 'image17') {
-                            unitImg.classList.add(unitData.unit);
+                            unitImg.style.filter = `drop-shadow(0 0 10px ${unitData.color}) drop-shadow(0 0 20px ${unitData.color})`;
                             
                             if (!state.unitPairs[cellId] && !state.deleteMode) {
                                 const shadowBtn = document.createElement('button');
@@ -1407,7 +1409,7 @@
             // Create promises for all unit images to load
             const unitPromises = [];
             
-            // First draw all image0 units (Relics)
+            // First draw all Relics (image0)
             Object.keys(state.units).forEach(cellId => {
                 const [_, x, y] = cellId.split('-');
                 const units = state.units[cellId];
