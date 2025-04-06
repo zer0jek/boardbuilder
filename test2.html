@@ -1131,6 +1131,11 @@
                     state.deleteMode = false;
                     state.shadowPlacementMode = false;
                     toggleDeleteModeBtn.classList.remove('active');
+                    
+                    // Show all shadow buttons when selecting a unit
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
                 });
                 unitPalette.appendChild(unitDiv);
             }
@@ -1192,13 +1197,15 @@
                     const units = state.units[cellId];
                     let hadConnection = false;
                     
-                    units.forEach(unit => {
+                    // Remove all units except Omens (image17) if they have connections
+                    state.units[cellId] = units.filter(unit => {
                         if (unit.unit === 'image17' && state.unitPairs[cellId]) {
                             const shadowCellId = state.unitPairs[cellId];
                             state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
                             delete state.unitPairs[cellId];
                             delete state.image17Colors[cellId];
                             hadConnection = true;
+                            return true; // Keep the Omen
                         }
                         if (unit.unit === 'image0') {
                             for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
@@ -1210,11 +1217,14 @@
                                 }
                             }
                         }
+                        return false; // Remove other units
                     });
                     
-                    state.units[cellId] = [];
-                    
                     if (hadConnection) {
+                        renderUnits();
+                    } else {
+                        // If no special connections were found, just clear the cell
+                        state.units[cellId] = [];
                         renderUnits();
                     }
                 } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
@@ -1231,6 +1241,11 @@
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
                     renderUnits();
+                    
+                    // Show all shadow buttons after placement
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
                 } else if (state.selectedUnit) {
                     const color = state.selectedUnit === 'image17' ? state.currentColor : '#ff0000';
                     addUnitToCell(cellId, state.selectedUnit, color);
@@ -1297,11 +1312,14 @@
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
                     
+                    // Hide shadow buttons in delete mode
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'none';
                     });
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
+                    
+                    // Show shadow buttons when exiting delete mode
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'block';
                     });
@@ -1510,6 +1528,7 @@
                         if (unitData.unit === 'image17') {
                             unitImg.style.filter = `drop-shadow(0 0 10px ${unitData.color}) drop-shadow(0 0 20px ${unitData.color})`;
                             
+                            // Show shadow button unless in delete mode
                             if (!state.deleteMode) {
                                 const shadowBtn = document.createElement('button');
                                 shadowBtn.className = 'shadow-button';
@@ -1525,8 +1544,11 @@
                                         color: state.image17Colors[cellId] || unitData.color
                                     };
                                     
+                                    // Hide other shadow buttons during placement
                                     document.querySelectorAll('.shadow-button').forEach(btn => {
-                                        btn.style.display = 'none';
+                                        if (btn !== shadowBtn) {
+                                            btn.style.display = 'none';
+                                        }
                                     });
                                     
                                     alert('Click on another cell to place the connected Relic for this Omen');
