@@ -1296,13 +1296,14 @@
                     }
                 } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
                     const originCellId = state.activeShadowOrigin.cellId;
-                    const originColor = state.image17Colors[originCellId];
+                    const originColor = state.image17Colors[originCellId] || state.currentColor;
                     
                     if (state.unitPairs[originCellId]) {
                         const oldShadowCellId = state.unitPairs[originCellId];
                         state.units[oldShadowCellId] = state.units[oldShadowCellId].filter(u => u.unit !== 'image0');
                     }
                     
+                    // Add the relic with the Omen's color
                     addUnitToCell(cellId, 'image0', originColor);
                     state.unitPairs[originCellId] = cellId;
                     state.shadowPlacementMode = false;
@@ -1528,7 +1529,7 @@
                 // Find if this Relic is connected to an Omen
                 for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                     if (relicCellId === cellId) {
-                        color = state.image17Colors[omenCellId];
+                        color = state.image17Colors[omenCellId] || color;
                         break;
                     }
                 }
@@ -1570,8 +1571,17 @@
                 const units = state.units[cellId];
                 units.forEach((unitData) => {
                     if (unitData.unit === 'image0') {
-                        // Create glow effect
-                        const glow = createGlowElement(unitData.color);
+                        // Get the correct color from the connected Omen if exists
+                        let color = unitData.color;
+                        for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
+                            if (relicCellId === cellId) {
+                                color = state.image17Colors[omenCellId] || color;
+                                break;
+                            }
+                        }
+                        
+                        // Create glow effect with the correct color
+                        const glow = createGlowElement(color);
                         cell.appendChild(glow);
                         
                         // Create unit image
@@ -1748,6 +1758,17 @@
             const unitImg = new Image();
             unitImg.src = `${unitData.unit}.png`;
             
+            // Get the correct color for relics connected to omens
+            let color = unitData.color;
+            if (unitData.unit === 'image0') {
+                for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
+                    if (relicCellId === `cell-${x}-${y}`) {
+                        color = state.image17Colors[omenCellId] || color;
+                        break;
+                    }
+                }
+            }
+            
             // Draw shadow/glow effect first (same for both Omen and Relic)
             if (unitData.unit === 'image0' || unitData.unit === 'image17') {
                 const centerX = posX + (config.cellSize * scaleFactor) / 2;
@@ -1760,7 +1781,7 @@
                     const radius = shadowSize * (i / steps);
                     const alpha = maxAlpha * (1 - (i / steps));
                     
-                    ctx.fillStyle = unitData.color;
+                    ctx.fillStyle = color;
                     ctx.globalAlpha = alpha;
                     ctx.beginPath();
                     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
