@@ -5,26 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Board Editor</title>
     <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --header-bg: #f5f5f5;
+            --panel-bg: white;
+            --cell-bg: transparent;
+            --border-color: #ddd;
+            --shadow-color: rgba(0,0,0,0.1);
+            --button-primary: #4a90e2;
+            --button-primary-hover: #3a7bc8;
+            --button-secondary: #f0f0f0;
+            --button-secondary-hover: #e0e0e0;
+            --button-danger: #e74c3c;
+            --button-danger-hover: #c0392b;
+            --button-success: #2ecc71;
+            --button-success-hover: #27ae60;
+        }
+
+        .dark-mode {
+            --bg-color: #222;
+            --text-color: #eee;
+            --header-bg: #333;
+            --panel-bg: #444;
+            --cell-bg: rgba(255,255,255,0.05);
+            --border-color: #555;
+            --shadow-color: rgba(0,0,0,0.3);
+            --button-primary: #3a7bc8;
+            --button-primary-hover: #4a90e2;
+            --button-secondary: #555;
+            --button-secondary-hover: #666;
+            --button-danger: #c0392b;
+            --button-danger-hover: #e74c3c;
+            --button-success: #27ae60;
+            --button-success-hover: #2ecc71;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             overflow-x: auto;
             min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
         
         .fixed-header {
             position: sticky;
             top: 0;
-            background-color: #f5f5f5;
+            background-color: var(--header-bg);
             padding: 10px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px var(--shadow-color);
             z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background-color 0.3s;
         }
         
         .header-title {
@@ -37,7 +75,7 @@
         }
         
         h1, h2, h3 {
-            color: #444;
+            color: var(--text-color);
             margin-top: 0;
             animation: fadeIn 0.5s ease-out;
         }
@@ -63,7 +101,7 @@
             overflow: visible;
             z-index: 10;
             transition: transform 0.3s ease;
-            background-color: rgba(255,255,255,0.5);
+            background-color: rgba(255,255,255,0.1);
         }
         
         .board-container:hover {
@@ -73,9 +111,9 @@
         .board {
             display: grid;
             position: relative;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             z-index: 2;
-            background-color: transparent;
+            background-color: var(--cell-bg);
             transition: all 0.3s ease;
         }
         
@@ -89,7 +127,7 @@
             background-repeat: no-repeat;
             background-position: center;
             z-index: 1;
-            background-color: rgba(255,255,255,0.7);
+            background-color: rgba(255,255,255,0.1);
             transition: opacity 0.3s ease;
         }
         
@@ -124,21 +162,21 @@
         }
         
         .cell:hover {
-            background-color: rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
         }
         
         .controls-panel {
-            background-color: white;
+            background-color: var(--panel-bg);
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px var(--shadow-color);
             padding: 15px;
             width: 100%;
             max-width: 300px;
             margin: 0 auto;
             position: relative;
             animation: fadeIn 0.5s ease-out 0.2s backwards;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, background-color 0.3s;
         }
         
         .controls-panel:hover {
@@ -148,7 +186,7 @@
         .section {
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
             animation: fadeIn 0.5s ease-out;
         }
         
@@ -165,7 +203,7 @@
             align-items: center;
             font-size: 14px;
             text-transform: uppercase;
-            color: #666;
+            color: var(--text-color);
         }
         
         .section-title::before {
@@ -173,7 +211,7 @@
             display: inline-block;
             width: 4px;
             height: 16px;
-            background-color: #4a90e2;
+            background-color: var(--button-primary);
             margin-right: 8px;
             border-radius: 2px;
         }
@@ -190,40 +228,40 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
-            background-color: #f9f9f9;
-            animation: fadeIn 0.5s ease-out;
+            background-color: var(--panel-bg);
         }
         
         .unit-option:hover {
-            border-color: #4a90e2;
+            border-color: var(--button-primary);
             transform: scale(1.05);
-            background-color: white;
+            background-color: var(--panel-bg);
         }
         
         .unit-option.selected {
-            border-color: #4a90e2;
+            border-color: var(--button-primary);
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
-            background-color: white;
+            background-color: var(--panel-bg);
             animation: pulse 0.5s ease;
         }
         
         select {
             width: 100%;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             margin-bottom: 10px;
-            background-color: white;
+            background-color: var(--panel-bg);
             font-size: 13px;
             transition: all 0.3s ease;
+            color: var(--text-color);
         }
         
         select:focus {
-            border-color: #4a90e2;
+            border-color: var(--button-primary);
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
         }
         
@@ -234,10 +272,10 @@
             gap: 10px;
             margin-bottom: 15px;
             padding: 15px;
-            background-color: #f8f9fa;
+            background-color: var(--panel-bg);
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid var(--border-color);
         }
         
         .color-picker-header {
@@ -250,14 +288,14 @@
         .color-picker-label {
             font-size: 14px;
             font-weight: 600;
-            color: #495057;
+            color: var(--text-color);
         }
         
         .color-value {
             font-size: 13px;
             font-family: monospace;
-            color: #6c757d;
-            background: #f1f1f1;
+            color: var(--text-color);
+            background: var(--panel-bg);
             padding: 2px 6px;
             border-radius: 4px;
         }
@@ -274,13 +312,13 @@
             height: 60px;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 10px var(--shadow-color);
             transition: all 0.3s ease;
         }
         
         .color-input-wrapper:hover {
             transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 5px 15px var(--shadow-color);
         }
         
         input[type="color"] {
@@ -342,23 +380,23 @@
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px var(--shadow-color);
         }
         
         .color-preset:hover {
             transform: scale(1.1);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            box-shadow: 0 3px 6px var(--shadow-color);
         }
         
         .color-preset.active {
-            border-color: #4a90e2;
+            border-color: var(--button-primary);
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
             transform: scale(1.1);
         }
         
         .color-info {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-color);
             margin-top: 5px;
             line-height: 1.4;
         }
@@ -375,7 +413,7 @@
         
         .checkbox-container label {
             font-size: 13px;
-            color: #555;
+            color: var(--text-color);
         }
         
         .button-group {
@@ -386,7 +424,7 @@
         
         button {
             padding: 10px 15px;
-            background-color: #4a90e2;
+            background-color: var(--button-primary);
             color: white;
             border: none;
             border-radius: 4px;
@@ -399,7 +437,7 @@
         }
         
         button:hover {
-            background-color: #3a7bc8;
+            background-color: var(--button-primary-hover);
             transform: translateY(-2px);
         }
         
@@ -408,42 +446,51 @@
         }
         
         button.secondary {
-            background-color: #f0f0f0;
-            color: #333;
+            background-color: var(--button-secondary);
+            color: var(--text-color);
         }
         
         button.secondary:hover {
-            background-color: #e0e0e0;
+            background-color: var(--button-secondary-hover);
         }
         
         button.danger {
-            background-color: #e74c3c;
+            background-color: var(--button-danger);
         }
         
         button.danger:hover {
-            background-color: #c0392b;
+            background-color: var(--button-danger-hover);
         }
         
         button.active {
-            background-color: #c0392b;
+            background-color: var(--button-danger-hover);
             box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.3);
         }
         
         button.info {
-            background-color: #2ecc71;
+            background-color: var(--button-success);
             margin-bottom: 10px;
             width: auto;
         }
         
         button.info:hover {
-            background-color: #27ae60;
+            background-color: var(--button-success-hover);
+        }
+        
+        button.theme-toggle {
+            background-color: var(--button-secondary);
+            color: var(--text-color);
+        }
+        
+        button.theme-toggle:hover {
+            background-color: var(--button-secondary-hover);
         }
         
         #imageOutput {
             display: none;
-            background-color: white;
+            background-color: var(--panel-bg);
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px var(--shadow-color);
             padding: 20px;
             margin: 20px auto;
             width: calc(100% - 40px);
@@ -457,7 +504,7 @@
             image-rendering: crisp-edges;
             display: block;
             margin: 0 auto;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 15px var(--shadow-color);
             transition: all 0.3s ease;
             background-color: white;
         }
@@ -468,7 +515,7 @@
         
         .divider {
             height: 1px;
-            background-color: #eee;
+            background-color: var(--border-color);
             margin: 15px 0;
         }
         
@@ -482,22 +529,22 @@
             display: flex;
             align-items: center;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
-            background-color: #f9f9f9;
+            background-color: var(--panel-bg);
         }
         
         .background-option:hover {
-            background-color: white;
-            border-color: #bbb;
+            background-color: var(--panel-bg);
+            border-color: var(--button-primary);
             transform: translateX(5px);
         }
         
         .background-option.selected {
-            border: 1px solid #4a90e2;
-            background-color: #f0f7ff;
+            border: 1px solid var(--button-primary);
+            background-color: var(--panel-bg);
             transform: translateX(5px);
         }
         
@@ -509,19 +556,19 @@
             background-repeat: no-repeat;
             background-position: center;
             margin-right: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             background-color: white;
             transition: all 0.3s ease;
         }
         
         .background-name {
             font-size: 13px;
-            color: #333;
+            color: var(--text-color);
         }
         
         .background-type {
             font-size: 11px;
-            color: #999;
+            color: var(--text-color);
             margin-top: 2px;
         }
 
@@ -530,7 +577,7 @@
             position: absolute;
             top: -10px;
             right: -10px;
-            background-color: #4a90e2;
+            background-color: var(--button-primary);
             color: white;
             border: none;
             border-radius: 50%;
@@ -545,7 +592,7 @@
         }
 
         .shadow-button:hover {
-            background-color: #3a7bc8;
+            background-color: var(--button-primary-hover);
             transform: scale(1.1);
         }
 
@@ -568,15 +615,16 @@
         }
 
         .modal-content {
-            background-color: white;
+            background-color: var(--panel-bg);
             padding: 20px;
             border-radius: 8px;
             max-width: 90%;
             max-height: 90%;
             overflow-y: auto;
             width: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px var(--shadow-color);
             animation: slideUp 0.3s ease-out;
+            color: var(--text-color);
         }
 
         .modal-header {
@@ -596,7 +644,7 @@
             border: none;
             font-size: 24px;
             cursor: pointer;
-            color: #666;
+            color: var(--text-color);
             padding: 0;
             line-height: 1;
             transition: transform 0.3s ease;
@@ -620,16 +668,17 @@
             flex-direction: column;
             align-items: center;
             padding: 10px;
-            border: 1px solid #eee;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
+            background-color: var(--panel-bg);
         }
 
         .unit-info-item:hover {
-            background-color: #f5f5f5;
+            background-color: var(--panel-bg);
             transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px var(--shadow-color);
         }
 
         .unit-info-image {
@@ -650,6 +699,7 @@
             font-size: 12px;
             text-align: center;
             word-break: break-word;
+            color: var(--text-color);
         }
 
         /* Unit Detail Modal */
@@ -671,7 +721,7 @@
         }
 
         .unit-detail-content {
-            background-color: white;
+            background-color: var(--panel-bg);
             padding: 20px;
             border-radius: 8px;
             max-width: 90%;
@@ -679,8 +729,9 @@
             overflow-y: auto;
             width: 400px;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px var(--shadow-color);
             animation: slideUp 0.3s ease-out;
+            color: var(--text-color);
         }
 
         .unit-detail-image {
@@ -706,11 +757,40 @@
 
         .unit-detail-description {
             font-size: 14px;
-            color: #555;
+            color: var(--text-color);
             margin-bottom: 15px;
             text-align: left;
             line-height: 1.5;
             animation: fadeIn 0.5s ease-out 0.1s backwards;
+        }
+
+        /* Custom shadow classes for Omens and Relics */
+        .omen-shadow {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            width: 70px;
+            height: 70px;
+            filter: blur(15px);
+            opacity: 0.7;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+        }
+
+        .relic-shadow {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            width: 70px;
+            height: 70px;
+            filter: blur(15px);
+            opacity: 0.7;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
         }
 
         /* Scrollbar styling */
@@ -720,18 +800,18 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: var(--panel-bg);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
+            background: var(--border-color);
             border-radius: 4px;
             transition: background 0.3s ease;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+            background: var(--button-primary);
         }
 
         /* Animations */
@@ -760,21 +840,6 @@
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
-        }
-
-        /* Glow effect styles */
-        .glow-effect {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            width: 70px;
-            height: 70px;
-            filter: blur(15px);
-            opacity: 0.7;
-            transform: translate(-50%, -50%);
-            top: 50%;
-            left: 50%;
         }
 
         /* Responsywne style */
@@ -849,7 +914,7 @@
                 min-width: auto;
             }
             
-            .glow-effect {
+            .omen-shadow, .relic-shadow {
                 width: 50px;
                 height: 50px;
                 filter: blur(10px);
@@ -857,7 +922,7 @@
         }
         
         footer {
-            color: grey;
+            color: var(--text-color);
             text-align: center;
             margin: 20px 0;
             padding: 0 20px;
@@ -869,6 +934,7 @@
         <h1 class="header-title">Board Editor</h1>
         <div class="header-actions">
             <button id="unitsInfoBtn" class="info">Units Info</button>
+            <button id="themeToggle" class="theme-toggle">Dark Mode</button>
         </div>
     </div>
     
@@ -1078,7 +1144,9 @@
             activeShadowOrigin: null,
             unitPairs: {}, // Stores Omen -> Relic connections
             isResizing: false,
-            resizeTimer: null
+            resizeTimer: null,
+            darkMode: false,
+            omenCounter: 0 // Counter for unique Omen classes
         };
         
         // DOM elements
@@ -1104,6 +1172,7 @@
         const unitDetailName = document.getElementById('unitDetailName');
         const unitDetailDescription = document.getElementById('unitDetailDescription');
         const colorValue = document.getElementById('colorValue');
+        const themeToggleBtn = document.getElementById('themeToggle');
         
         // Initialization
         function init() {
@@ -1154,6 +1223,18 @@
             document.body.style.overflow = 'auto';
         }
         
+        // Toggle dark/light mode
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            if (state.darkMode) {
+                document.body.classList.add('dark-mode');
+                themeToggleBtn.textContent = 'Light Mode';
+            } else {
+                document.body.classList.remove('dark-mode');
+                themeToggleBtn.textContent = 'Dark Mode';
+            }
+        }
+        
         // Load background image
         function loadBackgroundImage() {
             return new Promise((resolve) => {
@@ -1166,7 +1247,7 @@
                 };
                 img.onerror = function() {
                     boardBackground.style.backgroundImage = 'none';
-                    boardBackground.style.backgroundColor = 'rgba(255,255,255,0.7)';
+                    boardBackground.style.backgroundColor = 'rgba(255,255,255,0.1)';
                     resolve();
                 };
             });
@@ -1215,6 +1296,7 @@
             if (!state.isResizing) {
                 state.units = {};
                 state.unitPairs = {};
+                state.omenCounter = 0;
             }
             
             for (let y = 0; y < gridSize.rows; y++) {
@@ -1239,12 +1321,10 @@
             }
         }
         
-        // Create glow effect element
-        function createGlowElement(color) {
-            const glow = document.createElement('div');
-            glow.className = 'glow-effect';
-            glow.style.backgroundColor = color;
-            return glow;
+        // Create unique class name for Omen's shadow
+        function createOmenClass() {
+            state.omenCounter++;
+            return `omen-shadow-${state.omenCounter}`;
         }
         
         // Set up event listeners
@@ -1293,14 +1373,15 @@
                 } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
                     const originCellId = state.activeShadowOrigin.cellId;
                     const originColor = state.activeShadowOrigin.color;
+                    const omenClass = state.activeShadowOrigin.omenClass;
                     
                     if (state.unitPairs[originCellId]) {
                         const oldShadowCellId = state.unitPairs[originCellId];
                         state.units[oldShadowCellId] = state.units[oldShadowCellId].filter(u => u.unit !== 'image0');
                     }
                     
-                    // Add the relic with the Omen's color
-                    addUnitToCell(cellId, 'image0', originColor);
+                    // Add the relic with the Omen's color and class
+                    addUnitToCell(cellId, 'image0', originColor, omenClass);
                     state.unitPairs[originCellId] = cellId;
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
@@ -1311,10 +1392,12 @@
                         btn.style.display = 'block';
                     });
                 } else if (state.selectedUnit) {
-                    const color = state.selectedUnit === 'image17' ? state.currentColor : '#ff0000';
-                    addUnitToCell(cellId, state.selectedUnit, color);
-                    
-                    renderUnits();
+                    if (state.selectedUnit === 'image17') {
+                        const omenClass = createOmenClass();
+                        addUnitToCell(cellId, state.selectedUnit, state.currentColor, omenClass);
+                    } else {
+                        addUnitToCell(cellId, state.selectedUnit, '#ff0000');
+                    }
                 }
             });
             
@@ -1359,6 +1442,7 @@
                     state.units[key] = [];
                 });
                 state.unitPairs = {};
+                state.omenCounter = 0;
                 renderUnits();
             });
             
@@ -1451,6 +1535,8 @@
                 document.body.style.overflow = 'hidden';
             });
 
+            themeToggleBtn.addEventListener('click', toggleDarkMode);
+
             closeModalBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const modalId = btn.dataset.modal;
@@ -1510,22 +1596,21 @@
         }
         
         // Add unit to cell
-        function addUnitToCell(cellId, unit, color) {
+        function addUnitToCell(cellId, unit, color, omenClass = null) {
             if (!state.units[cellId]) {
                 state.units[cellId] = [];
             }
             
-            // For Omen and Relic, maintain their original colors
+            // For Omen and Relic, maintain their original colors and classes
             if (unit === 'image0') {
                 // Find if this Relic is connected to an Omen
                 for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                     if (relicCellId === cellId) {
-                        const omenCell = document.querySelector(`[data-id="${omenCellId}"]`);
-                        if (omenCell) {
-                            const glowElement = omenCell.querySelector('.glow-effect');
-                            if (glowElement) {
-                                color = glowElement.style.backgroundColor;
-                            }
+                        const omenUnits = state.units[omenCellId];
+                        const omenUnit = omenUnits.find(u => u.unit === 'image17');
+                        if (omenUnit) {
+                            color = omenUnit.color;
+                            omenClass = omenUnit.omenClass;
                         }
                         break;
                     }
@@ -1536,8 +1621,13 @@
             
             if (unit === 'image0' || unit === 'image17') {
                 const existingColor = existingUnit ? existingUnit.color : color;
+                const existingClass = existingUnit ? existingUnit.omenClass : omenClass;
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
-                state.units[cellId].push({ unit, color: existingColor });
+                state.units[cellId].push({ 
+                    unit, 
+                    color: existingColor,
+                    omenClass: existingClass
+                });
             } else {
                 state.units[cellId].push({ unit, color });
             }
@@ -1553,7 +1643,8 @@
         function renderUnits() {
             document.querySelectorAll('.unit').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
-            document.querySelectorAll('.glow-effect').forEach(el => el.remove());
+            document.querySelectorAll('.omen-shadow').forEach(el => el.remove());
+            document.querySelectorAll('.relic-shadow').forEach(el => el.remove());
             
             // First render all Relics (image0)
             Object.keys(state.units).forEach(cellId => {
@@ -1563,24 +1654,27 @@
                 const units = state.units[cellId];
                 units.forEach((unitData) => {
                     if (unitData.unit === 'image0') {
-                        // Get the correct color from the connected Omen if exists
+                        // Get the correct color and class from the connected Omen if exists
                         let color = unitData.color;
+                        let shadowClass = 'relic-shadow';
+                        
                         for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                             if (relicCellId === cellId) {
-                                const omenCell = document.querySelector(`[data-id="${omenCellId}"]`);
-                                if (omenCell) {
-                                    const glowElement = omenCell.querySelector('.glow-effect');
-                                    if (glowElement) {
-                                        color = glowElement.style.backgroundColor;
-                                    }
+                                const omenUnits = state.units[omenCellId];
+                                const omenUnit = omenUnits.find(u => u.unit === 'image17');
+                                if (omenUnit) {
+                                    color = omenUnit.color;
+                                    shadowClass = omenUnit.omenClass;
                                 }
                                 break;
                             }
                         }
                         
-                        // Create glow effect with the correct color
-                        const glow = createGlowElement(color);
-                        cell.appendChild(glow);
+                        // Create shadow effect with the correct color and class
+                        const shadow = document.createElement('div');
+                        shadow.className = shadowClass;
+                        shadow.style.backgroundColor = color;
+                        cell.appendChild(shadow);
                         
                         // Create unit image
                         const unitImg = document.createElement('img');
@@ -1600,9 +1694,11 @@
                 units.forEach((unitData) => {
                     if (unitData.unit !== 'image0') {
                         if (unitData.unit === 'image17') {
-                            // Create glow effect for Omen
-                            const glow = createGlowElement(unitData.color);
-                            cell.appendChild(glow);
+                            // Create shadow effect for Omen
+                            const shadow = document.createElement('div');
+                            shadow.className = unitData.omenClass || 'omen-shadow';
+                            shadow.style.backgroundColor = unitData.color;
+                            cell.appendChild(shadow);
                         }
                         
                         // Create unit image
@@ -1622,17 +1718,15 @@
                                 e.stopPropagation();
                                 state.shadowPlacementMode = true;
                                 
-                                // Get the Omen's current glow color
-                                let omenColor = '#ff0000';
-                                const glowElement = cell.querySelector('.glow-effect');
-                                if (glowElement) {
-                                    omenColor = glowElement.style.backgroundColor;
-                                }
+                                // Get the Omen's current shadow color and class
+                                let omenColor = unitData.color;
+                                let omenClass = unitData.omenClass;
                                 
                                 state.activeShadowOrigin = { 
                                     cellId, 
                                     unitData,
-                                    color: omenColor
+                                    color: omenColor,
+                                    omenClass: omenClass
                                 };
                                 
                                 // Hide other shadow buttons during placement
@@ -1769,12 +1863,10 @@
             if (unitData.unit === 'image0') {
                 for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                     if (relicCellId === `cell-${x}-${y}`) {
-                        const omenCell = document.querySelector(`[data-id="${omenCellId}"]`);
-                        if (omenCell) {
-                            const glowElement = omenCell.querySelector('.glow-effect');
-                            if (glowElement) {
-                                color = glowElement.style.backgroundColor;
-                            }
+                        const omenUnits = state.units[omenCellId];
+                        const omenUnit = omenUnits.find(u => u.unit === 'image17');
+                        if (omenUnit) {
+                            color = omenUnit.color;
                         }
                         break;
                     }
