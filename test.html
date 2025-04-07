@@ -1077,7 +1077,6 @@
             shadowPlacementMode: false,
             activeShadowOrigin: null,
             unitPairs: {}, // Stores Omen -> Relic connections
-            image17Colors: {}, // Stores colors for Omens
             isResizing: false,
             resizeTimer: null
         };
@@ -1216,7 +1215,6 @@
             if (!state.isResizing) {
                 state.units = {};
                 state.unitPairs = {};
-                state.image17Colors = {};
             }
             
             for (let y = 0; y < gridSize.rows; y++) {
@@ -1270,7 +1268,6 @@
                             const shadowCellId = state.unitPairs[cellId];
                             state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
                             delete state.unitPairs[cellId];
-                            delete state.image17Colors[cellId];
                             hadConnection = true;
                             return true; // Keep the Omen
                         }
@@ -1278,7 +1275,6 @@
                             for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
                                 if (shadowCellId === cellId) {
                                     delete state.unitPairs[originCellId];
-                                    delete state.image17Colors[originCellId];
                                     hadConnection = true;
                                     break;
                                 }
@@ -1296,7 +1292,7 @@
                     }
                 } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
                     const originCellId = state.activeShadowOrigin.cellId;
-                    const originColor = state.image17Colors[originCellId] || state.currentColor;
+                    const originColor = state.activeShadowOrigin.color;
                     
                     if (state.unitPairs[originCellId]) {
                         const oldShadowCellId = state.unitPairs[originCellId];
@@ -1318,9 +1314,7 @@
                     const color = state.selectedUnit === 'image17' ? state.currentColor : '#ff0000';
                     addUnitToCell(cellId, state.selectedUnit, color);
                     
-                    if (state.selectedUnit === 'image17') {
-                        state.image17Colors[cellId] = color;
-                    }
+                    renderUnits();
                 }
             });
             
@@ -1365,7 +1359,6 @@
                     state.units[key] = [];
                 });
                 state.unitPairs = {};
-                state.image17Colors = {};
                 renderUnits();
             });
             
@@ -1523,13 +1516,17 @@
             }
             
             // For Omen and Relic, maintain their original colors
-            if (unit === 'image17' && state.image17Colors[cellId]) {
-                color = state.image17Colors[cellId];
-            } else if (unit === 'image0') {
+            if (unit === 'image0') {
                 // Find if this Relic is connected to an Omen
                 for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                     if (relicCellId === cellId) {
-                        color = state.image17Colors[omenCellId] || color;
+                        const omenCell = document.querySelector(`[data-id="${omenCellId}"]`);
+                        if (omenCell) {
+                            const glowElement = omenCell.querySelector('.glow-effect');
+                            if (glowElement) {
+                                color = glowElement.style.backgroundColor;
+                            }
+                        }
                         break;
                     }
                 }
@@ -1541,11 +1538,6 @@
                 const existingColor = existingUnit ? existingUnit.color : color;
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
                 state.units[cellId].push({ unit, color: existingColor });
-                
-                // Store Omen color for connected Relics
-                if (unit === 'image17') {
-                    state.image17Colors[cellId] = existingColor;
-                }
             } else {
                 state.units[cellId].push({ unit, color });
             }
@@ -1575,7 +1567,13 @@
                         let color = unitData.color;
                         for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                             if (relicCellId === cellId) {
-                                color = state.image17Colors[omenCellId] || color;
+                                const omenCell = document.querySelector(`[data-id="${omenCellId}"]`);
+                                if (omenCell) {
+                                    const glowElement = omenCell.querySelector('.glow-effect');
+                                    if (glowElement) {
+                                        color = glowElement.style.backgroundColor;
+                                    }
+                                }
                                 break;
                             }
                         }
@@ -1623,10 +1621,18 @@
                             shadowBtn.addEventListener('click', (e) => {
                                 e.stopPropagation();
                                 state.shadowPlacementMode = true;
+                                
+                                // Get the Omen's current glow color
+                                let omenColor = '#ff0000';
+                                const glowElement = cell.querySelector('.glow-effect');
+                                if (glowElement) {
+                                    omenColor = glowElement.style.backgroundColor;
+                                }
+                                
                                 state.activeShadowOrigin = { 
                                     cellId, 
                                     unitData,
-                                    color: state.image17Colors[cellId] || unitData.color
+                                    color: omenColor
                                 };
                                 
                                 // Hide other shadow buttons during placement
@@ -1763,7 +1769,13 @@
             if (unitData.unit === 'image0') {
                 for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                     if (relicCellId === `cell-${x}-${y}`) {
-                        color = state.image17Colors[omenCellId] || color;
+                        const omenCell = document.querySelector(`[data-id="${omenCellId}"]`);
+                        if (omenCell) {
+                            const glowElement = omenCell.querySelector('.glow-effect');
+                            if (glowElement) {
+                                color = glowElement.style.backgroundColor;
+                            }
+                        }
                         break;
                     }
                 }
