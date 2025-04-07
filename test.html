@@ -5,130 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Board Editor</title>
     <style>
-        :root {
-            --primary-color: #4a90e2;
-            --danger-color: #e74c3c;
-            --success-color: #2ecc71;
-            --shadow-color: rgba(0,0,0,0.1);
-            --border-radius: 8px;
-            --transition-speed: 0.3s;
-            --top-bar-height: 60px;
-            --top-bar-expanded-height: 200px;
-        }
-        
-        * {
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f5f5f5;
             color: #333;
+            overflow-x: auto;
             min-height: 100vh;
-            line-height: 1.6;
-            padding-top: var(--top-bar-height);
         }
         
-        /* Fixed Top Bar */
-        .top-bar {
-            position: fixed;
+        .fixed-header {
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--top-bar-height);
-            background-color: #2c3e50;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 1000;
-            transition: height var(--transition-speed) ease;
-            overflow: hidden;
-        }
-        
-        .top-bar.expanded {
-            height: var(--top-bar-expanded-height);
-        }
-        
-        .app-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin: 0;
-        }
-        
-        .top-bar-controls {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .top-bar-button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 4px;
-            transition: background-color var(--transition-speed) ease;
-        }
-        
-        .top-bar-button:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-        
-        .top-bar-button i {
-            margin-right: 5px;
-        }
-        
-        .top-bar-content {
-            position: absolute;
-            top: var(--top-bar-height);
-            left: 0;
-            width: 100%;
+            background-color: #f5f5f5;
             padding: 15px 20px;
-            background-color: #34495e;
-            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
         
-        .top-bar.expanded .top-bar-content {
-            display: block;
-        }
-        
-        .top-bar-section {
-            margin-bottom: 15px;
-        }
-        
-        .top-bar-section-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #ecf0f1;
-        }
-        
-        .top-bar-section-content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .quick-action {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 6px 12px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all var(--transition-speed) ease;
-        }
-        
-        .quick-action:hover {
-            background-color: #3a7bc8;
-            transform: translateY(-2px);
+        h1, h2, h3 {
+            color: #444;
+            margin-top: 0;
+            animation: fadeIn 0.5s ease-out;
         }
         
         .container {
@@ -136,22 +35,23 @@
             flex-wrap: wrap;
             gap: 20px;
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 0 auto;
+            padding: 20px;
             padding-bottom: 20px;
+            animation: slideUp 0.5s ease-out;
         }
         
         .board-container {
             position: relative;
             width: fit-content;
             height: fit-content;
-            border-radius: var(--border-radius);
+            border-radius: 8px;
             padding: 10px;
             margin: 0 auto;
             overflow: visible;
             z-index: 10;
-            transition: transform var(--transition-speed) ease;
+            transition: transform 0.3s ease;
             background-color: rgba(255,255,255,0.5);
-            box-shadow: 0 4px 15px var(--shadow-color);
         }
         
         .board-container:hover {
@@ -164,13 +64,13 @@
             border: 1px solid #ddd;
             z-index: 2;
             background-color: transparent;
-            transition: all var(--transition-speed) ease;
+            transition: all 0.3s ease;
         }
         
         .board-background {
             position: absolute;
-            top: 0;
-            left: 0;
+            top: auto;
+            left: auto;
             width: 100%;
             height: 100%;
             background-size: contain;
@@ -178,7 +78,34 @@
             background-position: center;
             z-index: 1;
             background-color: rgba(255,255,255,0.7);
-            transition: opacity var(--transition-speed) ease;
+            transition: opacity 0.3s ease;
+        }
+        
+        .unit {
+            position: absolute;
+            object-fit: contain;
+            z-index: 3;
+            image-rendering: crisp-edges;
+            background-color: transparent;
+            margin: auto;
+            pointer-events: none;
+            max-width: 80%;
+            max-height: 80%;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .unit-relic {
+            z-index: 2;
+            filter: 
+                drop-shadow(0 0 15px var(--unit-color, #ff0000))
+                drop-shadow(0 0 25px var(--unit-color, #ff0000));
+        }
+
+        .unit-omen {
+            z-index: 4;
+            filter: 
+                drop-shadow(0 0 15px var(--unit-color, #ff0000))
+                drop-shadow(0 0 25px var(--unit-color, #ff0000));
         }
         
         .cell {
@@ -195,110 +122,17 @@
             border-radius: 2px;
         }
         
-        .unit {
-            position: absolute;
-            object-fit: contain;
-            z-index: 3;
-            image-rendering: crisp-edges;
-            background-color: transparent;
-            margin: auto;
-            pointer-events: none;
-            max-width: 80%;
-            max-height: 80%;
-            transition: transform var(--transition-speed) ease;
-        }
-
-        .unit.omen {
-            z-index: 4;
-        }
-        
-        .unit.relic {
-            z-index: 2;
-        }
-        
-        /* Shadow effect classes */
-        .shadow-red {
-            --shadow-color: #ff0000;
-        }
-        
-        .shadow-blue {
-            --shadow-color: #0000ff;
-        }
-        
-        .shadow-green {
-            --shadow-color: #00ff00;
-        }
-        
-        .shadow-yellow {
-            --shadow-color: #ffff00;
-        }
-        
-        .shadow-purple {
-            --shadow-color: #ff00ff;
-        }
-        
-        .shadow-cyan {
-            --shadow-color: #00ffff;
-        }
-        
-        .shadow-orange {
-            --shadow-color: #ff9900;
-        }
-        
-        .shadow-violet {
-            --shadow-color: #9900ff;
-        }
-        
-        /* Shadow effects */
-        .omen-shadow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 3;
-            opacity: 0.5;
-            background: radial-gradient(
-                circle,
-                var(--shadow-color) 0%,
-                transparent 70%
-            );
-            filter: blur(10px);
-        }
-        
-        .relic-shadow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 120%;
-            height: 120%;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.4;
-            background: radial-gradient(
-                circle,
-                var(--shadow-color) 0%,
-                transparent 70%
-            );
-            filter: blur(15px);
-        }
-        
         .controls-panel {
             background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 10px var(--shadow-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 15px;
             width: 100%;
             max-width: 300px;
             margin: 0 auto;
             position: relative;
             animation: fadeIn 0.5s ease-out 0.2s backwards;
-            transition: transform var(--transition-speed) ease;
+            transition: transform 0.3s ease;
         }
         
         .controls-panel:hover {
@@ -333,7 +167,7 @@
             display: inline-block;
             width: 4px;
             height: 16px;
-            background-color: var(--primary-color);
+            background-color: #4a90e2;
             margin-right: 8px;
             border-radius: 2px;
         }
@@ -359,19 +193,19 @@
         }
         
         .unit-option:hover {
-            border-color: var(--primary-color);
+            border-color: #4a90e2;
             transform: scale(1.05);
             background-color: white;
         }
         
         .unit-option.selected {
-            border-color: var(--primary-color);
+            border-color: #4a90e2;
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
             background-color: white;
             animation: pulse 0.5s ease;
         }
         
-        select, input[type="text"] {
+        select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
@@ -379,15 +213,15 @@
             margin-bottom: 10px;
             background-color: white;
             font-size: 13px;
-            transition: all var(--transition-speed) ease;
+            transition: all 0.3s ease;
         }
         
-        select:focus, input[type="text"]:focus {
-            border-color: var(--primary-color);
+        select:focus {
+            border-color: #4a90e2;
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
-            outline: none;
         }
         
+        /* Enhanced Color Picker Styles */
         .color-picker-container {
             display: flex;
             flex-direction: column;
@@ -434,8 +268,8 @@
             height: 60px;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 3px 10px var(--shadow-color);
-            transition: all var(--transition-speed) ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
         }
         
         .color-input-wrapper:hover {
@@ -502,7 +336,7 @@
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 4px var(--shadow-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .color-preset:hover {
@@ -511,7 +345,7 @@
         }
         
         .color-preset.active {
-            border-color: var(--primary-color);
+            border-color: #4a90e2;
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
             transform: scale(1.1);
         }
@@ -546,7 +380,7 @@
         
         button {
             padding: 10px 15px;
-            background-color: var(--primary-color);
+            background-color: #4a90e2;
             color: white;
             border: none;
             border-radius: 4px;
@@ -577,7 +411,7 @@
         }
         
         button.danger {
-            background-color: var(--danger-color);
+            background-color: #e74c3c;
         }
         
         button.danger:hover {
@@ -590,7 +424,7 @@
         }
         
         button.info {
-            background-color: var(--success-color);
+            background-color: #2ecc71;
             margin-bottom: 10px;
             width: 100%;
         }
@@ -602,11 +436,12 @@
         #imageOutput {
             display: none;
             background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 10px var(--shadow-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 20px;
-            margin-top: 20px;
-            width: 100%;
+            margin: 20px auto;
+            width: calc(100% - 40px);
+            max-width: 1200px;
             animation: fadeIn 0.5s ease-out;
         }
         
@@ -616,8 +451,8 @@
             image-rendering: crisp-edges;
             display: block;
             margin: 0 auto;
-            box-shadow: 0 2px 15px var(--shadow-color);
-            transition: all var(--transition-speed) ease;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
             background-color: white;
         }
         
@@ -655,7 +490,7 @@
         }
         
         .background-option.selected {
-            border: 1px solid var(--primary-color);
+            border: 1px solid #4a90e2;
             background-color: #f0f7ff;
             transform: translateX(5px);
         }
@@ -670,7 +505,7 @@
             margin-right: 10px;
             border: 1px solid #ddd;
             background-color: white;
-            transition: all var(--transition-speed) ease;
+            transition: all 0.3s ease;
         }
         
         .background-name {
@@ -689,7 +524,7 @@
             position: absolute;
             top: -10px;
             right: -10px;
-            background-color: var(--primary-color);
+            background-color: #4a90e2;
             color: white;
             border: none;
             border-radius: 50%;
@@ -699,7 +534,7 @@
             cursor: pointer;
             z-index: 10;
             display: block;
-            transition: all var(--transition-speed) ease;
+            transition: all 0.3s ease;
             animation: pulse 2s infinite;
         }
 
@@ -729,14 +564,13 @@
         .modal-content {
             background-color: white;
             padding: 20px;
-            border-radius: var(--border-radius);
+            border-radius: 8px;
             max-width: 90%;
             max-height: 90%;
             overflow-y: auto;
             width: 500px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             animation: slideUp 0.3s ease-out;
-            position: relative;
         }
 
         .modal-header {
@@ -759,7 +593,7 @@
             color: #666;
             padding: 0;
             line-height: 1;
-            transition: transform var(--transition-speed) ease;
+            transition: transform 0.3s ease;
         }
 
         .close-modal:hover {
@@ -789,7 +623,7 @@
         .unit-info-item:hover {
             background-color: #f5f5f5;
             transform: translateY(-2px);
-            box-shadow: 0 2px 5px var(--shadow-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .unit-info-image {
@@ -799,7 +633,7 @@
             background-repeat: no-repeat;
             background-position: center;
             margin-bottom: 5px;
-            transition: transform var(--transition-speed) ease;
+            transition: transform 0.3s ease;
         }
 
         .unit-info-item:hover .unit-info-image {
@@ -833,7 +667,7 @@
         .unit-detail-content {
             background-color: white;
             padding: 20px;
-            border-radius: var(--border-radius);
+            border-radius: 8px;
             max-width: 90%;
             max-height: 90%;
             overflow-y: auto;
@@ -850,7 +684,7 @@
             background-repeat: no-repeat;
             background-position: center;
             margin: 0 auto 15px;
-            transition: transform var(--transition-speed) ease;
+            transition: transform 0.3s ease;
         }
 
         .unit-detail-image:hover {
@@ -873,53 +707,6 @@
             animation: fadeIn 0.5s ease-out 0.1s backwards;
         }
 
-        /* Loading spinner */
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .toast.show {
-            opacity: 1;
-        }
-
-        /* Keyboard shortcut hint */
-        .keyboard-hint {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            font-size: 11px;
-            color: #999;
-            background: rgba(255,255,255,0.7);
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
@@ -934,7 +721,7 @@
         ::-webkit-scrollbar-thumb {
             background: #c1c1c1;
             border-radius: 4px;
-            transition: background var(--transition-speed) ease;
+            transition: background 0.3s ease;
         }
 
         ::-webkit-scrollbar-thumb:hover {
@@ -969,11 +756,16 @@
             50% { transform: translateY(-5px); }
         }
 
-        /* Responsive styles */
-        @media (max-width: 768px) {
+        /* Responsywne style */
+        @media (max-width: 600px) {
+            .fixed-header {
+                padding: 10px 15px;
+            }
+            
             .container {
                 flex-direction: column;
                 gap: 15px;
+                padding: 15px;
             }
             
             .board-container {
@@ -1028,95 +820,20 @@
                 min-width: auto;
             }
         }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            
-            .controls-panel {
-                padding: 10px;
-            }
-            
-            .section {
-                margin-bottom: 15px;
-                padding-bottom: 10px;
-            }
-            
-            .unit-palette {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            
-            .color-picker-main {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-            }
+        
+        footer {
+            color: grey;
+            text-align: center;
+            margin: 20px 0;
+            padding: 0 20px;
         }
     </style>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Fixed Top Bar -->
-    <div class="top-bar" id="topBar">
-        <h1 class="app-title">Board Editor</h1>
-        <div class="top-bar-controls">
-            <button class="top-bar-button" id="toggleTopBar">
-                <i class="fas fa-cog"></i> Settings
-            </button>
-            <button class="top-bar-button" id="helpButton">
-                <i class="fas fa-question-circle"></i> Help
-            </button>
-        </div>
-        
-        <div class="top-bar-content">
-            <div class="top-bar-section">
-                <div class="top-bar-section-title">Quick Actions</div>
-                <div class="top-bar-section-content">
-                    <button class="quick-action" id="quickClear">
-                        <i class="fas fa-trash"></i> Clear Board
-                    </button>
-                    <button class="quick-action" id="quickSave">
-                        <i class="fas fa-save"></i> Save Layout
-                    </button>
-                    <button class="quick-action" id="quickLoad">
-                        <i class="fas fa-folder-open"></i> Load Layout
-                    </button>
-                </div>
-            </div>
-            
-            <div class="top-bar-section">
-                <div class="top-bar-section-title">Board Presets</div>
-                <div class="top-bar-section-content">
-                    <button class="quick-action" data-preset="default">
-                        <i class="fas fa-chess-board"></i> Default
-                    </button>
-                    <button class="quick-action" data-preset="twoPlayers">
-                        <i class="fas fa-users"></i> 2 Players
-                    </button>
-                    <button class="quick-action" data-preset="tower">
-                        <i class="fas fa-chess-rook"></i> Tower
-                    </button>
-                </div>
-            </div>
-            
-            <div class="top-bar-section">
-                <div class="top-bar-section-title">Info</div>
-                <div style="color: #ecf0f1; font-size: 13px;">
-                    Current layout: <span id="currentLayoutInfo">Default 7x5</span>
-                </div>
-            </div>
-        </div>
+    <div class="fixed-header">
+        <h1>Board Editor</h1>
     </div>
-
+    
     <div class="container">
         <div class="board-container">
             <div class="board-background" id="boardBackground"></div>
@@ -1135,6 +852,7 @@
             
             <div class="section">
                 <div class="section-title">Board Creator</div>
+                </div>
                 <div class="background-options" id="backgroundOptions">
                     <div class="background-option selected" data-bg="default.png">
                         <div class="background-preview" style="background-image: url('default.png');"></div>
@@ -1154,13 +872,13 @@
             </div>
             
             <div class="button-group">
-                <button id="clearBoard" class="secondary">Clear (C)</button>
-                <button id="toggleDeleteMode" class="danger">Delete (D)</button>
+                <button id="clearBoard" class="secondary">Clear</button>
+                <button id="toggleDeleteMode" class="danger">Delete</button>
             </div>
 
             <div class="section">
                 <div class="section-title">Units</div>
-                <button id="unitsInfoBtn" class="info">Units Info (I)</button>
+                <button id="unitsInfoBtn" class="info">Units Info</button>
                 <div class="unit-palette" id="unitPalette"></div>
             </div>
             
@@ -1178,7 +896,7 @@
                         </div>
                         <div class="color-actions">
                             <div class="color-presets" id="colorPresets">
-                                <div class="color-preset active" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                                <div class="color-preset" style="background-color: #ff0000;" data-color="#ff0000"></div>
                                 <div class="color-preset" style="background-color: #00ff00;" data-color="#00ff00"></div>
                                 <div class="color-preset" style="background-color: #0000ff;" data-color="#0000ff"></div>
                                 <div class="color-preset" style="background-color: #ffff00;" data-color="#ffff00"></div>
@@ -1204,7 +922,7 @@
                     <option value="2" selected>Standard Quality</option>
                     <option value="3">High Quality</option>
                 </select>
-                <button id="generateImage">Generate & Copy (G)</button>
+                <button id="generateImage">Generate & Copy to Clipboard</button>
             </div>
         </div>
     </div>
@@ -1224,7 +942,6 @@
             <div class="units-info-grid" id="unitsInfoGrid">
                 <!-- Units will be added here dynamically -->
             </div>
-            <div class="keyboard-hint">Press ESC to close</div>
         </div>
     </div>
 
@@ -1238,13 +955,11 @@
             <div class="unit-detail-image" id="unitDetailImage"></div>
             <div class="unit-detail-name" id="unitDetailName"></div>
             <div class="unit-detail-description" id="unitDetailDescription"></div>
-            <button class="close-modal" data-modal="unitDetailModal">Close (ESC)</button>
-            <div class="keyboard-hint">Press ESC to close</div>
+            <button class="close-modal" data-modal="unitDetailModal">Close</button>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
+    <footer>Made By 0jek</footer>
 
     <script>
         // Configuration
@@ -1309,22 +1024,11 @@
                 'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
                 'image17': 'Omen that can create connected Relics. The shadow color represents their connection. Click the + button to place a connected Relic. Always appears above connected Relics.',
-            },
-            colorPresets: [
-                '#ff0000', '#00ff00', '#0000ff', '#ffff00',
-                '#ff00ff', '#00ffff', '#ff9900', '#9900ff'
-            ],
-            keyboardShortcuts: {
-                'd': 'toggleDeleteMode',
-                'c': 'clearBoard',
-                'g': 'generateImage',
-                'i': 'unitsInfoBtn',
-                'Escape': ['closeModal', ['unitsInfoModal', 'unitDetailModal']]
             }
         };
         
         // Application state
-        const state = {
+        let state = {
             selectedUnit: null,
             currentColor: '#ff0000',
             deleteMode: false,
@@ -1338,44 +1042,32 @@
             unitPairs: {}, // Stores Omen -> Relic connections
             image17Colors: {}, // Stores colors for Omens
             isResizing: false,
-            resizeTimer: null,
-            loadedImages: {} // Cache for loaded unit images
+            resizeTimer: null
         };
         
         // DOM elements
-        const elements = {
-            gameBoard: document.getElementById('gameBoard'),
-            boardBackground: document.getElementById('boardBackground'),
-            unitPalette: document.getElementById('unitPalette'),
-            shapeColor: document.getElementById('shapeColor'),
-            colorPreview: document.getElementById('colorPreview'),
-            generateImageBtn: document.getElementById('generateImage'),
-            clearBoardBtn: document.getElementById('clearBoard'),
-            toggleDeleteModeBtn: document.getElementById('toggleDeleteMode'),
-            backgroundOptions: document.getElementById('backgroundOptions'),
-            gridSizeSelect: document.getElementById('gridSizeSelect'),
-            outputCanvas: document.getElementById('outputCanvas'),
-            imageOutput: document.getElementById('imageOutput'),
-            qualitySelect: document.getElementById('qualitySelect'),
-            unitsInfoBtn: document.getElementById('unitsInfoBtn'),
-            unitsInfoModal: document.getElementById('unitsInfoModal'),
-            unitsInfoGrid: document.getElementById('unitsInfoGrid'),
-            closeModalBtns: document.querySelectorAll('.close-modal'),
-            unitDetailModal: document.getElementById('unitDetailModal'),
-            unitDetailImage: document.getElementById('unitDetailImage'),
-            unitDetailName: document.getElementById('unitDetailName'),
-            unitDetailDescription: document.getElementById('unitDetailDescription'),
-            colorValue: document.getElementById('colorValue'),
-            colorPresets: document.getElementById('colorPresets'),
-            toast: document.getElementById('toast'),
-            topBar: document.getElementById('topBar'),
-            toggleTopBar: document.getElementById('toggleTopBar'),
-            quickClear: document.getElementById('quickClear'),
-            quickSave: document.getElementById('quickSave'),
-            quickLoad: document.getElementById('quickLoad'),
-            helpButton: document.getElementById('helpButton'),
-            currentLayoutInfo: document.getElementById('currentLayoutInfo')
-        };
+        const gameBoard = document.getElementById('gameBoard');
+        const boardBackground = document.getElementById('boardBackground');
+        const unitPalette = document.getElementById('unitPalette');
+        const shapeColor = document.getElementById('shapeColor');
+        const colorPreview = document.getElementById('colorPreview');
+        const generateImageBtn = document.getElementById('generateImage');
+        const clearBoardBtn = document.getElementById('clearBoard');
+        const toggleDeleteModeBtn = document.getElementById('toggleDeleteMode');
+        const backgroundOptions = document.getElementById('backgroundOptions');
+        const gridSizeSelect = document.getElementById('gridSizeSelect');
+        const outputCanvas = document.getElementById('outputCanvas');
+        const imageOutput = document.getElementById('imageOutput');
+        const qualitySelect = document.getElementById('qualitySelect');
+        const unitsInfoBtn = document.getElementById('unitsInfoBtn');
+        const unitsInfoModal = document.getElementById('unitsInfoModal');
+        const unitsInfoGrid = document.getElementById('unitsInfoGrid');
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        const unitDetailModal = document.getElementById('unitDetailModal');
+        const unitDetailImage = document.getElementById('unitDetailImage');
+        const unitDetailName = document.getElementById('unitDetailName');
+        const unitDetailDescription = document.getElementById('unitDetailDescription');
+        const colorValue = document.getElementById('colorValue');
         
         // Initialization
         function init() {
@@ -1384,95 +1076,13 @@
                 createBoard();
                 setupEventListeners();
                 createUnitsInfo();
-                setupTopBar();
                 updateColorDisplay(state.currentColor);
-                preloadUnitImages();
-            }).catch(error => {
-                console.error('Error during initialization:', error);
-                showToast('Initialization failed. Please refresh the page.', 'error');
             });
-        }
-        
-        // Setup top bar functionality
-        function setupTopBar() {
-            // Toggle top bar expansion
-            elements.toggleTopBar.addEventListener('click', function() {
-                elements.topBar.classList.toggle('expanded');
-            });
-            
-            // Connect quick actions to existing functionality
-            elements.quickClear.addEventListener('click', function() {
-                elements.clearBoard.click();
-                elements.topBar.classList.remove('expanded');
-            });
-            
-            elements.quickSave.addEventListener('click', function() {
-                showToast('Save functionality coming soon!');
-                elements.topBar.classList.remove('expanded');
-            });
-            
-            elements.quickLoad.addEventListener('click', function() {
-                showToast('Load functionality coming soon!');
-                elements.topBar.classList.remove('expanded');
-            });
-            
-            // Board presets
-            document.querySelectorAll('[data-preset]').forEach(button => {
-                button.addEventListener('click', function() {
-                    const preset = this.dataset.preset;
-                    switch(preset) {
-                        case 'default':
-                            elements.gridSizeSelect.value = '7x5';
-                            break;
-                        case 'twoPlayers':
-                            elements.gridSizeSelect.value = '7x10';
-                            break;
-                        case 'tower':
-                            elements.gridSizeSelect.value = '7x7';
-                            break;
-                    }
-                    elements.gridSizeSelect.dispatchEvent(new Event('change'));
-                    elements.currentLayoutInfo.textContent = this.textContent.trim();
-                    elements.topBar.classList.remove('expanded');
-                });
-            });
-            
-            // Help button
-            elements.helpButton.addEventListener('click', function() {
-                elements.unitsInfoBtn.click();
-                elements.topBar.classList.remove('expanded');
-            });
-            
-            // Close top bar when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!elements.topBar.contains(e.target)) {
-                    elements.topBar.classList.remove('expanded');
-                }
-            });
-            
-            // Update layout info when grid size changes
-            elements.gridSizeSelect.addEventListener('change', function() {
-                const optionText = this.options[this.selectedIndex].text;
-                elements.currentLayoutInfo.textContent = optionText;
-            });
-            
-            // Initialize layout info
-            elements.currentLayoutInfo.textContent = elements.gridSizeSelect.options[0].text;
-        }
-        
-        // Preload unit images for better performance
-        function preloadUnitImages() {
-            for (let i = 0; i < config.unitCount; i++) {
-                const unitKey = `image${i}`;
-                const img = new Image();
-                img.src = `${unitKey}.png`;
-                state.loadedImages[unitKey] = img;
-            }
         }
         
         // Create units info modal content
         function createUnitsInfo() {
-            elements.unitsInfoGrid.innerHTML = '';
+            unitsInfoGrid.innerHTML = '';
             for (let i = 0; i < config.unitCount; i++) {
                 const unitKey = `image${i}`;
                 const unitItem = document.createElement('div');
@@ -1489,16 +1099,16 @@
                 
                 unitItem.appendChild(unitImage);
                 unitItem.appendChild(unitName);
-                elements.unitsInfoGrid.appendChild(unitItem);
+                unitsInfoGrid.appendChild(unitItem);
             }
         }
         
         // Show unit details
         function showUnitDetails(unitKey) {
-            elements.unitDetailImage.style.backgroundImage = `url('${unitKey}.png')`;
-            elements.unitDetailName.textContent = config.unitNames[unitKey] || unitKey;
-            elements.unitDetailDescription.textContent = config.unitDescriptions[unitKey] || 'No additional information available for this unit.';
-            elements.unitDetailModal.style.display = 'flex';
+            unitDetailImage.style.backgroundImage = `url('${unitKey}.png')`;
+            unitDetailName.textContent = config.unitNames[unitKey] || unitKey;
+            unitDetailDescription.textContent = config.unitDescriptions[unitKey] || 'No additional information available for this unit.';
+            unitDetailModal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
         
@@ -1508,42 +1118,19 @@
             document.body.style.overflow = 'auto';
         }
         
-        // Show toast notification
-        function showToast(message, type = 'info') {
-            const toast = elements.toast;
-            toast.textContent = message;
-            toast.className = 'toast';
-            
-            // Add type-specific styling
-            if (type === 'error') {
-                toast.style.backgroundColor = '#e74c3c';
-            } else if (type === 'success') {
-                toast.style.backgroundColor = '#2ecc71';
-            }
-            
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 10);
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-        
         // Load background image
         function loadBackgroundImage() {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const img = new Image();
                 img.src = state.currentBackground;
                 img.onload = function() {
                     state.backgroundImage = img;
-                    elements.boardBackground.style.backgroundImage = `url('${state.currentBackground}')`;
+                    boardBackground.style.backgroundImage = `url('${state.currentBackground}')`;
                     resolve();
                 };
                 img.onerror = function() {
-                    console.warn(`Failed to load background image: ${state.currentBackground}`);
-                    elements.boardBackground.style.backgroundImage = 'none';
-                    elements.boardBackground.style.backgroundColor = 'rgba(255,255,255,0.7)';
+                    boardBackground.style.backgroundImage = 'none';
+                    boardBackground.style.backgroundColor = 'rgba(255,255,255,0.7)';
                     resolve();
                 };
             });
@@ -1551,14 +1138,12 @@
         
         // Create unit palette
         function createUnitPalette() {
-            elements.unitPalette.innerHTML = '';
+            unitPalette.innerHTML = '';
             for (let i = 0; i < config.unitCount; i++) {
                 const unitDiv = document.createElement('div');
                 unitDiv.className = 'unit-option';
                 unitDiv.dataset.unit = `image${i}`;
                 unitDiv.style.backgroundImage = `url('image${i}.png')`;
-                unitDiv.title = config.unitNames[`image${i}`] || `Unit ${i}`;
-                
                 unitDiv.addEventListener('click', () => {
                     document.querySelectorAll('.unit-option').forEach(opt => {
                         opt.classList.remove('selected');
@@ -1567,30 +1152,28 @@
                     state.selectedUnit = `image${i}`;
                     state.deleteMode = false;
                     state.shadowPlacementMode = false;
-                    elements.toggleDeleteModeBtn.classList.remove('active');
+                    toggleDeleteModeBtn.classList.remove('active');
                     
                     // Show all shadow buttons when selecting a unit
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'block';
                     });
-                    
-                    showToast(`${config.unitNames[`image${i}`] || `Unit ${i}`} selected`);
                 });
-                elements.unitPalette.appendChild(unitDiv);
+                unitPalette.appendChild(unitDiv);
             }
         }
         
         // Create game board
         function createBoard() {
             const gridSize = config.gridSizes[state.currentGridSize];
-            elements.gameBoard.innerHTML = '';
-            elements.gameBoard.style.gridTemplateColumns = `repeat(${gridSize.cols}, ${config.cellSize}px)`;
-            elements.gameBoard.style.gridTemplateRows = `repeat(${gridSize.rows}, ${config.cellSize}px)`;
-            elements.gameBoard.style.width = `${gridSize.cols * config.cellSize}px`;
-            elements.gameBoard.style.height = `${gridSize.rows * config.cellSize}px`;
+            gameBoard.innerHTML = '';
+            gameBoard.style.gridTemplateColumns = `repeat(${gridSize.cols}, ${config.cellSize}px)`;
+            gameBoard.style.gridTemplateRows = `repeat(${gridSize.rows}, ${config.cellSize}px)`;
+            gameBoard.style.width = `${gridSize.cols * config.cellSize}px`;
+            gameBoard.style.height = `${gridSize.rows * config.cellSize}px`;
             
-            elements.boardBackground.style.width = `${gridSize.cols * config.cellSize}px`;
-            elements.boardBackground.style.height = `${gridSize.rows * config.cellSize}px`;
+            boardBackground.style.width = `${gridSize.cols * config.cellSize}px`;
+            boardBackground.style.height = `${gridSize.rows * config.cellSize}px`;
             
             // Only reset units if we're not just resizing
             if (!state.isResizing) {
@@ -1606,7 +1189,7 @@
                     cell.dataset.x = x;
                     cell.dataset.y = y;
                     cell.dataset.id = `cell-${x}-${y}`;
-                    elements.gameBoard.appendChild(cell);
+                    gameBoard.appendChild(cell);
                     
                     if (!state.isResizing) {
                         state.units[`cell-${x}-${y}`] = [];
@@ -1623,395 +1206,260 @@
         
         // Set up event listeners
         function setupEventListeners() {
-            // Board interaction
-            elements.gameBoard.addEventListener('click', handleBoardClick);
+            gameBoard.addEventListener('click', (e) => {
+                let cell = e.target;
+                while (cell && !cell.classList.contains('cell')) {
+                    cell = cell.parentElement;
+                }
+                if (!cell || !cell.classList.contains('cell')) return;
+                
+                const cellId = cell.dataset.id;
+                
+                if (state.deleteMode) {
+                    const units = state.units[cellId];
+                    let hadConnection = false;
+                    
+                    // Remove all units except Omens (image17) if they have connections
+                    state.units[cellId] = units.filter(unit => {
+                        if (unit.unit === 'image17' && state.unitPairs[cellId]) {
+                            const shadowCellId = state.unitPairs[cellId];
+                            state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
+                            delete state.unitPairs[cellId];
+                            delete state.image17Colors[cellId];
+                            hadConnection = true;
+                            return true; // Keep the Omen
+                        }
+                        if (unit.unit === 'image0') {
+                            for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
+                                if (shadowCellId === cellId) {
+                                    delete state.unitPairs[originCellId];
+                                    delete state.image17Colors[originCellId];
+                                    hadConnection = true;
+                                    break;
+                                }
+                            }
+                        }
+                        return false; // Remove other units
+                    });
+                    
+                    if (hadConnection) {
+                        renderUnits();
+                    } else {
+                        // If no special connections were found, just clear the cell
+                        state.units[cellId] = [];
+                        renderUnits();
+                    }
+                } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
+                    const originCellId = state.activeShadowOrigin.cellId;
+                    const originColor = state.image17Colors[originCellId];
+                    
+                    if (state.unitPairs[originCellId]) {
+                        const oldShadowCellId = state.unitPairs[originCellId];
+                        state.units[oldShadowCellId] = state.units[oldShadowCellId].filter(u => u.unit !== 'image0');
+                    }
+                    
+                    addUnitToCell(cellId, 'image0', originColor);
+                    state.unitPairs[originCellId] = cellId;
+                    state.shadowPlacementMode = false;
+                    state.activeShadowOrigin = null;
+                    renderUnits();
+                    
+                    // Show all shadow buttons after placement
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
+                } else if (state.selectedUnit) {
+                    const color = state.selectedUnit === 'image17' ? state.currentColor : '#ff0000';
+                    addUnitToCell(cellId, state.selectedUnit, color);
+                    
+                    if (state.selectedUnit === 'image17') {
+                        state.image17Colors[cellId] = color;
+                    }
+                }
+            });
             
-            // Color picker
-            elements.shapeColor.addEventListener('input', handleColorChange);
-            elements.colorPresets.addEventListener('click', handleColorPresetClick);
+            shapeColor.addEventListener('input', (e) => {
+                state.currentColor = e.target.value;
+                updateColorDisplay(state.currentColor);
+                
+                // Visual feedback
+                colorPreview.style.transform = "scale(1.1)";
+                setTimeout(() => {
+                    colorPreview.style.transform = "scale(1)";
+                }, 200);
+            });
             
-            // Buttons
-            elements.generateImageBtn.addEventListener('click', generateImage);
-            elements.clearBoardBtn.addEventListener('click', clearBoard);
-            elements.toggleDeleteModeBtn.addEventListener('click', toggleDeleteMode);
-            elements.unitsInfoBtn.addEventListener('click', showUnitsInfo);
+            // Color preset click handler
+            document.getElementById('colorPresets').addEventListener('click', (e) => {
+                const preset = e.target.closest('.color-preset');
+                if (!preset) return;
+                
+                const color = preset.dataset.color;
+                state.currentColor = color;
+                shapeColor.value = color;
+                updateColorDisplay(color);
+                
+                // Update active state
+                document.querySelectorAll('.color-preset').forEach(p => {
+                    p.classList.remove('active');
+                });
+                preset.classList.add('active');
+                
+                // Visual feedback
+                preset.style.transform = "scale(1.2)";
+                setTimeout(() => {
+                    preset.style.transform = "scale(1.1)";
+                }, 200);
+            });
             
-            // Background selection
-            elements.backgroundOptions.addEventListener('click', handleBackgroundChange);
+            generateImageBtn.addEventListener('click', generateImage);
             
-            // Grid size selection
-            elements.gridSizeSelect.addEventListener('change', handleGridSizeChange);
+            clearBoardBtn.addEventListener('click', () => {
+                Object.keys(state.units).forEach(key => {
+                    state.units[key] = [];
+                });
+                state.unitPairs = {};
+                state.image17Colors = {};
+                renderUnits();
+            });
             
-            // Quality selection
-            elements.qualitySelect.addEventListener('change', handleQualityChange);
+            toggleDeleteModeBtn.addEventListener('click', () => {
+                state.deleteMode = !state.deleteMode;
+                if (state.deleteMode) {
+                    toggleDeleteModeBtn.classList.add('active');
+                    document.querySelectorAll('.unit-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    state.selectedUnit = null;
+                    state.shadowPlacementMode = false;
+                    state.activeShadowOrigin = null;
+                    
+                    // Hide shadow buttons in delete mode
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                } else {
+                    toggleDeleteModeBtn.classList.remove('active');
+                    
+                    // Show shadow buttons when exiting delete mode
+                    document.querySelectorAll('.shadow-button').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
+                }
+            });
             
-            // Modal controls
-            elements.closeModalBtns.forEach(btn => {
+            backgroundOptions.addEventListener('click', (e) => {
+                const bgOption = e.target.closest('.background-option');
+                if (!bgOption) return;
+                
+                document.querySelectorAll('.background-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                bgOption.classList.add('selected');
+                state.currentBackground = bgOption.dataset.bg;
+                loadBackgroundImage();
+            });
+            
+            gridSizeSelect.addEventListener('change', async (e) => {
+                state.currentGridSize = e.target.value;
+                const gridConfig = config.gridSizes[state.currentGridSize];
+                
+                backgroundOptions.innerHTML = '';
+                gridConfig.backgrounds.forEach((bg) => {
+                    const bgOption = document.createElement('div');
+                    bgOption.className = 'background-option';
+                    bgOption.dataset.bg = bg.id;
+                    
+                    const bgPreview = document.createElement('div');
+                    bgPreview.className = 'background-preview';
+                    bgPreview.style.backgroundImage = `url('${bg.id}')`;
+                    
+                    const bgInfo = document.createElement('div');
+                    
+                    const bgName = document.createElement('div');
+                    bgName.className = 'background-name';
+                    bgName.textContent = bg.name;
+                    
+                    const bgType = document.createElement('div');
+                    bgType.className = 'background-type';
+                    bgType.textContent = bg.type;
+                    
+                    bgInfo.appendChild(bgName);
+                    bgInfo.appendChild(bgType);
+                    
+                    bgOption.appendChild(bgPreview);
+                    bgOption.appendChild(bgInfo);
+                    
+                    if (gridConfig.backgrounds.indexOf(bg) === 0) {
+                        bgOption.classList.add('selected');
+                        state.currentBackground = bg.id;
+                    }
+                    
+                    backgroundOptions.appendChild(bgOption);
+                });
+                
+                await loadBackgroundImage();
+                createBoard();
+            });
+
+            qualitySelect.addEventListener('change', (e) => {
+                state.exportQuality = parseInt(e.target.value);
+            });
+
+            unitsInfoBtn.addEventListener('click', () => {
+                unitsInfoModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+
+            closeModalBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const modalId = btn.dataset.modal;
                     closeModal(modalId);
                 });
             });
-            
-            // Modal backdrop clicks
+
             window.addEventListener('click', (e) => {
-                if (e.target === elements.unitsInfoModal) {
-                    closeModal('unitsInfoModal');
+                if (e.target === unitsInfoModal) {
+                    unitsInfoModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
                 }
-                if (e.target === elements.unitDetailModal) {
-                    closeModal('unitDetailModal');
+                if (e.target === unitDetailModal) {
+                    unitDetailModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
                 }
             });
-            
-            // Unit info grid clicks
-            elements.unitsInfoGrid.addEventListener('click', (e) => {
+
+            unitsInfoGrid.addEventListener('click', (e) => {
                 const unitItem = e.target.closest('.unit-info-item');
                 if (unitItem) {
                     const unitKey = unitItem.dataset.unit;
                     showUnitDetails(unitKey);
                 }
             });
-            
+
             // Handle window resize with debounce
-            window.addEventListener('resize', handleWindowResize);
-            
-            // Keyboard shortcuts
-            document.addEventListener('keydown', handleKeyboardShortcuts);
-        }
-        
-        // Handle board click events
-        function handleBoardClick(e) {
-            let cell = e.target;
-            while (cell && !cell.classList.contains('cell')) {
-                cell = cell.parentElement;
-            }
-            if (!cell || !cell.classList.contains('cell')) return;
-            
-            const cellId = cell.dataset.id;
-            
-            if (state.deleteMode) {
-                deleteUnitsInCell(cellId);
-            } else if (state.shadowPlacementMode && state.activeShadowOrigin) {
-                placeConnectedRelic(cellId);
-            } else if (state.selectedUnit) {
-                placeUnitInCell(cellId, state.selectedUnit);
-            }
-        }
-        
-        // Delete units in a cell
-        function deleteUnitsInCell(cellId) {
-            const units = state.units[cellId];
-            let hadConnection = false;
-            
-            // Remove all units except Omens (image17) if they have connections
-            state.units[cellId] = units.filter(unit => {
-                if (unit.unit === 'image17' && state.unitPairs[cellId]) {
-                    const shadowCellId = state.unitPairs[cellId];
-                    state.units[shadowCellId] = state.units[shadowCellId].filter(u => u.unit !== 'image0');
-                    delete state.unitPairs[cellId];
-                    delete state.image17Colors[cellId];
-                    hadConnection = true;
-                    return true; // Keep the Omen
-                }
-                if (unit.unit === 'image0') {
-                    for (const [originCellId, shadowCellId] of Object.entries(state.unitPairs)) {
-                        if (shadowCellId === cellId) {
-                            delete state.unitPairs[originCellId];
-                            delete state.image17Colors[originCellId];
-                            hadConnection = true;
-                            break;
-                        }
-                    }
-                }
-                return false; // Remove other units
-            });
-            
-            if (hadConnection) {
-                renderUnits();
-                showToast('Connection removed');
-            } else {
-                // If no special connections were found, just clear the cell
-                state.units[cellId] = [];
-                renderUnits();
-                showToast('Cell cleared');
-            }
-        }
-        
-        // Place connected relic for an Omen
-        function placeConnectedRelic(cellId) {
-            const originCellId = state.activeShadowOrigin.cellId;
-            const originColor = state.image17Colors[originCellId].color;
-            const originColorClass = state.image17Colors[originCellId].colorClass;
-            
-            if (state.unitPairs[originCellId]) {
-                const oldShadowCellId = state.unitPairs[originCellId];
-                state.units[oldShadowCellId] = state.units[oldShadowCellId].filter(u => u.unit !== 'image0');
-            }
-            
-            addUnitToCell(cellId, 'image0', originColor);
-            state.unitPairs[originCellId] = cellId;
-            state.shadowPlacementMode = false;
-            state.activeShadowOrigin = null;
-            renderUnits();
-            
-            // Show all shadow buttons after placement
-            document.querySelectorAll('.shadow-button').forEach(btn => {
-                btn.style.display = 'block';
-            });
-            
-            showToast('Connected Relic placed');
-        }
-        
-        // Place unit in a cell
-        function placeUnitInCell(cellId, unit) {
-            const color = unit === 'image17' ? state.currentColor : '#ff0000';
-            addUnitToCell(cellId, unit, color);
-            
-            if (unit === 'image17') {
-                state.image17Colors[cellId] = { 
-                    color: color,
-                    colorClass: colorToClass(color)
-                };
-            }
-            
-            showToast(`${config.unitNames[unit] || unit} placed`);
-        }
-        
-        // Convert color to class name
-        function colorToClass(color) {
-            const colorMap = {
-                '#ff0000': 'shadow-red',
-                '#0000ff': 'shadow-blue',
-                '#00ff00': 'shadow-green',
-                '#ffff00': 'shadow-yellow',
-                '#ff00ff': 'shadow-purple',
-                '#00ffff': 'shadow-cyan',
-                '#ff9900': 'shadow-orange',
-                '#9900ff': 'shadow-violet'
-            };
-            
-            // Find the closest matching color
-            const hexColor = color.toLowerCase();
-            if (colorMap[hexColor]) {
-                return colorMap[hexColor];
-            }
-            
-            // Default to red if no match found
-            return 'shadow-red';
-        }
-        
-        // Handle color change
-        function handleColorChange(e) {
-            state.currentColor = e.target.value;
-            updateColorDisplay(state.currentColor);
-            
-            // Visual feedback
-            elements.colorPreview.style.transform = "scale(1.1)";
-            setTimeout(() => {
-                elements.colorPreview.style.transform = "scale(1)";
-            }, 200);
-        }
-        
-        // Handle color preset click
-        function handleColorPresetClick(e) {
-            const preset = e.target.closest('.color-preset');
-            if (!preset) return;
-            
-            const color = preset.dataset.color;
-            state.currentColor = color;
-            elements.shapeColor.value = color;
-            updateColorDisplay(color);
-            
-            // Update active state
-            document.querySelectorAll('.color-preset').forEach(p => {
-                p.classList.remove('active');
-            });
-            preset.classList.add('active');
-            
-            // Visual feedback
-            preset.style.transform = "scale(1.2)";
-            setTimeout(() => {
-                preset.style.transform = "scale(1.1)";
-            }, 200);
-            
-            showToast(`Color changed to ${color}`);
-        }
-        
-        // Handle background change
-        function handleBackgroundChange(e) {
-            const bgOption = e.target.closest('.background-option');
-            if (!bgOption) return;
-            
-            document.querySelectorAll('.background-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            
-            bgOption.classList.add('selected');
-            state.currentBackground = bgOption.dataset.bg;
-            loadBackgroundImage().then(() => {
-                showToast('Background changed');
-            });
-        }
-        
-        // Handle grid size change
-        async function handleGridSizeChange(e) {
-            state.currentGridSize = e.target.value;
-            const gridConfig = config.gridSizes[state.currentGridSize];
-            
-            elements.backgroundOptions.innerHTML = '';
-            gridConfig.backgrounds.forEach((bg) => {
-                const bgOption = document.createElement('div');
-                bgOption.className = 'background-option';
-                bgOption.dataset.bg = bg.id;
+            window.addEventListener('resize', function() {
+                state.isResizing = true;
                 
-                const bgPreview = document.createElement('div');
-                bgPreview.className = 'background-preview';
-                bgPreview.style.backgroundImage = `url('${bg.id}')`;
-                
-                const bgInfo = document.createElement('div');
-                
-                const bgName = document.createElement('div');
-                bgName.className = 'background-name';
-                bgName.textContent = bg.name;
-                
-                const bgType = document.createElement('div');
-                bgType.className = 'background-type';
-                bgType.textContent = bg.type;
-                
-                bgInfo.appendChild(bgName);
-                bgInfo.appendChild(bgType);
-                
-                bgOption.appendChild(bgPreview);
-                bgOption.appendChild(bgInfo);
-                
-                if (gridConfig.backgrounds.indexOf(bg) === 0) {
-                    bgOption.classList.add('selected');
-                    state.currentBackground = bg.id;
+                // Clear any pending resize events
+                if (state.resizeTimer) {
+                    clearTimeout(state.resizeTimer);
                 }
                 
-                elements.backgroundOptions.appendChild(bgOption);
+                // Set a new timer
+                state.resizeTimer = setTimeout(function() {
+                    config.cellSize = window.innerWidth < 600 ? 50 : 80;
+                    createBoard();
+                }, 200);
             });
-            
-            try {
-                await loadBackgroundImage();
-                createBoard();
-                showToast(`Board size changed to ${state.currentGridSize}`);
-            } catch (error) {
-                console.error('Error changing grid size:', error);
-                showToast('Failed to change board size', 'error');
-            }
-        }
-        
-        // Handle quality change
-        function handleQualityChange(e) {
-            state.exportQuality = parseInt(e.target.value);
-            showToast(`Export quality set to ${e.target.options[e.target.selectedIndex].text}`);
-        }
-        
-        // Clear the board
-        function clearBoard() {
-            Object.keys(state.units).forEach(key => {
-                state.units[key] = [];
-            });
-            state.unitPairs = {};
-            state.image17Colors = {};
-            renderUnits();
-            showToast('Board cleared');
-        }
-        
-        // Toggle delete mode
-        function toggleDeleteMode() {
-            state.deleteMode = !state.deleteMode;
-            if (state.deleteMode) {
-                elements.toggleDeleteModeBtn.classList.add('active');
-                document.querySelectorAll('.unit-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                state.selectedUnit = null;
-                state.shadowPlacementMode = false;
-                state.activeShadowOrigin = null;
-                
-                // Hide shadow buttons in delete mode
-                document.querySelectorAll('.shadow-button').forEach(btn => {
-                    btn.style.display = 'none';
-                });
-                
-                showToast('Delete mode activated');
-            } else {
-                elements.toggleDeleteModeBtn.classList.remove('active');
-                
-                // Show shadow buttons when exiting delete mode
-                document.querySelectorAll('.shadow-button').forEach(btn => {
-                    btn.style.display = 'block';
-                });
-                
-                showToast('Delete mode deactivated');
-            }
-        }
-        
-        // Show units info modal
-        function showUnitsInfo() {
-            elements.unitsInfoModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // Handle window resize
-        function handleWindowResize() {
-            state.isResizing = true;
-            
-            // Clear any pending resize events
-            if (state.resizeTimer) {
-                clearTimeout(state.resizeTimer);
-            }
-            
-            // Set a new timer
-            state.resizeTimer = setTimeout(function() {
-                config.cellSize = window.innerWidth < 600 ? 50 : 80;
-                createBoard();
-            }, 200);
-        }
-        
-        // Handle keyboard shortcuts
-        function handleKeyboardShortcuts(e) {
-            const key = e.key.toLowerCase();
-            
-            // Check if we're in a text input or textarea
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
-                return;
-            }
-            
-            // Check for specific shortcuts
-            if (config.keyboardShortcuts[key]) {
-                const action = config.keyboardShortcuts[key];
-                
-                if (typeof action === 'string') {
-                    // Simple action - trigger button click
-                    e.preventDefault();
-                    const button = document.getElementById(action);
-                    if (button) button.click();
-                } else if (Array.isArray(action)) {
-                    // Complex action - first element is function name, second is params
-                    e.preventDefault();
-                    const [funcName, params] = action;
-                    
-                    if (funcName === 'closeModal') {
-                        // Check if any of the modals are open
-                        params.forEach(modalId => {
-                            const modal = document.getElementById(modalId);
-                            if (modal.style.display === 'flex') {
-                                closeModal(modalId);
-                            }
-                        });
-                    }
-                }
-            }
         }
         
         // Update color display elements
         function updateColorDisplay(color) {
-            elements.colorPreview.style.backgroundColor = color;
-            elements.colorValue.textContent = color.toUpperCase();
-            elements.colorPreview.textContent = color.toUpperCase();
+            colorPreview.style.backgroundColor = color;
+            colorValue.textContent = color.toUpperCase();
+            colorPreview.textContent = color.toUpperCase();
             
             // Determine text color based on brightness
             const hex = color.replace('#', '');
@@ -2019,7 +1467,7 @@
             const g = parseInt(hex.substring(2, 4), 16);
             const b = parseInt(hex.substring(4, 6), 16);
             const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            elements.colorPreview.style.color = brightness > 128 ? '#000' : '#fff';
+            colorPreview.style.color = brightness > 128 ? '#000' : '#fff';
         }
         
         // Add unit to cell
@@ -2029,26 +1477,13 @@
             }
             
             // For Omen and Relic, maintain their original colors
-            if (unit === 'image17') {
-                // Store the color class for this Omen
-                const colorClass = colorToClass(color);
-                state.image17Colors[cellId] = { color, colorClass };
-                
-                // If this Omen has a connected Relic, update its color
-                if (state.unitPairs[cellId]) {
-                    const relicCellId = state.unitPairs[cellId];
-                    state.units[relicCellId] = state.units[relicCellId].map(u => {
-                        if (u.unit === 'image0') {
-                            return { ...u, color, colorClass };
-                        }
-                        return u;
-                    });
-                }
+            if (unit === 'image17' && state.image17Colors[cellId]) {
+                color = state.image17Colors[cellId];
             } else if (unit === 'image0') {
                 // Find if this Relic is connected to an Omen
                 for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                     if (relicCellId === cellId) {
-                        color = state.image17Colors[omenCellId].color;
+                        color = state.image17Colors[omenCellId];
                         break;
                     }
                 }
@@ -2058,21 +1493,12 @@
             
             if (unit === 'image0' || unit === 'image17') {
                 const existingColor = existingUnit ? existingUnit.color : color;
-                const existingColorClass = existingUnit ? existingUnit.colorClass : colorToClass(color);
-                
                 state.units[cellId] = state.units[cellId].filter(u => u.unit !== unit);
-                state.units[cellId].push({ 
-                    unit, 
-                    color: existingColor,
-                    colorClass: existingColorClass
-                });
+                state.units[cellId].push({ unit, color: existingColor });
                 
                 // Store Omen color for connected Relics
                 if (unit === 'image17') {
-                    state.image17Colors[cellId] = { 
-                        color: existingColor,
-                        colorClass: existingColorClass
-                    };
+                    state.image17Colors[cellId] = existingColor;
                 }
             } else {
                 state.units[cellId].push({ unit, color });
@@ -2087,8 +1513,7 @@
         
         // Render units on board
         function renderUnits() {
-            // Clear existing units and shadow buttons
-            document.querySelectorAll('.unit, .omen-shadow, .relic-shadow').forEach(el => el.remove());
+            document.querySelectorAll('.unit').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
             
             // First render all Relics (image0)
@@ -2099,7 +1524,11 @@
                 const units = state.units[cellId];
                 units.forEach((unitData) => {
                     if (unitData.unit === 'image0') {
-                        createUnitElement(cell, unitData);
+                        const unitImg = document.createElement('img');
+                        unitImg.className = `unit unit-relic ${unitData.unit}`;
+                        unitImg.src = `${unitData.unit}.png`;
+                        unitImg.style.setProperty('--unit-color', unitData.color);
+                        cell.appendChild(unitImg);
                     }
                 });
             });
@@ -2112,162 +1541,147 @@
                 const units = state.units[cellId];
                 units.forEach((unitData) => {
                     if (unitData.unit !== 'image0') {
-                        createUnitElement(cell, unitData);
+                        const unitImg = document.createElement('img');
+                        unitImg.className = `unit ${unitData.unit === 'image17' ? 'unit-omen' : ''} ${unitData.unit}`;
+                        unitImg.src = `${unitData.unit}.png`;
+                        unitImg.style.setProperty('--unit-color', unitData.color);
                         
-                        // Add shadow button for Omens if not in delete mode
-                        if (unitData.unit === 'image17' && !state.deleteMode) {
-                            createShadowButton(cell, cellId, unitData);
+                        if (unitData.unit === 'image17') {
+                            // Always show shadow button for Omens unless in delete mode
+                            const shadowBtn = document.createElement('button');
+                            shadowBtn.className = 'shadow-button';
+                            shadowBtn.textContent = '+';
+                            shadowBtn.title = 'Place connected Relic';
+                            shadowBtn.style.display = state.deleteMode ? 'none' : 'block';
+                            
+                            shadowBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                state.shadowPlacementMode = true;
+                                state.activeShadowOrigin = { 
+                                    cellId, 
+                                    unitData,
+                                    color: state.image17Colors[cellId] || unitData.color
+                                };
+                                
+                                // Hide other shadow buttons during placement
+                                document.querySelectorAll('.shadow-button').forEach(btn => {
+                                    if (btn !== shadowBtn) {
+                                        btn.style.display = 'none';
+                                    }
+                                });
+                                
+                                alert('Click on another cell to place the connected Relic for this Omen');
+                            });
+                            
+                            cell.appendChild(shadowBtn);
                         }
+                        
+                        cell.appendChild(unitImg);
                     }
                 });
             });
-        }
-        
-        // Create a unit element
-        function createUnitElement(cell, unitData) {
-            const unitImg = document.createElement('img');
-            unitImg.className = `unit ${unitData.unit === 'image17' ? 'omen' : 'relic'}`;
-            unitImg.src = `${unitData.unit}.png`;
-            
-            // Add shadow class based on color
-            const shadowClass = unitData.colorClass || colorToClass(unitData.color);
-            unitImg.classList.add(shadowClass);
-            
-            // Create shadow element
-            const shadow = document.createElement('div');
-            shadow.className = unitData.unit === 'image17' ? 'omen-shadow' : 'relic-shadow';
-            shadow.classList.add(shadowClass);
-            
-            // Add CSS variable for color
-            shadow.style.setProperty('--shadow-color', unitData.color);
-            
-            cell.appendChild(shadow);
-            cell.appendChild(unitImg);
-        }
-        
-        // Create shadow button for Omens
-        function createShadowButton(cell, cellId, unitData) {
-            const shadowBtn = document.createElement('button');
-            shadowBtn.className = 'shadow-button';
-            shadowBtn.textContent = '+';
-            shadowBtn.title = 'Place connected Relic';
-            
-            shadowBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                state.shadowPlacementMode = true;
-                state.activeShadowOrigin = { 
-                    cellId, 
-                    unitData,
-                    color: state.image17Colors[cellId].color,
-                    colorClass: state.image17Colors[cellId].colorClass
-                };
-                
-                // Hide other shadow buttons during placement
-                document.querySelectorAll('.shadow-button').forEach(btn => {
-                    if (btn !== shadowBtn) {
-                        btn.style.display = 'none';
-                    }
-                });
-                
-                showToast('Click on another cell to place the connected Relic for this Omen');
-            });
-            
-            cell.appendChild(shadowBtn);
         }
         
         // Generate board image
         function generateImage() {
-            const originalButtonText = elements.generateImageBtn.textContent;
-            elements.generateImageBtn.innerHTML = '<span class="spinner"></span> Generating...';
-            elements.generateImageBtn.disabled = true;
+            const gridSize = config.gridSizes[state.currentGridSize];
+            const canvas = outputCanvas;
+            const ctx = canvas.getContext('2d');
+            const scaleFactor = state.exportQuality;
             
-            setTimeout(() => {
-                try {
-                    const gridSize = config.gridSizes[state.currentGridSize];
-                    const canvas = elements.outputCanvas;
-                    const ctx = canvas.getContext('2d');
-                    const scaleFactor = state.exportQuality;
-                    
-                    canvas.width = gridSize.cols * config.cellSize * scaleFactor;
-                    canvas.height = gridSize.rows * config.cellSize * scaleFactor;
-                    canvas.style.width = `${gridSize.cols * config.cellSize}px`;
-                    canvas.style.height = `${gridSize.rows * config.cellSize}px`;
-                    
-                    ctx.imageSmoothingEnabled = false;
-                    ctx.webkitImageSmoothingEnabled = false;
-                    ctx.mozImageSmoothingEnabled = false;
-                    
-                    // Draw white background
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    // Draw board background if exists
-                    if (state.backgroundImage) {
-                        const bgRatio = state.backgroundImage.width / state.backgroundImage.height;
-                        const boardRatio = canvas.width / canvas.height;
-                        
-                        let bgWidth, bgHeight, offsetX, offsetY;
-                        
-                        if (bgRatio > boardRatio) {
-                            bgWidth = canvas.width;
-                            bgHeight = canvas.width / bgRatio;
-                            offsetX = 0;
-                            offsetY = (canvas.height - bgHeight) / 2;
-                        } else {
-                            bgHeight = canvas.height;
-                            bgWidth = canvas.height * bgRatio;
-                            offsetX = (canvas.width - bgWidth) / 2;
-                            offsetY = 0;
-                        }
-                        
-                        ctx.drawImage(
-                            state.backgroundImage,
-                            offsetX,
-                            offsetY,
-                            bgWidth,
-                            bgHeight
-                        );
-                    }
-                    
-                    // First draw all Relics (image0)
-                    Object.keys(state.units).forEach(cellId => {
-                        const [_, x, y] = cellId.split('-');
-                        const units = state.units[cellId];
-                        
-                        units.forEach((unitData) => {
-                            if (unitData.unit === 'image0') {
-                                drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
-                            }
-                        });
-                    });
-                    
-                    // Then draw all other units (including Omens)
-                    Object.keys(state.units).forEach(cellId => {
-                        const [_, x, y] = cellId.split('-');
-                        const units = state.units[cellId];
-                        
-                        units.forEach((unitData) => {
-                            if (unitData.unit !== 'image0') {
-                                drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
-                            }
-                        });
-                    });
-                    
-                    elements.imageOutput.style.display = 'block';
-                    // Scroll to the output with smooth behavior
-                    setTimeout(() => {
-                        elements.imageOutput.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                    
-                    copyToClipboard();
-                } catch (error) {
-                    console.error('Error generating image:', error);
-                    showToast('Failed to generate image', 'error');
-                } finally {
-                    elements.generateImageBtn.textContent = originalButtonText;
-                    elements.generateImageBtn.disabled = false;
+            canvas.width = gridSize.cols * config.cellSize * scaleFactor;
+            canvas.height = gridSize.rows * config.cellSize * scaleFactor;
+            canvas.style.width = `${gridSize.cols * config.cellSize}px`;
+            canvas.style.height = `${gridSize.rows * config.cellSize}px`;
+            
+            ctx.imageSmoothingEnabled = false;
+            ctx.webkitImageSmoothingEnabled = false;
+            ctx.mozImageSmoothingEnabled = false;
+            
+            // Draw white background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw board background if exists
+            if (state.backgroundImage) {
+                const bgRatio = state.backgroundImage.width / state.backgroundImage.height;
+                const boardRatio = canvas.width / canvas.height;
+                
+                let bgWidth, bgHeight, offsetX, offsetY;
+                
+                if (bgRatio > boardRatio) {
+                    bgWidth = canvas.width;
+                    bgHeight = canvas.width / bgRatio;
+                    offsetX = 0;
+                    offsetY = (canvas.height - bgHeight) / 2;
+                } else {
+                    bgHeight = canvas.height;
+                    bgWidth = canvas.height * bgRatio;
+                    offsetX = (canvas.width - bgWidth) / 2;
+                    offsetY = 0;
                 }
-            }, 100); // Small delay to allow UI to update
+                
+                ctx.drawImage(
+                    state.backgroundImage,
+                    offsetX,
+                    offsetY,
+                    bgWidth,
+                    bgHeight
+                );
+            }
+            
+            // Create promises for all unit images to load
+            const unitPromises = [];
+            
+            // First draw all Relics (image0)
+            Object.keys(state.units).forEach(cellId => {
+                const [_, x, y] = cellId.split('-');
+                const units = state.units[cellId];
+                
+                units.forEach((unitData) => {
+                    if (unitData.unit === 'image0') {
+                        const promise = new Promise((resolve) => {
+                            const unitImg = new Image();
+                            unitImg.onload = function() {
+                                drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                                resolve();
+                            };
+                            unitImg.src = `${unitData.unit}.png`;
+                        });
+                        unitPromises.push(promise);
+                    }
+                });
+            });
+            
+            // Then draw all other units (including Omens)
+            Object.keys(state.units).forEach(cellId => {
+                const [_, x, y] = cellId.split('-');
+                const units = state.units[cellId];
+                
+                units.forEach((unitData) => {
+                    if (unitData.unit !== 'image0') {
+                        const promise = new Promise((resolve) => {
+                            const unitImg = new Image();
+                            unitImg.onload = function() {
+                                drawUnitWithShadow(ctx, x, y, unitData, scaleFactor);
+                                resolve();
+                            };
+                            unitImg.src = `${unitData.unit}.png`;
+                        });
+                        unitPromises.push(promise);
+                    }
+                });
+            });
+            
+            // Wait for all images to load and then copy to clipboard
+            Promise.all(unitPromises).then(() => {
+                imageOutput.style.display = 'block';
+                // Scroll to the output with smooth behavior
+                setTimeout(() => {
+                    imageOutput.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+                copyToClipboard();
+            });
         }
         
         // Draw unit with shadow effect
@@ -2275,17 +1689,17 @@
             const posX = parseInt(x) * config.cellSize * scaleFactor;
             const posY = parseInt(y) * config.cellSize * scaleFactor;
             
-            const unitImg = state.loadedImages[unitData.unit] || new Image();
+            const unitImg = new Image();
+            unitImg.src = `${unitData.unit}.png`;
             
-            // Draw shadow/glow effect first
+            // Draw shadow/glow effect first (same for both Omen and Relic)
             if (unitData.unit === 'image0' || unitData.unit === 'image17') {
-                const shadowSize = unitData.unit === 'image0' ? 35 : 25;
-                const steps = unitData.unit === 'image0' ? 12 : 8;
+                const shadowSize = 35;
+                const steps = 12;
                 const centerX = posX + (config.cellSize * scaleFactor) / 2;
                 const centerY = posY + (config.cellSize * scaleFactor) / 2;
-                const maxAlpha = unitData.unit === 'image0' ? 0.4 : 0.5;
+                const maxAlpha = 0.5;
                 
-                // Draw multiple circles for glow effect
                 for (let i = 0; i < steps; i++) {
                     const radius = (shadowSize * scaleFactor) * (i / steps);
                     const alpha = maxAlpha * (1 - (i / steps));
@@ -2326,25 +1740,19 @@
         
         // Copy image to clipboard
         function copyToClipboard() {
-            if (!navigator.clipboard || !window.ClipboardItem) {
-                showToast('Clipboard API not supported in this browser', 'error');
-                return;
-            }
-            
-            elements.outputCanvas.toBlob(function(blob) {
+            outputCanvas.toBlob(function(blob) {
                 const item = new ClipboardItem({ 'image/png': blob });
                 navigator.clipboard.write([item]).then(function() {
-                    showToast('Image copied to clipboard!', 'success');
-                }).catch(function(error) {
+                    alert('Image copied to clipboard!');
+                }, function(error) {
                     console.error('Could not copy image: ', error);
-                    showToast('Failed to copy image to clipboard', 'error');
+                    alert('Failed to copy image to clipboard. Please try again.');
                 });
             }, 'image/png', 1.0);
         }
         
-        // Initialize application when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
+        // Initialize application
+        init();
     </script>
-    <footer>Made By 0jek</footer>
 </body>
 </html>
