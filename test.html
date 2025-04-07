@@ -103,7 +103,7 @@
             pointer-events: none;
             max-width: 80%;
             max-height: 80%;
-            transition: transform 0.3s ease, filter 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .unit-relic {
@@ -762,6 +762,21 @@
             50% { transform: translateY(-5px); }
         }
 
+        /* Glow effect styles */
+        .glow-effect {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            width: 70px;
+            height: 70px;
+            filter: blur(15px);
+            opacity: 0.7;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+        }
+
         /* Responsywne style */
         @media (max-width: 600px) {
             .fixed-header {
@@ -833,6 +848,12 @@
             .color-picker-label {
                 min-width: auto;
             }
+            
+            .glow-effect {
+                width: 50px;
+                height: 50px;
+                filter: blur(10px);
+            }
         }
         
         footer {
@@ -840,14 +861,6 @@
             text-align: center;
             margin: 20px 0;
             padding: 0 20px;
-        }
-        
-        /* Glow effect for units */
-        .glow-effect {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
         }
     </style>
 </head>
@@ -1048,11 +1061,6 @@
                 'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
                 'image17': 'Omen that can create connected Relics. The shadow color represents their connection. Click the + button to place a connected Relic. Always appears above connected Relics.',
-            },
-            glowSettings: {
-                size: 35,       // Rozmiar cienia w pikselach
-                steps: 12,      // Liczba warstw cienia
-                maxAlpha: 0.5   // Maksymalna przezroczystość
             }
         };
         
@@ -1237,11 +1245,7 @@
         function createGlowElement(color) {
             const glow = document.createElement('div');
             glow.className = 'glow-effect';
-            glow.style.width = `${config.glowSettings.size}px`;
-            glow.style.height = `${config.glowSettings.size}px`;
             glow.style.backgroundColor = color;
-            glow.style.opacity = config.glowSettings.maxAlpha;
-            glow.style.filter = `blur(${config.glowSettings.size/2}px)`;
             return glow;
         }
         
@@ -1748,10 +1752,13 @@
             if (unitData.unit === 'image0' || unitData.unit === 'image17') {
                 const centerX = posX + (config.cellSize * scaleFactor) / 2;
                 const centerY = posY + (config.cellSize * scaleFactor) / 2;
+                const steps = 12;
+                const maxAlpha = 0.5;
+                const shadowSize = 35 * scaleFactor;
                 
-                for (let i = 0; i < config.glowSettings.steps; i++) {
-                    const radius = (config.glowSettings.size * scaleFactor) * (i / config.glowSettings.steps);
-                    const alpha = config.glowSettings.maxAlpha * (1 - (i / config.glowSettings.steps));
+                for (let i = 0; i < steps; i++) {
+                    const radius = shadowSize * (i / steps);
+                    const alpha = maxAlpha * (1 - (i / steps));
                     
                     ctx.fillStyle = unitData.color;
                     ctx.globalAlpha = alpha;
