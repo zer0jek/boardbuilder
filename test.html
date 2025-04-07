@@ -19,9 +19,21 @@
             position: sticky;
             top: 0;
             background-color: #f5f5f5;
-            padding: 15px 20px;
+            padding: 10px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
         }
         
         h1, h2, h3 {
@@ -96,16 +108,10 @@
 
         .unit-relic {
             z-index: 2;
-            filter: 
-                drop-shadow(0 0 15px var(--unit-color, #ff0000))
-                drop-shadow(0 0 25px var(--unit-color, #ff0000));
         }
 
         .unit-omen {
             z-index: 4;
-            filter: 
-                drop-shadow(0 0 15px var(--unit-color, #ff0000))
-                drop-shadow(0 0 25px var(--unit-color, #ff0000));
         }
         
         .cell {
@@ -426,7 +432,7 @@
         button.info {
             background-color: #2ecc71;
             margin-bottom: 10px;
-            width: 100%;
+            width: auto;
         }
         
         button.info:hover {
@@ -760,6 +766,14 @@
         @media (max-width: 600px) {
             .fixed-header {
                 padding: 10px 15px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
             }
             
             .container {
@@ -827,11 +841,22 @@
             margin: 20px 0;
             padding: 0 20px;
         }
+        
+        /* Glow effect for units */
+        .glow-effect {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
     <div class="fixed-header">
-        <h1>Board Editor</h1>
+        <h1 class="header-title">Board Editor</h1>
+        <div class="header-actions">
+            <button id="unitsInfoBtn" class="info">Units Info</button>
+        </div>
     </div>
     
     <div class="container">
@@ -878,7 +903,6 @@
 
             <div class="section">
                 <div class="section-title">Units</div>
-                <button id="unitsInfoBtn" class="info">Units Info</button>
                 <div class="unit-palette" id="unitPalette"></div>
             </div>
             
@@ -1024,6 +1048,11 @@
                 'image1': 'Basic unit with standard functionality. Can be used for various purposes in your board design.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
                 'image17': 'Omen that can create connected Relics. The shadow color represents their connection. Click the + button to place a connected Relic. Always appears above connected Relics.',
+            },
+            glowSettings: {
+                size: 35,       // Rozmiar cienia w pikselach
+                steps: 12,      // Liczba warstw cienia
+                maxAlpha: 0.5   // Maksymalna przezroczystość
             }
         };
         
@@ -1202,6 +1231,18 @@
                 renderUnits();
                 state.isResizing = false;
             }
+        }
+        
+        // Create glow effect element
+        function createGlowElement(color) {
+            const glow = document.createElement('div');
+            glow.className = 'glow-effect';
+            glow.style.width = `${config.glowSettings.size}px`;
+            glow.style.height = `${config.glowSettings.size}px`;
+            glow.style.backgroundColor = color;
+            glow.style.opacity = config.glowSettings.maxAlpha;
+            glow.style.filter = `blur(${config.glowSettings.size/2}px)`;
+            return glow;
         }
         
         // Set up event listeners
@@ -1515,6 +1556,7 @@
         function renderUnits() {
             document.querySelectorAll('.unit').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
+            document.querySelectorAll('.glow-effect').forEach(el => el.remove());
             
             // First render all Relics (image0)
             Object.keys(state.units).forEach(cellId => {
@@ -1524,10 +1566,14 @@
                 const units = state.units[cellId];
                 units.forEach((unitData) => {
                     if (unitData.unit === 'image0') {
+                        // Create glow effect
+                        const glow = createGlowElement(unitData.color);
+                        cell.appendChild(glow);
+                        
+                        // Create unit image
                         const unitImg = document.createElement('img');
                         unitImg.className = `unit unit-relic ${unitData.unit}`;
                         unitImg.src = `${unitData.unit}.png`;
-                        unitImg.style.setProperty('--unit-color', unitData.color);
                         cell.appendChild(unitImg);
                     }
                 });
@@ -1541,10 +1587,16 @@
                 const units = state.units[cellId];
                 units.forEach((unitData) => {
                     if (unitData.unit !== 'image0') {
+                        if (unitData.unit === 'image17') {
+                            // Create glow effect for Omen
+                            const glow = createGlowElement(unitData.color);
+                            cell.appendChild(glow);
+                        }
+                        
+                        // Create unit image
                         const unitImg = document.createElement('img');
                         unitImg.className = `unit ${unitData.unit === 'image17' ? 'unit-omen' : ''} ${unitData.unit}`;
                         unitImg.src = `${unitData.unit}.png`;
-                        unitImg.style.setProperty('--unit-color', unitData.color);
                         
                         if (unitData.unit === 'image17') {
                             // Always show shadow button for Omens unless in delete mode
@@ -1694,15 +1746,12 @@
             
             // Draw shadow/glow effect first (same for both Omen and Relic)
             if (unitData.unit === 'image0' || unitData.unit === 'image17') {
-                const shadowSize = 35;
-                const steps = 12;
                 const centerX = posX + (config.cellSize * scaleFactor) / 2;
                 const centerY = posY + (config.cellSize * scaleFactor) / 2;
-                const maxAlpha = 0.5;
                 
-                for (let i = 0; i < steps; i++) {
-                    const radius = (shadowSize * scaleFactor) * (i / steps);
-                    const alpha = maxAlpha * (1 - (i / steps));
+                for (let i = 0; i < config.glowSettings.steps; i++) {
+                    const radius = (config.glowSettings.size * scaleFactor) * (i / config.glowSettings.steps);
+                    const alpha = config.glowSettings.maxAlpha * (1 - (i / config.glowSettings.steps));
                     
                     ctx.fillStyle = unitData.color;
                     ctx.globalAlpha = alpha;
