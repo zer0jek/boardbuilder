@@ -764,33 +764,27 @@
             animation: fadeIn 0.5s ease-out 0.1s backwards;
         }
 
-        /* Custom shadow classes for Omens and Relics */
-        .omen-shadow {
+        /* Glow effect styles */
+        .glow-effect {
             position: absolute;
             border-radius: 50%;
             pointer-events: none;
             z-index: 1;
-            width: 70px;
-            height: 70px;
-            filter: blur(15px);
-            opacity: 0.7;
             transform: translate(-50%, -50%);
             top: 50%;
             left: 50%;
+            filter: blur(15px);
+            opacity: 0.7;
         }
 
-        .relic-shadow {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
+        .omen-glow {
+            width: 50px;
+            height: 50px;
+        }
+
+        .relic-glow {
             width: 70px;
             height: 70px;
-            filter: blur(15px);
-            opacity: 0.7;
-            transform: translate(-50%, -50%);
-            top: 50%;
-            left: 50%;
         }
 
         /* Scrollbar styling */
@@ -914,9 +908,9 @@
                 min-width: auto;
             }
             
-            .omen-shadow, .relic-shadow {
-                width: 50px;
-                height: 50px;
+            .omen-glow, .relic-glow {
+                width: 40px;
+                height: 40px;
                 filter: blur(10px);
             }
         }
@@ -934,6 +928,7 @@
         <h1 class="header-title">Board Editor</h1>
         <div class="header-actions">
             <button id="unitsInfoBtn" class="info">Units Info</button>
+            <button id="downloadImageBtn" class="info">Download Image</button>
             <button id="themeToggle" class="theme-toggle">Dark Mode</button>
         </div>
     </div>
@@ -1156,6 +1151,7 @@
         const shapeColor = document.getElementById('shapeColor');
         const colorPreview = document.getElementById('colorPreview');
         const generateImageBtn = document.getElementById('generateImage');
+        const downloadImageBtn = document.getElementById('downloadImageBtn');
         const clearBoardBtn = document.getElementById('clearBoard');
         const toggleDeleteModeBtn = document.getElementById('toggleDeleteMode');
         const backgroundOptions = document.getElementById('backgroundOptions');
@@ -1436,6 +1432,7 @@
             });
             
             generateImageBtn.addEventListener('click', generateImage);
+            downloadImageBtn.addEventListener('click', downloadImage);
             
             clearBoardBtn.addEventListener('click', () => {
                 Object.keys(state.units).forEach(key => {
@@ -1643,8 +1640,7 @@
         function renderUnits() {
             document.querySelectorAll('.unit').forEach(el => el.remove());
             document.querySelectorAll('.shadow-button').forEach(el => el.remove());
-            document.querySelectorAll('.omen-shadow').forEach(el => el.remove());
-            document.querySelectorAll('.relic-shadow').forEach(el => el.remove());
+            document.querySelectorAll('.glow-effect').forEach(el => el.remove());
             
             // First render all Relics (image0)
             Object.keys(state.units).forEach(cellId => {
@@ -1654,9 +1650,8 @@
                 const units = state.units[cellId];
                 units.forEach((unitData) => {
                     if (unitData.unit === 'image0') {
-                        // Get the correct color and class from the connected Omen if exists
+                        // Get the correct color for relics connected to omens
                         let color = unitData.color;
-                        let shadowClass = 'relic-shadow';
                         
                         for (const [omenCellId, relicCellId] of Object.entries(state.unitPairs)) {
                             if (relicCellId === cellId) {
@@ -1664,17 +1659,16 @@
                                 const omenUnit = omenUnits.find(u => u.unit === 'image17');
                                 if (omenUnit) {
                                     color = omenUnit.color;
-                                    shadowClass = omenUnit.omenClass;
                                 }
                                 break;
                             }
                         }
                         
-                        // Create shadow effect with the correct color and class
-                        const shadow = document.createElement('div');
-                        shadow.className = shadowClass;
-                        shadow.style.backgroundColor = color;
-                        cell.appendChild(shadow);
+                        // Create glow effect
+                        const glow = document.createElement('div');
+                        glow.className = 'glow-effect relic-glow';
+                        glow.style.backgroundColor = color;
+                        cell.appendChild(glow);
                         
                         // Create unit image
                         const unitImg = document.createElement('img');
@@ -1694,11 +1688,11 @@
                 units.forEach((unitData) => {
                     if (unitData.unit !== 'image0') {
                         if (unitData.unit === 'image17') {
-                            // Create shadow effect for Omen
-                            const shadow = document.createElement('div');
-                            shadow.className = unitData.omenClass || 'omen-shadow';
-                            shadow.style.backgroundColor = unitData.color;
-                            cell.appendChild(shadow);
+                            // Create glow effect for Omen
+                            const glow = document.createElement('div');
+                            glow.className = 'glow-effect omen-glow';
+                            glow.style.backgroundColor = unitData.color;
+                            cell.appendChild(glow);
                         }
                         
                         // Create unit image
@@ -1850,6 +1844,18 @@
             });
         }
         
+        // Download image
+        function downloadImage() {
+            generateImageBtn.click(); // Generate the image first
+            
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.download = 'board-export.png';
+                link.href = outputCanvas.toDataURL('image/png');
+                link.click();
+            }, 500); // Small delay to ensure image is generated
+        }
+        
         // Draw unit with shadow effect
         function drawUnitWithShadow(ctx, x, y, unitData, scaleFactor) {
             const posX = parseInt(x) * config.cellSize * scaleFactor;
@@ -1865,24 +1871,22 @@
                     if (relicCellId === `cell-${x}-${y}`) {
                         const omenUnits = state.units[omenCellId];
                         const omenUnit = omenUnits.find(u => u.unit === 'image17');
-                        if (omenUnit) {
-                            color = omenUnit.color;
-                        }
+                        if (omenUnit) color = omenUnit.color;
                         break;
                     }
                 }
             }
             
-            // Draw shadow/glow effect first (same for both Omen and Relic)
+            // Draw glow effect (different size for Omens and Relics)
             if (unitData.unit === 'image0' || unitData.unit === 'image17') {
                 const centerX = posX + (config.cellSize * scaleFactor) / 2;
                 const centerY = posY + (config.cellSize * scaleFactor) / 2;
                 const steps = 12;
                 const maxAlpha = 0.5;
-                const shadowSize = 35 * scaleFactor;
+                const glowSize = unitData.unit === 'image17' ? 25 * scaleFactor : 35 * scaleFactor; // Smaller for Omens
                 
                 for (let i = 0; i < steps; i++) {
-                    const radius = shadowSize * (i / steps);
+                    const radius = glowSize * (i / steps);
                     const alpha = maxAlpha * (1 - (i / steps));
                     
                     ctx.fillStyle = color;
