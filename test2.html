@@ -829,14 +829,7 @@
             margin-top: 15px;
         }
 
-        .image-upload-preview {
-            width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            display: none;
-        }
+        
 
         .file-input-label {
             display: block;
@@ -859,9 +852,7 @@
             display: block;
         }
 
-        #imageUpload {
-            display: none;
-        }
+        
 
         .progress-bar {
             width: 100%;
@@ -1033,7 +1024,7 @@
         <div class="header-actions">
             <button id="unitsInfoBtn" class="info">Units Info</button>
             <button id="downloadImageBtn" class="info">Download Image</button>
-            <button id="analyzeImageBtn" class="info">Analyze Image</button>
+            <button id="analyzeImageBtn" class="info">DO NOT CLICK!!!</button>
             <button id="themeToggle" class="theme-toggle">Dark Mode</button>
         </div>
     </div>
@@ -1170,11 +1161,7 @@
             </div>
             <div class="image-upload-container">
                 <label for="imageUpload" class="file-input-label">
-                    <div>Click to upload or drag & drop</div>
-                    <div>Supports PNG, JPG, JPEG</div>
-                </label>
-                <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/jpg">
-                <img id="imagePreview" class="image-upload-preview" alt="Preview">
+                    
                 <div class="progress-bar">
                     <div class="progress" id="progressBar"></div>
                 </div>
