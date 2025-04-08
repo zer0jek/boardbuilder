@@ -2217,7 +2217,7 @@
             for (let y = 0; y < gridSize.rows; y++) {
                 for (let x = 0; x < gridSize.cols; x++) {
                     // 20% chance to place a unit in each cell
-                    if (Math.random() < 0.2) {
+                    if (Math.random() < 0.5) {
                         const cellId = `cell-${x}-${y}`;
                         const randomUnit = `image${Math.floor(Math.random() * config.unitCount)}`;
                         
