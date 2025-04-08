@@ -21,8 +21,6 @@
             --button-danger-hover: #c0392b;
             --button-success: #2ecc71;
             --button-success-hover: #27ae60;
-            --notification-bg: rgba(0, 0, 0, 0.8);
-            --notification-text: white;
         }
 
         .dark-mode {
@@ -41,8 +39,6 @@
             --button-danger-hover: #e74c3c;
             --button-success: #27ae60;
             --button-success-hover: #2ecc71;
-            --notification-bg: rgba(255, 255, 255, 0.9);
-            --notification-text: #333;
         }
 
         body {
@@ -609,7 +605,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            z-index: 2000;
+            z-index: 100;
             justify-content: center;
             align-items: center;
             overflow-y: auto;
@@ -715,7 +711,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            z-index: 2001;
+            z-index: 101;
             justify-content: center;
             align-items: center;
             overflow-y: auto;
@@ -791,95 +787,6 @@
             height: 70px;
         }
 
-        /* Notification styles */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--notification-bg);
-            color: var(--notification-text);
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 2002;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideDown 0.3s ease-out;
-            max-width: 90%;
-            text-align: center;
-        }
-
-        .notification-close {
-            background: none;
-            border: none;
-            color: inherit;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            line-height: 1;
-        }
-
-        /* Image analysis modal */
-        .image-upload-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .image-upload-preview {
-            width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            display: none;
-        }
-
-        .file-input-label {
-            display: block;
-            padding: 15px;
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .file-input-label:hover {
-            border-color: var(--button-primary);
-            background-color: rgba(74, 144, 226, 0.1);
-        }
-
-        .file-input-label i {
-            font-size: 24px;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        #imageUpload {
-            display: none;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background-color: var(--border-color);
-            border-radius: 5px;
-            margin-top: 10px;
-            overflow: hidden;
-            display: none;
-        }
-
-        .progress {
-            height: 100%;
-            background-color: var(--button-primary);
-            width: 0%;
-            transition: width 0.3s;
-        }
-
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
@@ -911,17 +818,6 @@
             from { 
                 opacity: 0;
                 transform: translateY(20px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideDown {
-            from { 
-                opacity: 0;
-                transform: translateY(-20px);
             }
             to { 
                 opacity: 1;
@@ -1033,7 +929,6 @@
         <div class="header-actions">
             <button id="unitsInfoBtn" class="info">Units Info</button>
             <button id="downloadImageBtn" class="info">Download Image</button>
-            <button id="analyzeImageBtn" class="info">Analyze Image</button>
             <button id="themeToggle" class="theme-toggle">Dark Mode</button>
         </div>
     </div>
@@ -1162,28 +1057,6 @@
         </div>
     </div>
 
-    <!-- Image Analysis Modal -->
-    <div class="modal" id="imageAnalysisModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Analyze Board Image</div>
-                <button class="close-modal" data-modal="imageAnalysisModal">&times;</button>
-            </div>
-            <div class="image-upload-container">
-                <label for="imageUpload" class="file-input-label">
-                    <div>Click to upload or drag & drop</div>
-                    <div>Supports PNG, JPG, JPEG</div>
-                </label>
-                <input type="file" id="imageUpload" accept="image/png, image/jpeg, image/jpg">
-                <img id="imagePreview" class="image-upload-preview" alt="Preview">
-                <div class="progress-bar">
-                    <div class="progress" id="progressBar"></div>
-                </div>
-                <button id="analyzeBtn" class="info" disabled>Analyze Image</button>
-            </div>
-        </div>
-    </div>
-
     <footer>Made By 0jek</footer>
 
     <script>
@@ -1249,10 +1122,6 @@
                 'image1': 'Damage Dealer, damage is based of mob/boss hp, shield is not hp.',
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
                 'image17': 'Omen that can create connected Relics. The shadow color represents their connection. Click the + button to place a connected Relic. Always appears above connected Relics.',
-            },
-            unitColors: {
-                'image0': '#ff0000', // Default color for relics
-                'image17': '#ff0000' // Default color for omens
             }
         };
         
@@ -1272,8 +1141,7 @@
             isResizing: false,
             resizeTimer: null,
             darkMode: false,
-            omenCounter: 0, // Counter for unique Omen classes
-            uploadedImage: null
+            omenCounter: 0 // Counter for unique Omen classes
         };
         
         // DOM elements
@@ -1301,12 +1169,6 @@
         const unitDetailDescription = document.getElementById('unitDetailDescription');
         const colorValue = document.getElementById('colorValue');
         const themeToggleBtn = document.getElementById('themeToggle');
-        const analyzeImageBtn = document.getElementById('analyzeImageBtn');
-        const imageAnalysisModal = document.getElementById('imageAnalysisModal');
-        const imageUpload = document.getElementById('imageUpload');
-        const imagePreview = document.getElementById('imagePreview');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const progressBar = document.getElementById('progressBar');
         
         // Initialization
         function init() {
@@ -1317,31 +1179,6 @@
                 createUnitsInfo();
                 updateColorDisplay(state.currentColor);
             });
-        }
-        
-        // Show notification
-        function showNotification(message, duration = 3000) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `
-                <span>${message}</span>
-                <button class="notification-close">&times;</button>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            const closeBtn = notification.querySelector('.notification-close');
-            closeBtn.addEventListener('click', () => {
-                notification.remove();
-            });
-            
-            if (duration > 0) {
-                setTimeout(() => {
-                    notification.remove();
-                }, duration);
-            }
-            
-            return notification;
         }
         
         // Create units info modal content
@@ -1546,9 +1383,6 @@
                     state.activeShadowOrigin = null;
                     renderUnits();
                     
-                    // Show notification
-                    showNotification('Relic placed successfully!');
-                    
                     // Show all shadow buttons after placement
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'block';
@@ -1607,7 +1441,6 @@
                 state.unitPairs = {};
                 state.omenCounter = 0;
                 renderUnits();
-                showNotification('Board cleared successfully!');
             });
             
             toggleDeleteModeBtn.addEventListener('click', () => {
@@ -1625,8 +1458,6 @@
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'none';
                     });
-                    
-                    showNotification('Delete mode activated. Click on units to remove them.');
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
                     
@@ -1634,8 +1465,6 @@
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'block';
                     });
-                    
-                    showNotification('Delete mode deactivated.');
                 }
             });
             
@@ -1650,7 +1479,6 @@
                 bgOption.classList.add('selected');
                 state.currentBackground = bgOption.dataset.bg;
                 loadBackgroundImage();
-                showNotification(`Background changed to ${bgOption.querySelector('.background-name').textContent}`);
             });
             
             gridSizeSelect.addEventListener('change', async (e) => {
@@ -1693,12 +1521,10 @@
                 
                 await loadBackgroundImage();
                 createBoard();
-                showNotification(`Board size changed to ${state.currentGridSize}`);
             });
 
             qualitySelect.addEventListener('change', (e) => {
                 state.exportQuality = parseInt(e.target.value);
-                showNotification(`Export quality set to ${e.target.options[e.target.selectedIndex].text}`);
             });
 
             unitsInfoBtn.addEventListener('click', () => {
@@ -1722,10 +1548,6 @@
                 }
                 if (e.target === unitDetailModal) {
                     unitDetailModal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }
-                if (e.target === imageAnalysisModal) {
-                    imageAnalysisModal.style.display = 'none';
                     document.body.style.overflow = 'auto';
                 }
             });
@@ -1753,56 +1575,6 @@
                     createBoard();
                 }, 200);
             });
-
-            // Image analysis functionality
-            analyzeImageBtn.addEventListener('click', () => {
-                imageAnalysisModal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            });
-
-            // Handle image upload
-            imageUpload.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    imagePreview.src = event.target.result;
-                    imagePreview.style.display = 'block';
-                    state.uploadedImage = event.target.result;
-                    analyzeBtn.disabled = false;
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // Drag and drop for image upload
-            const fileInputLabel = document.querySelector('.file-input-label');
-            fileInputLabel.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                fileInputLabel.style.borderColor = var(--button-primary);
-                fileInputLabel.style.backgroundColor = 'rgba(74, 144, 226, 0.2)';
-            });
-
-            fileInputLabel.addEventListener('dragleave', () => {
-                fileInputLabel.style.borderColor = var(--border-color);
-                fileInputLabel.style.backgroundColor = '';
-            });
-
-            fileInputLabel.addEventListener('drop', (e) => {
-                e.preventDefault();
-                fileInputLabel.style.borderColor = var(--border-color);
-                fileInputLabel.style.backgroundColor = '';
-
-                const file = e.dataTransfer.files[0];
-                if (file && file.type.match('image.*')) {
-                    imageUpload.files = e.dataTransfer.files;
-                    const event = new Event('change');
-                    imageUpload.dispatchEvent(event);
-                }
-            });
-
-            // Analyze button click
-            analyzeBtn.addEventListener('click', analyzeUploadedImage);
         }
         
         // Update color display elements
@@ -1958,7 +1730,7 @@
                                     }
                                 });
                                 
-                                showNotification('Click on another cell to place the connected Relic for this Omen');
+                                alert('Click on another cell to place the connected Relic for this Omen');
                             });
                             
                             cell.appendChild(shadowBtn);
@@ -2081,7 +1853,6 @@
                 link.download = 'board-export.png';
                 link.href = outputCanvas.toDataURL('image/png');
                 link.click();
-                showNotification('Image downloaded successfully!');
             }, 500); // Small delay to ensure image is generated
         }
         
@@ -2157,113 +1928,12 @@
             outputCanvas.toBlob(function(blob) {
                 const item = new ClipboardItem({ 'image/png': blob });
                 navigator.clipboard.write([item]).then(function() {
-                    showNotification('Image copied to clipboard!');
+                    alert('Image copied to clipboard!');
                 }, function(error) {
                     console.error('Could not copy image: ', error);
-                    showNotification('Failed to copy image to clipboard. Please try again.', 5000);
+                    alert('Failed to copy image to clipboard. Please try again.');
                 });
             }, 'image/png', 1.0);
-        }
-        
-        // Analyze uploaded image
-        function analyzeUploadedImage() {
-            if (!state.uploadedImage) {
-                showNotification('Please upload an image first!', 3000);
-                return;
-            }
-            
-            const notification = showNotification('Analyzing image... Please wait', 0);
-            const progressBarContainer = document.querySelector('.progress-bar');
-            const progressBarElement = document.getElementById('progressBar');
-            
-            progressBarContainer.style.display = 'block';
-            progressBarElement.style.width = '0%';
-            
-            // Simulate progress (in a real app, this would be based on actual processing)
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 5;
-                progressBarElement.style.width = `${progress}%`;
-                
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                    
-                    // Simulate analysis completion
-                    setTimeout(() => {
-                        // In a real implementation, you would analyze the image here
-                        // For now, we'll just simulate it with random units
-                        simulateImageAnalysis();
-                        
-                        notification.remove();
-                        progressBarContainer.style.display = 'none';
-                        closeModal('imageAnalysisModal');
-                        showNotification('Image analyzed and board updated!');
-                    }, 500);
-                }
-            }, 100);
-        }
-        
-        // Simulate image analysis (for demo purposes)
-        function simulateImageAnalysis() {
-            // Clear the board first
-            Object.keys(state.units).forEach(key => {
-                state.units[key] = [];
-            });
-            state.unitPairs = {};
-            state.omenCounter = 0;
-            
-            const gridSize = config.gridSizes[state.currentGridSize];
-            
-            // Place some random units for demonstration
-            for (let y = 0; y < gridSize.rows; y++) {
-                for (let x = 0; x < gridSize.cols; x++) {
-                    // 20% chance to place a unit in each cell
-                    if (Math.random() < 0.2) {
-                        const cellId = `cell-${x}-${y}`;
-                        const randomUnit = `image${Math.floor(Math.random() * config.unitCount)}`;
-                        
-                        if (randomUnit === 'image17') {
-                            const omenClass = createOmenClass();
-                            addUnitToCell(cellId, randomUnit, getRandomColor(), omenClass);
-                            
-                            // 50% chance to add a connected relic
-                            if (Math.random() < 0.5) {
-                                const possibleCells = [];
-                                for (let dy = -1; dy <= 1; dy++) {
-                                    for (let dx = -1; dx <= 1; dx++) {
-                                        if (dx === 0 && dy === 0) continue;
-                                        const nx = x + dx;
-                                        const ny = y + dy;
-                                        if (nx >= 0 && nx < gridSize.cols && ny >= 0 && ny < gridSize.rows) {
-                                            possibleCells.push(`cell-${nx}-${ny}`);
-                                        }
-                                    }
-                                }
-                                
-                                if (possibleCells.length > 0) {
-                                    const relicCellId = possibleCells[Math.floor(Math.random() * possibleCells.length)];
-                                    addUnitToCell(relicCellId, 'image0', getRandomColor());
-                                    state.unitPairs[cellId] = relicCellId;
-                                }
-                            }
-                        } else {
-                            addUnitToCell(cellId, randomUnit, '#ff0000');
-                        }
-                    }
-                }
-            }
-            
-            renderUnits();
-        }
-        
-        // Helper function to get random color
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
         }
         
         // Initialize application
@@ -2271,3 +1941,4 @@
     </script>
 </body>
 </html>
+dodaj funkcje analizy obrazka ktora polega na przeslaniu przez uzytkownika obrazka i na jego podstawie strona automatycznie ulozy jednostki na planszy, zmien obecne powiadomienia wyskakujace na ekranie po na przyklad kliknieciu na przycisk nad image17 na powiadomienie wyskakujace na ekranie na strone, zrobtak aby units info menu pokazywalo sie nad top fixed bar
