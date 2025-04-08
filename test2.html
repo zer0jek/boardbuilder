@@ -1272,7 +1272,8 @@
             resizeTimer: null,
             darkMode: false,
             omenCounter: 0, // Counter for unique Omen classes
-            uploadedImage: null
+            uploadedImage: null,
+            unitSignatures: {} // Stores color signatures for each unit type
         };
         
         // DOM elements
@@ -1315,7 +1316,62 @@
                 setupEventListeners();
                 createUnitsInfo();
                 updateColorDisplay(state.currentColor);
+                preloadUnitSignatures();
             });
+        }
+        
+        // Preload unit signatures (color patterns) for image analysis
+        function preloadUnitSignatures() {
+            const promises = [];
+            
+            for (let i = 0; i < config.unitCount; i++) {
+                const unitKey = `image${i}`;
+                const promise = new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous";
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        state.unitSignatures[unitKey] = getColorSignature(imageData);
+                        resolve();
+                    };
+                    img.src = `${unitKey}.png`;
+                });
+                promises.push(promise);
+            }
+            
+            return Promise.all(promises);
+        }
+        
+        // Get color signature from image data
+        function getColorSignature(imageData) {
+            const data = imageData.data;
+            const signature = [];
+            
+            // Sample 9 points from the image (3x3 grid)
+            const width = imageData.width;
+            const height = imageData.height;
+            
+            for (let y = 1; y <= 3; y++) {
+                for (let x = 1; x <= 3; x++) {
+                    const px = Math.floor(width * x / 4);
+                    const py = Math.floor(height * y / 4);
+                    const idx = (py * width + px) * 4;
+                    
+                    signature.push({
+                        r: data[idx],
+                        g: data[idx + 1],
+                        b: data[idx + 2],
+                        a: data[idx + 3]
+                    });
+                }
+            }
+            
+            return signature;
         }
         
         // Show notification
@@ -2178,32 +2234,49 @@
             progressBarContainer.style.display = 'block';
             progressBarElement.style.width = '0%';
             
-            // Simulate progress (in a real app, this would be based on actual processing)
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 5;
-                progressBarElement.style.width = `${progress}%`;
+            // Create a temporary image to analyze
+            const img = new Image();
+            img.onload = function() {
+                // Update progress
+                progressBarElement.style.width = '30%';
                 
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                    
-                    // Simulate analysis completion
-                    setTimeout(() => {
-                        // In a real implementation, you would analyze the image here
-                        // For now, we'll just simulate it with random units
-                        simulateImageAnalysis();
-                        
-                        notification.remove();
-                        progressBarContainer.style.display = 'none';
-                        closeModal('imageAnalysisModal');
-                        showNotification('Image analyzed and board updated!');
-                    }, 500);
-                }
-            }, 100);
+                // Create canvas to analyze the image
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                // Update progress
+                progressBarElement.style.width = '60%';
+                
+                // Analyze the image
+                analyzeImage(canvas);
+                
+                // Complete progress
+                progressBarElement.style.width = '100%';
+                
+                // Clean up
+                setTimeout(() => {
+                    notification.remove();
+                    progressBarContainer.style.display = 'none';
+                    closeModal('imageAnalysisModal');
+                    showNotification('Image analyzed and board updated!');
+                }, 500);
+            };
+            img.src = state.uploadedImage;
         }
         
-        // Simulate image analysis (for demo purposes)
-        function simulateImageAnalysis() {
+        // Analyze the image and detect units
+        function analyzeImage(canvas) {
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            const gridSize = config.gridSizes[state.currentGridSize];
+            const cellWidth = canvas.width / gridSize.cols;
+            const cellHeight = canvas.height / gridSize.rows;
+            
             // Clear the board first
             Object.keys(state.units).forEach(key => {
                 state.units[key] = [];
@@ -2211,42 +2284,33 @@
             state.unitPairs = {};
             state.omenCounter = 0;
             
-            const gridSize = config.gridSizes[state.currentGridSize];
-            
-            // Place some random units for demonstration
+            // Scan each cell in the grid
             for (let y = 0; y < gridSize.rows; y++) {
                 for (let x = 0; x < gridSize.cols; x++) {
-                    // 20% chance to place a unit in each cell
-                    if (Math.random() < 0.2) {
+                    const cellX = Math.floor(x * cellWidth);
+                    const cellY = Math.floor(y * cellHeight);
+                    const cellWidthActual = Math.floor(cellWidth);
+                    const cellHeightActual = Math.floor(cellHeight);
+                    
+                    // Get the image data for this cell
+                    const cellImageData = ctx.getImageData(cellX, cellY, cellWidthActual, cellHeightActual);
+                    
+                    // Find the best matching unit for this cell
+                    const bestMatch = findBestUnitMatch(cellImageData);
+                    
+                    if (bestMatch) {
                         const cellId = `cell-${x}-${y}`;
-                        const randomUnit = `image${Math.floor(Math.random() * config.unitCount)}`;
                         
-                        if (randomUnit === 'image17') {
+                        if (bestMatch.unit === 'image17') {
+                            // For Omens, create a unique class and add with current color
                             const omenClass = createOmenClass();
-                            addUnitToCell(cellId, randomUnit, getRandomColor(), omenClass);
+                            addUnitToCell(cellId, bestMatch.unit, state.currentColor, omenClass);
                             
-                            // 50% chance to add a connected relic
-                            if (Math.random() < 0.5) {
-                                const possibleCells = [];
-                                for (let dy = -1; dy <= 1; dy++) {
-                                    for (let dx = -1; dx <= 1; dx++) {
-                                        if (dx === 0 && dy === 0) continue;
-                                        const nx = x + dx;
-                                        const ny = y + dy;
-                                        if (nx >= 0 && nx < gridSize.cols && ny >= 0 && ny < gridSize.rows) {
-                                            possibleCells.push(`cell-${nx}-${ny}`);
-                                        }
-                                    }
-                                }
-                                
-                                if (possibleCells.length > 0) {
-                                    const relicCellId = possibleCells[Math.floor(Math.random() * possibleCells.length)];
-                                    addUnitToCell(relicCellId, 'image0', getRandomColor());
-                                    state.unitPairs[cellId] = relicCellId;
-                                }
-                            }
+                            // Try to find a connected relic (look in adjacent cells)
+                            findConnectedRelic(x, y, gridSize, canvas, omenClass, cellId);
                         } else {
-                            addUnitToCell(cellId, randomUnit, '#ff0000');
+                            // For other units, just add them
+                            addUnitToCell(cellId, bestMatch.unit, '#ff0000');
                         }
                     }
                 }
@@ -2255,14 +2319,85 @@
             renderUnits();
         }
         
-        // Helper function to get random color
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
+        // Find the best matching unit for a cell image
+        function findBestUnitMatch(cellImageData) {
+            let bestMatch = null;
+            let bestScore = 0;
+            const threshold = 0.7; // Minimum match score to consider
+            
+            // Get the color signature of the cell
+            const cellSignature = getColorSignature(cellImageData);
+            
+            // Compare with all unit signatures
+            for (const [unitKey, unitSignature] of Object.entries(state.unitSignatures)) {
+                const score = compareSignatures(cellSignature, unitSignature);
+                
+                if (score > bestScore && score > threshold) {
+                    bestScore = score;
+                    bestMatch = { unit: unitKey, score: score };
+                }
             }
-            return color;
+            
+            return bestMatch;
+        }
+        
+        // Compare two color signatures
+        function compareSignatures(sig1, sig2) {
+            let totalDiff = 0;
+            const maxDiff = 255 * 3 * sig1.length; // Maximum possible difference
+            
+            for (let i = 0; i < sig1.length; i++) {
+                const diffR = Math.abs(sig1[i].r - sig2[i].r);
+                const diffG = Math.abs(sig1[i].g - sig2[i].g);
+                const diffB = Math.abs(sig1[i].b - sig2[i].b);
+                
+                // Ignore fully transparent pixels in comparison
+                if (sig1[i].a < 10 || sig2[i].a < 10) continue;
+                
+                totalDiff += diffR + diffG + diffB;
+            }
+            
+            // Convert to similarity score (0 to 1)
+            const similarity = 1 - (totalDiff / maxDiff);
+            return similarity;
+        }
+        
+        // Try to find a connected relic for an Omen
+        function findConnectedRelic(x, y, gridSize, canvas, omenClass, omenCellId) {
+            const ctx = canvas.getContext('2d');
+            const cellWidth = canvas.width / gridSize.cols;
+            const cellHeight = canvas.height / gridSize.rows;
+            
+            // Check adjacent cells (3x3 area around the Omen)
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (dx === 0 && dy === 0) continue; // Skip the Omen's cell
+                    
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    
+                    // Check if the neighbor is within bounds
+                    if (nx >= 0 && nx < gridSize.cols && ny >= 0 && ny < gridSize.rows) {
+                        const cellX = Math.floor(nx * cellWidth);
+                        const cellY = Math.floor(ny * cellHeight);
+                        const cellWidthActual = Math.floor(cellWidth);
+                        const cellHeightActual = Math.floor(cellHeight);
+                        
+                        // Get the image data for this cell
+                        const cellImageData = ctx.getImageData(cellX, cellY, cellWidthActual, cellHeightActual);
+                        
+                        // Check if this cell contains a relic
+                        const relicMatch = findBestUnitMatch(cellImageData);
+                        
+                        if (relicMatch && relicMatch.unit === 'image0') {
+                            // Found a relic, create the connection
+                            const relicCellId = `cell-${nx}-${ny}`;
+                            state.unitPairs[omenCellId] = relicCellId;
+                            return;
+                        }
+                    }
+                }
+            }
         }
         
         // Initialize application
