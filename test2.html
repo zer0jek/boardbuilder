@@ -21,8 +21,6 @@
             --button-danger-hover: #c0392b;
             --button-success: #2ecc71;
             --button-success-hover: #27ae60;
-            --notification-bg: rgba(0, 0, 0, 0.8);
-            --notification-text: white;
         }
 
         .dark-mode {
@@ -41,8 +39,6 @@
             --button-danger-hover: #e74c3c;
             --button-success: #27ae60;
             --button-success-hover: #2ecc71;
-            --notification-bg: rgba(255, 255, 255, 0.9);
-            --notification-text: #333;
         }
 
         body {
@@ -237,6 +233,7 @@
             cursor: pointer;
             transition: all 0.2s;
             background-color: var(--panel-bg);
+            position: relative;
         }
         
         .unit-option:hover {
@@ -250,6 +247,22 @@
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
             background-color: var(--panel-bg);
             animation: pulse 0.5s ease;
+        }
+        
+        .unit-variants {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background-color: var(--button-primary);
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--panel-bg);
         }
         
         select {
@@ -609,7 +622,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            z-index: 2000;
+            z-index: 100;
             justify-content: center;
             align-items: center;
             overflow-y: auto;
@@ -715,7 +728,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            z-index: 2001;
+            z-index: 101;
             justify-content: center;
             align-items: center;
             overflow-y: auto;
@@ -768,6 +781,89 @@
             animation: fadeIn 0.5s ease-out 0.1s backwards;
         }
 
+        /* Variant Selector Modal */
+        .variant-selector-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 102;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .variant-selector-content {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            animation: slideUp 0.3s ease-out;
+            color: var(--text-color);
+        }
+
+        .variant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .variant-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: var(--panel-bg);
+        }
+
+        .variant-option:hover {
+            background-color: var(--panel-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        .variant-option.selected {
+            border-color: var(--button-primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+        }
+
+        .variant-image {
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .variant-option:hover .variant-image {
+            transform: scale(1.1);
+        }
+
+        .variant-name {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+            color: var(--text-color);
+        }
+
         /* Glow effect styles */
         .glow-effect {
             position: absolute;
@@ -789,86 +885,6 @@
         .relic-glow {
             width: 70px;
             height: 70px;
-        }
-
-        /* Notification styles */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--notification-bg);
-            color: var(--notification-text);
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 2002;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideDown 0.3s ease-out;
-            max-width: 90%;
-            text-align: center;
-        }
-
-        .notification-close {
-            background: none;
-            border: none;
-            color: inherit;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            line-height: 1;
-        }
-
-        /* Image analysis modal */
-        .image-upload-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        
-
-        .file-input-label {
-            display: block;
-            padding: 15px;
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .file-input-label:hover {
-            border-color: var(--button-primary);
-            background-color: rgba(74, 144, 226, 0.1);
-        }
-
-        .file-input-label i {
-            font-size: 24px;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        
-
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background-color: var(--border-color);
-            border-radius: 5px;
-            margin-top: 10px;
-            overflow: hidden;
-            display: none;
-        }
-
-        .progress {
-            height: 100%;
-            background-color: var(--button-primary);
-            width: 0%;
-            transition: width 0.3s;
         }
 
         /* Scrollbar styling */
@@ -902,17 +918,6 @@
             from { 
                 opacity: 0;
                 transform: translateY(20px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideDown {
-            from { 
-                opacity: 0;
-                transform: translateY(-20px);
             }
             to { 
                 opacity: 1;
@@ -1024,7 +1029,6 @@
         <div class="header-actions">
             <button id="unitsInfoBtn" class="info">Units Info</button>
             <button id="downloadImageBtn" class="info">Download Image</button>
-            <button id="analyzeImageBtn" class="info">DO NOT CLICK!!!</button>
             <button id="themeToggle" class="theme-toggle">Dark Mode</button>
         </div>
     </div>
@@ -1047,6 +1051,7 @@
             
             <div class="section">
                 <div class="section-title">Board Creator</div>
+                </div>
                 <div class="background-options" id="backgroundOptions">
                     <div class="background-option selected" data-bg="default.png">
                         <div class="background-preview" style="background-image: url('default.png');"></div>
@@ -1152,20 +1157,16 @@
         </div>
     </div>
 
-    <!-- Image Analysis Modal -->
-    <div class="modal" id="imageAnalysisModal">
-        <div class="modal-content">
+    <!-- Variant Selector Modal -->
+    <div class="variant-selector-modal" id="variantSelectorModal">
+        <div class="variant-selector-content">
             <div class="modal-header">
-                <div class="modal-title">Analyze Board Image</div>
-                <button class="close-modal" data-modal="imageAnalysisModal">&times;</button>
+                <div class="modal-title">Select Unit Variant</div>
+                <button class="close-modal" data-modal="variantSelectorModal">&times;</button>
             </div>
-            <div class="image-upload-container">
-                <label for="imageUpload" class="file-input-label">
-                    
-                <div class="progress-bar">
-                    <div class="progress" id="progressBar"></div>
-                </div>
-                <button id="analyzeBtn" class="info" disabled>Analyze Image</button>
+            <div id="variantSelectorTitle" class="unit-detail-name"></div>
+            <div class="variant-grid" id="variantGrid">
+                <!-- Variants will be added here dynamically -->
             </div>
         </div>
     </div>
@@ -1182,7 +1183,7 @@
                     backgrounds: [
                         { id: 'default.png', name: 'Normal', type: '7x5' },
                         { id: 'default0.png', name: 'Hard', type: '7x5' },
-                        { id: 'default0.png', name: 'Hard', type: '7x5' }
+                        { id: 'default1.png', name: 'Hell', type: '7x5' }
                     ] 
                 },
                 '7x10': { 
@@ -1200,12 +1201,11 @@
                     backgrounds: [
                         { id: 'tower.png', name: 'Tower', type: '7x7' },
                         { id: 'tower1.png', name: 'Tower', type: '7x7' },
-{ id: 'tower3.png', name: 'Tower', type: '7x7' }
-
+                        { id: 'tower3.png', name: 'Tower', type: '7x7' }
                     ] 
                 }
             },
-            unitCount: 25,
+            unitCount: 26,
             cellSize: window.innerWidth < 600 ? 50 : 80,
             unitNames: {
                 'image0': 'Relic',
@@ -1232,7 +1232,8 @@
                 'image21': 'Maniac',
                 'image22': 'Draxar',
                 'image23': 'Regik',
-                'image24': 'Basilisk'
+                'image24': 'Basilisk',
+                'image25': 'Cannon'
             },
             unitDescriptions: {
                 'image0': 'Relic that connects to an Omen. The shadow color represents their connection. Created by button on top of an Omen',
@@ -1240,15 +1241,128 @@
                 'image2': 'Versatile unit with multiple applications. Works well in combination with other units.',
                 'image17': 'Omen that can create connected Relics. The shadow color represents their connection. Click the + button to place a connected Relic. Always appears above connected Relics.',
             },
-            unitColors: {
-                'image0': '#ff0000', // Default color for relics
-                'image17': '#ff0000' // Default color for omens
+            // Unit variants configuration
+            unitVariants: {
+                'image1': [
+                    { id: 'image1', name: 'Default' },
+                    { id: 'image1_v2', name: 'Variant 2' },
+                    { id: 'image1_v3', name: 'Variant 3' }
+                ],
+                'image2': [
+                    { id: 'image2', name: 'Default' },
+                    { id: 'image2_v2', name: 'Variant 2' }
+                ],
+                'image3': [
+                    { id: 'image3', name: 'Default' },
+                    { id: 'image3_v2', name: 'Variant 2' },
+                    { id: 'image3_v3', name: 'Variant 3' }
+                ],
+                'image4': [
+                    { id: 'image4', name: 'Default' },
+                    { id: 'image4_v2', name: 'Variant 2' }
+                ],
+                'image5': [
+                    { id: 'image5', name: 'Default' },
+                    { id: 'image5_v2', name: 'Variant 2' },
+                    { id: 'image5_v3', name: 'Variant 3' }
+                ],
+                'image6': [
+                    { id: 'image6', name: 'Default' },
+                    { id: 'image6_v2', name: 'Variant 2' }
+                ],
+                'image7': [
+                    { id: 'image7', name: 'Default' },
+                    { id: 'image7_v2', name: 'Variant 2' },
+                    { id: 'image7_v3', name: 'Variant 3' }
+                ],
+                'image8': [
+                    { id: 'image8', name: 'Default' },
+                    { id: 'image8_v2', name: 'Variant 2' }
+                ],
+                'image9': [
+                    { id: 'image9', name: 'Default' },
+                    { id: 'image9_v2', name: 'Variant 2' },
+                    { id: 'image9_v3', name: 'Variant 3' }
+                ],
+                'image10': [
+                    { id: 'image10', name: 'Default' },
+                    { id: 'image10_v2', name: 'Variant 2' }
+                ],
+                'image11': [
+                    { id: 'image11', name: 'Default' },
+                    { id: 'image11_v2', name: 'Variant 2' },
+                    { id: 'image11_v3', name: 'Variant 3' }
+                ],
+                'image12': [
+                    { id: 'image12', name: 'Default' },
+                    { id: 'image12_v2', name: 'Variant 2' }
+                ],
+                'image13': [
+                    { id: 'image13', name: 'Default' },
+                    { id: 'image13_v2', name: 'Variant 2' },
+                    { id: 'image13_v3', name: 'Variant 3' }
+                ],
+                'image14': [
+                    { id: 'image14', name: 'Default' },
+                    { id: 'image14_v2', name: 'Variant 2' }
+                ],
+                'image15': [
+                    { id: 'image15', name: 'Default' },
+                    { id: 'image15_v2', name: 'Variant 2' },
+                    { id: 'image15_v3', name: 'Variant 3' }
+                ],
+                'image16': [
+                    { id: 'image16', name: 'Default' },
+                    { id: 'image16_v2', name: 'Variant 2' }
+                ],
+                'image17': [
+                    { id: 'image17', name: 'Default' },
+                    { id: 'image17_v2', name: 'Variant 2' },
+                    { id: 'image17_v3', name: 'Variant 3' }
+                ],
+                'image18': [
+                    { id: 'image18', name: 'Default' },
+                    { id: 'image18_v2', name: 'Variant 2' }
+                ],
+                'image19': [
+                    { id: 'image19', name: 'Default' },
+                    { id: 'image19_v2', name: 'Variant 2' },
+                    { id: 'image19_v3', name: 'Variant 3' }
+                ],
+                'image20': [
+                    { id: 'image20', name: 'Default' },
+                    { id: 'image20_v2', name: 'Variant 2' }
+                ],
+                'image21': [
+                    { id: 'image21', name: 'Default' },
+                    { id: 'image21_v2', name: 'Variant 2' },
+                    { id: 'image21_v3', name: 'Variant 3' }
+                ],
+                'image22': [
+                    { id: 'image22', name: 'Default' },
+                    { id: 'image22_v2', name: 'Variant 2' }
+                ],
+                'image23': [
+                    { id: 'image23', name: 'Default' },
+                    { id: 'image23_v2', name: 'Variant 2' },
+                    { id: 'image23_v3', name: 'Variant 3' }
+                ],
+                'image24': [
+                    { id: 'image24', name: 'Default' },
+                    { id: 'image24_v2', name: 'Variant 2' }
+                ],
+                'image25': [
+                    { id: 'image25', name: 'Default' },
+                    { id: 'image25_v2', name: 'Variant 2' },
+                    { id: 'image25_v3', name: 'Variant 3' }
+                ]
             }
         };
         
         // Application state
         let state = {
             selectedUnit: null,
+            selectedVariant: null,
             currentColor: '#ff0000',
             deleteMode: false,
             currentGridSize: '7x5',
@@ -1262,8 +1376,7 @@
             isResizing: false,
             resizeTimer: null,
             darkMode: false,
-            omenCounter: 0, // Counter for unique Omen classes
-            uploadedImage: null
+            omenCounter: 0 // Counter for unique Omen classes
         };
         
         // DOM elements
@@ -1291,12 +1404,9 @@
         const unitDetailDescription = document.getElementById('unitDetailDescription');
         const colorValue = document.getElementById('colorValue');
         const themeToggleBtn = document.getElementById('themeToggle');
-        const analyzeImageBtn = document.getElementById('analyzeImageBtn');
-        const imageAnalysisModal = document.getElementById('imageAnalysisModal');
-        const imageUpload = document.getElementById('imageUpload');
-        const imagePreview = document.getElementById('imagePreview');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const progressBar = document.getElementById('progressBar');
+        const variantSelectorModal = document.getElementById('variantSelectorModal');
+        const variantGrid = document.getElementById('variantGrid');
+        const variantSelectorTitle = document.getElementById('variantSelectorTitle');
         
         // Initialization
         function init() {
@@ -1307,31 +1417,6 @@
                 createUnitsInfo();
                 updateColorDisplay(state.currentColor);
             });
-        }
-        
-        // Show notification
-        function showNotification(message, duration = 3000) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `
-                <span>${message}</span>
-                <button class="notification-close">&times;</button>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            const closeBtn = notification.querySelector('.notification-close');
-            closeBtn.addEventListener('click', () => {
-                notification.remove();
-            });
-            
-            if (duration > 0) {
-                setTimeout(() => {
-                    notification.remove();
-                }, duration);
-            }
-            
-            return notification;
         }
         
         // Create units info modal content
@@ -1363,6 +1448,38 @@
             unitDetailName.textContent = config.unitNames[unitKey] || unitKey;
             unitDetailDescription.textContent = config.unitDescriptions[unitKey] || 'No additional information available for this unit.';
             unitDetailModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Show variant selector
+        function showVariantSelector(unitKey) {
+            variantSelectorTitle.textContent = config.unitNames[unitKey] || unitKey;
+            variantGrid.innerHTML = '';
+            
+            const variants = config.unitVariants[unitKey] || [{ id: unitKey, name: 'Default' }];
+            
+            variants.forEach(variant => {
+                const variantOption = document.createElement('div');
+                variantOption.className = 'variant-option';
+                variantOption.dataset.variant = variant.id;
+                if (variant.id === (state.selectedVariant || unitKey)) {
+                    variantOption.classList.add('selected');
+                }
+                
+                const variantImg = document.createElement('div');
+                variantImg.className = 'variant-image';
+                variantImg.style.backgroundImage = `url('${variant.id}.png')`;
+                
+                const variantName = document.createElement('div');
+                variantName.className = 'variant-name';
+                variantName.textContent = variant.name;
+                
+                variantOption.appendChild(variantImg);
+                variantOption.appendChild(variantName);
+                variantGrid.appendChild(variantOption);
+            });
+            
+            variantSelectorModal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
         
@@ -1406,16 +1523,34 @@
         function createUnitPalette() {
             unitPalette.innerHTML = '';
             for (let i = 0; i < config.unitCount; i++) {
+                const unitKey = `image${i}`;
                 const unitDiv = document.createElement('div');
                 unitDiv.className = 'unit-option';
-                unitDiv.dataset.unit = `image${i}`;
-                unitDiv.style.backgroundImage = `url('image${i}.png')`;
-                unitDiv.addEventListener('click', () => {
+                unitDiv.dataset.unit = unitKey;
+                unitDiv.style.backgroundImage = `url('${unitKey}.png')`;
+                
+                // Add variant indicator if unit has variants
+                if (config.unitVariants[unitKey] && config.unitVariants[unitKey].length > 1) {
+                    const variantIndicator = document.createElement('div');
+                    variantIndicator.className = 'unit-variants';
+                    variantIndicator.textContent = config.unitVariants[unitKey].length;
+                    variantIndicator.title = 'This unit has alternative variants';
+                    unitDiv.appendChild(variantIndicator);
+                }
+                
+                unitDiv.addEventListener('click', (e) => {
+                    // Don't change selection if clicking on variant indicator
+                    if (e.target.classList.contains('unit-variants')) {
+                        e.stopPropagation();
+                        showVariantSelector(unitKey);
+                        return;
+                    }
+                    
                     document.querySelectorAll('.unit-option').forEach(opt => {
                         opt.classList.remove('selected');
                     });
                     unitDiv.classList.add('selected');
-                    state.selectedUnit = `image${i}`;
+                    state.selectedUnit = unitKey;
                     state.deleteMode = false;
                     state.shadowPlacementMode = false;
                     toggleDeleteModeBtn.classList.remove('active');
@@ -1425,6 +1560,14 @@
                         btn.style.display = 'block';
                     });
                 });
+                
+                // Add double click for variant selection
+                unitDiv.addEventListener('dblclick', () => {
+                    if (config.unitVariants[unitKey] && config.unitVariants[unitKey].length > 1) {
+                        showVariantSelector(unitKey);
+                    }
+                });
+                
                 unitPalette.appendChild(unitDiv);
             }
         }
@@ -1536,19 +1679,17 @@
                     state.activeShadowOrigin = null;
                     renderUnits();
                     
-                    // Show notification
-                    showNotification('Relic placed successfully!');
-                    
                     // Show all shadow buttons after placement
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'block';
                     });
                 } else if (state.selectedUnit) {
+                    const unitToPlace = state.selectedVariant || state.selectedUnit;
                     if (state.selectedUnit === 'image17') {
                         const omenClass = createOmenClass();
-                        addUnitToCell(cellId, state.selectedUnit, state.currentColor, omenClass);
+                        addUnitToCell(cellId, unitToPlace, state.currentColor, omenClass);
                     } else {
-                        addUnitToCell(cellId, state.selectedUnit, '#ff0000');
+                        addUnitToCell(cellId, unitToPlace, '#ff0000');
                     }
                 }
             });
@@ -1597,7 +1738,6 @@
                 state.unitPairs = {};
                 state.omenCounter = 0;
                 renderUnits();
-                showNotification('Board cleared successfully!');
             });
             
             toggleDeleteModeBtn.addEventListener('click', () => {
@@ -1615,8 +1755,6 @@
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'none';
                     });
-                    
-                    showNotification('Delete mode activated. Click on units to remove them.');
                 } else {
                     toggleDeleteModeBtn.classList.remove('active');
                     
@@ -1624,8 +1762,6 @@
                     document.querySelectorAll('.shadow-button').forEach(btn => {
                         btn.style.display = 'block';
                     });
-                    
-                    showNotification('Delete mode deactivated.');
                 }
             });
             
@@ -1640,7 +1776,6 @@
                 bgOption.classList.add('selected');
                 state.currentBackground = bgOption.dataset.bg;
                 loadBackgroundImage();
-                showNotification(`Background changed to ${bgOption.querySelector('.background-name').textContent}`);
             });
             
             gridSizeSelect.addEventListener('change', async (e) => {
@@ -1683,12 +1818,10 @@
                 
                 await loadBackgroundImage();
                 createBoard();
-                showNotification(`Board size changed to ${state.currentGridSize}`);
             });
 
             qualitySelect.addEventListener('change', (e) => {
                 state.exportQuality = parseInt(e.target.value);
-                showNotification(`Export quality set to ${e.target.options[e.target.selectedIndex].text}`);
             });
 
             unitsInfoBtn.addEventListener('click', () => {
@@ -1714,8 +1847,8 @@
                     unitDetailModal.style.display = 'none';
                     document.body.style.overflow = 'auto';
                 }
-                if (e.target === imageAnalysisModal) {
-                    imageAnalysisModal.style.display = 'none';
+                if (e.target === variantSelectorModal) {
+                    variantSelectorModal.style.display = 'none';
                     document.body.style.overflow = 'auto';
                 }
             });
@@ -1725,6 +1858,34 @@
                 if (unitItem) {
                     const unitKey = unitItem.dataset.unit;
                     showUnitDetails(unitKey);
+                }
+            });
+
+            variantGrid.addEventListener('click', (e) => {
+                const variantOption = e.target.closest('.variant-option');
+                if (variantOption) {
+                    const variantId = variantOption.dataset.variant;
+                    const unitKey = variantId.split('_')[0]; // Get base unit key (without _v2, _v3 etc.)
+                    
+                    // Update selected variant
+                    state.selectedVariant = variantId === unitKey ? null : variantId;
+                    
+                    // Update selected unit in palette
+                    document.querySelectorAll('.unit-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                        if (opt.dataset.unit === unitKey) {
+                            opt.classList.add('selected');
+                        }
+                    });
+                    
+                    // Update the unit preview
+                    const selectedUnitOption = document.querySelector(`.unit-option[data-unit="${unitKey}"]`);
+                    if (selectedUnitOption) {
+                        selectedUnitOption.style.backgroundImage = `url('${variantId}.png')`;
+                    }
+                    
+                    state.selectedUnit = unitKey;
+                    closeModal('variantSelectorModal');
                 }
             });
 
@@ -1743,56 +1904,6 @@
                     createBoard();
                 }, 200);
             });
-
-            // Image analysis functionality
-            analyzeImageBtn.addEventListener('click', () => {
-                imageAnalysisModal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            });
-
-            // Handle image upload
-            imageUpload.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    imagePreview.src = event.target.result;
-                    imagePreview.style.display = 'block';
-                    state.uploadedImage = event.target.result;
-                    analyzeBtn.disabled = false;
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // Drag and drop for image upload
-            const fileInputLabel = document.querySelector('.file-input-label');
-            fileInputLabel.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                fileInputLabel.style.borderColor = 'var(--button-primary)';
-                fileInputLabel.style.backgroundColor = 'rgba(74, 144, 226, 0.2)';
-            });
-
-            fileInputLabel.addEventListener('dragleave', () => {
-                fileInputLabel.style.borderColor = 'var(--border-color)';
-                fileInputLabel.style.backgroundColor = '';
-            });
-
-            fileInputLabel.addEventListener('drop', (e) => {
-                e.preventDefault();
-                fileInputLabel.style.borderColor = 'var(--border-color)';
-                fileInputLabel.style.backgroundColor = '';
-
-                const file = e.dataTransfer.files[0];
-                if (file && file.type.match('image.*')) {
-                    imageUpload.files = e.dataTransfer.files;
-                    const event = new Event('change');
-                    imageUpload.dispatchEvent(event);
-                }
-            });
-
-            // Analyze button click
-            analyzeBtn.addEventListener('click', analyzeUploadedImage);
         }
         
         // Update color display elements
@@ -1948,7 +2059,7 @@
                                     }
                                 });
                                 
-                                showNotification('Click on another cell to place the connected Relic for this Omen');
+                                alert('Click on another cell to place the connected Relic for this Omen');
                             });
                             
                             cell.appendChild(shadowBtn);
@@ -2071,7 +2182,6 @@
                 link.download = 'board-export.png';
                 link.href = outputCanvas.toDataURL('image/png');
                 link.click();
-                showNotification('Image downloaded successfully!');
             }, 500); // Small delay to ensure image is generated
         }
         
@@ -2147,110 +2257,12 @@
             outputCanvas.toBlob(function(blob) {
                 const item = new ClipboardItem({ 'image/png': blob });
                 navigator.clipboard.write([item]).then(function() {
-                    showNotification('Image copied to clipboard!');
+                    alert('Image copied to clipboard!');
                 }, function(error) {
                     console.error('Could not copy image: ', error);
-                    showNotification('Failed to copy image to clipboard. Please try again.', 5000);
+                    alert('Failed to copy image to clipboard. Please try again.');
                 });
             }, 'image/png', 1.0);
-        }
-        
-        // Analyze uploaded image
-        function analyzeUploadedImage() {
-            
-            
-            const notification = showNotification('Analyzing... Please wait', 0);
-            const progressBarContainer = document.querySelector('.progress-bar');
-            const progressBarElement = document.getElementById('progressBar');
-            
-            progressBarContainer.style.display = 'block';
-            progressBarElement.style.width = '0%';
-            
-            // Simulate progress (in a real app, this would be based on actual processing)
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 5;
-                progressBarElement.style.width = `${progress}%`;
-                
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                    
-                    // Simulate analysis completion
-                    setTimeout(() => {
-                        // In a real implementation, you would analyze the image here
-                        // For now, we'll just simulate it with random units
-                        simulateImageAnalysis();
-                        
-                        notification.remove();
-                        progressBarContainer.style.display = 'none';
-                        closeModal('imageAnalysisModal');
-                        showNotification('Image analyzed and board updated!');
-                    }, 500);
-                }
-            }, 100);
-        }
-        
-        // Simulate image analysis (for demo purposes)
-        function simulateImageAnalysis() {
-            // Clear the board first
-            Object.keys(state.units).forEach(key => {
-                state.units[key] = [];
-            });
-            state.unitPairs = {};
-            state.omenCounter = 0;
-            
-            const gridSize = config.gridSizes[state.currentGridSize];
-            
-            // Place some random units for demonstration
-            for (let y = 0; y < gridSize.rows; y++) {
-                for (let x = 0; x < gridSize.cols; x++) {
-                    // 50% chance to place a unit in each cell
-                    if (Math.random() < 0.5) {
-                        const cellId = `cell-${x}-${y}`;
-                        const randomUnit = `image${Math.floor(Math.random() * config.unitCount)}`;
-                        
-                        if (randomUnit === 'image17') {
-                            const omenClass = createOmenClass();
-                            addUnitToCell(cellId, randomUnit, getRandomColor(), omenClass);
-                            
-                            // 50% chance to add a connected relic
-                            if (Math.random() < 0.5) {
-                                const possibleCells = [];
-                                for (let dy = -1; dy <= 1; dy++) {
-                                    for (let dx = -1; dx <= 1; dx++) {
-                                        if (dx === 0 && dy === 0) continue;
-                                        const nx = x + dx;
-                                        const ny = y + dy;
-                                        if (nx >= 0 && nx < gridSize.cols && ny >= 0 && ny < gridSize.rows) {
-                                            possibleCells.push(`cell-${nx}-${ny}`);
-                                        }
-                                    }
-                                }
-                                
-                                if (possibleCells.length > 0) {
-                                    const relicCellId = possibleCells[Math.floor(Math.random() * possibleCells.length)];
-                                    addUnitToCell(relicCellId, 'image0', getRandomColor());
-                                    state.unitPairs[cellId] = relicCellId;
-                                }
-                            }
-                        } else {
-                            addUnitToCell(cellId, randomUnit, '#ff0000');
-                        }
-                    }
-                }
-            }
-            
-            renderUnits();
-        }
-        
-        // Helper function to get random color
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
         }
         
         // Initialize application
