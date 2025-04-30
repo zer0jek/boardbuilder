@@ -6,24 +6,6 @@
     <title>Board Editor</title>
     <style>
         :root {
-            --bg-color: #f5f5f5;
-            --text-color: #333;
-            --header-bg: #f5f5f5;
-            --panel-bg: white;
-            --cell-bg: transparent;
-            --border-color: #ddd;
-            --shadow-color: rgba(0,0,0,0.1);
-            --button-primary: #4a90e2;
-            --button-primary-hover: #3a7bc8;
-            --button-secondary: #f0f0f0;
-            --button-secondary-hover: #e0e0e0;
-            --button-danger: #e74c3c;
-            --button-danger-hover: #c0392b;
-            --button-success: #2ecc71;
-            --button-success-hover: #27ae60;
-        }
-
-        .dark-mode {
             --bg-color: #222;
             --text-color: #eee;
             --header-bg: #333;
@@ -39,6 +21,24 @@
             --button-danger-hover: #e74c3c;
             --button-success: #27ae60;
             --button-success-hover: #2ecc71;
+        }
+
+        .light-mode {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --header-bg: #f5f5f5;
+            --panel-bg: white;
+            --cell-bg: transparent;
+            --border-color: #ddd;
+            --shadow-color: rgba(0,0,0,0.1);
+            --button-primary: #4a90e2;
+            --button-primary-hover: #3a7bc8;
+            --button-secondary: #f0f0f0;
+            --button-secondary-hover: #e0e0e0;
+            --button-danger: #e74c3c;
+            --button-danger-hover: #c0392b;
+            --button-success: #2ecc71;
+            --button-success-hover: #27ae60;
         }
 
         body {
@@ -67,11 +67,14 @@
         
         .header-title {
             margin: 0;
+            font-size: 1.5rem;
         }
         
         .header-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
         
         h1, h2, h3 {
@@ -937,7 +940,7 @@
         }
 
         /* Responsywne style */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .fixed-header {
                 padding: 10px 15px;
                 flex-direction: column;
@@ -945,9 +948,14 @@
                 gap: 10px;
             }
             
+            .header-title {
+                font-size: 1.2rem;
+            }
+            
             .header-actions {
                 width: 100%;
                 justify-content: space-between;
+                gap: 8px;
             }
             
             .container {
@@ -974,10 +982,12 @@
             button {
                 padding: 8px 12px;
                 font-size: 12px;
+                white-space: nowrap;
             }
             
             .modal-content {
-                width: 90%;
+                width: 95%;
+                padding: 15px;
             }
 
             .units-info-grid {
@@ -990,7 +1000,8 @@
             }
 
             .unit-detail-content {
-                width: 90%;
+                width: 95%;
+                padding: 15px;
             }
 
             .unit-detail-image {
@@ -1013,6 +1024,85 @@
                 height: 40px;
                 filter: blur(10px);
             }
+
+            /* Improved units info modal for mobile */
+            .units-info-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 8px;
+            }
+
+            .unit-info-item {
+                padding: 8px;
+            }
+
+            .unit-info-image {
+                width: 35px;
+                height: 35px;
+            }
+
+            .unit-info-name {
+                font-size: 11px;
+            }
+
+            /* Unit detail modal improvements */
+            .unit-detail-content {
+                padding: 15px;
+            }
+
+            .unit-detail-image {
+                width: 80px;
+                height: 80px;
+            }
+
+            .unit-detail-name {
+                font-size: 18px;
+            }
+
+            .unit-detail-description {
+                font-size: 13px;
+            }
+
+            /* Variant selector improvements */
+            .variant-selector-content {
+                padding: 15px;
+            }
+
+            .variant-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            }
+
+            .variant-image {
+                width: 40px;
+                height: 40px;
+            }
+
+            .variant-name {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 1rem;
+            }
+            
+            button {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+            
+            .units-info-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+
+            .unit-info-image {
+                width: 30px;
+                height: 30px;
+            }
+
+            .unit-info-name {
+                font-size: 10px;
+            }
         }
         
         footer {
@@ -1020,6 +1110,7 @@
             text-align: center;
             margin: 20px 0;
             padding: 0 20px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -1028,8 +1119,8 @@
         <h1 class="header-title">Board Editor</h1>
         <div class="header-actions">
             <button id="unitsInfoBtn" class="info">Units Info</button>
-            <button id="downloadImageBtn" class="info">Download Image</button>
-            <button id="themeToggle" class="theme-toggle">Dark Mode</button>
+            <button id="downloadImageBtn" class="info">Download</button>
+            <button id="themeToggle" class="theme-toggle">Light Mode</button>
         </div>
     </div>
     
@@ -1206,7 +1297,7 @@
                 }
             },
             unitCount: 26,
-            cellSize: window.innerWidth < 600 ? 50 : 80,
+            cellSize: window.innerWidth < 768 ? 50 : 80,
             unitNames: {
                 'image0': 'Relic',
                 'image1': 'Oni',
@@ -1339,7 +1430,7 @@
             unitPairs: {}, // Stores Omen -> Relic connections
             isResizing: false,
             resizeTimer: null,
-            darkMode: false,
+            darkMode: true, // Default to dark mode
             omenCounter: 0 // Counter for unique Omen classes
         };
         
@@ -1374,6 +1465,10 @@
         
         // Initialization
         function init() {
+            // Set dark mode as default
+            document.body.classList.add('dark-mode');
+            themeToggleBtn.textContent = 'Light Mode';
+            
             createUnitPalette();
             loadBackgroundImage().then(() => {
                 createBoard();
@@ -1457,10 +1552,12 @@
         function toggleDarkMode() {
             state.darkMode = !state.darkMode;
             if (state.darkMode) {
+                document.body.classList.remove('light-mode');
                 document.body.classList.add('dark-mode');
                 themeToggleBtn.textContent = 'Light Mode';
             } else {
                 document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
                 themeToggleBtn.textContent = 'Dark Mode';
             }
         }
@@ -1515,6 +1612,7 @@
                     });
                     unitDiv.classList.add('selected');
                     state.selectedUnit = unitKey;
+                    state.selectedVariant = null; // Reset variant when selecting a new unit
                     state.deleteMode = false;
                     state.shadowPlacementMode = false;
                     toggleDeleteModeBtn.classList.remove('active');
@@ -1648,6 +1746,7 @@
                         btn.style.display = 'block';
                     });
                 } else if (state.selectedUnit) {
+                    // Use the selected variant if available, otherwise use the base unit
                     const unitToPlace = state.selectedVariant || state.selectedUnit;
                     if (state.selectedUnit === 'image17') {
                         const omenClass = createOmenClass();
@@ -1712,6 +1811,7 @@
                         opt.classList.remove('selected');
                     });
                     state.selectedUnit = null;
+                    state.selectedVariant = null;
                     state.shadowPlacementMode = false;
                     state.activeShadowOrigin = null;
                     
@@ -1831,7 +1931,7 @@
                     const variantId = variantOption.dataset.variant;
                     const unitKey = variantId.split('_')[0]; // Get base unit key (without _v2, _v3 etc.)
                     
-                    // Update selected variant
+                    // Update selected variant and reset the unit preview
                     state.selectedVariant = variantId === unitKey ? null : variantId;
                     
                     // Update selected unit in palette
@@ -1839,14 +1939,9 @@
                         opt.classList.remove('selected');
                         if (opt.dataset.unit === unitKey) {
                             opt.classList.add('selected');
+                            opt.style.backgroundImage = `url('${variantId}.png')`;
                         }
                     });
-                    
-                    // Update the unit preview
-                    const selectedUnitOption = document.querySelector(`.unit-option[data-unit="${unitKey}"]`);
-                    if (selectedUnitOption) {
-                        selectedUnitOption.style.backgroundImage = `url('${variantId}.png')`;
-                    }
                     
                     state.selectedUnit = unitKey;
                     closeModal('variantSelectorModal');
@@ -1864,7 +1959,7 @@
                 
                 // Set a new timer
                 state.resizeTimer = setTimeout(function() {
-                    config.cellSize = window.innerWidth < 600 ? 50 : 80;
+                    config.cellSize = window.innerWidth < 768 ? 50 : 80;
                     createBoard();
                 }, 200);
             });
